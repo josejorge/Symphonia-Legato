@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+        x:Class="SymphoniaLegato.Desktop.Views.PluginManagerWindow"
+        x:DataType="vm:PluginManagerViewModel"
+        Title="Plugin Manager"
+        Width="540" Height="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBackground}"
+        ShowInTaskbar="False">
+
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="0">
+
+    <!-- Plugin directory row -->
+    <Border Grid.Row="0"
+            Background="{DynamicResource ToolbarBackground}"
+            BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}"
+            Padding="12,8">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0"
+                 Text="{Binding PluginDirectory}"
+                 Watermark="Plugin directory path"
+                 AutomationProperties.Name="Plugin directory path"
+                 VerticalAlignment="Center"/>
+        <Button Grid.Column="1"
+                Content="Load Plugins"
+                Command="{Binding LoadPluginsCommand}"
+                Margin="8,0,0,0"
+                Background="{DynamicResource AccentColor}"
+                Foreground="White" CornerRadius="4" Padding="10,6"/>
+      </Grid>
+    </Border>
+
+    <!-- Plugin list -->
+    <ListBox Grid.Row="1"
+             ItemsSource="{Binding Plugins}"
+             SelectedItem="{Binding SelectedPlugin}"
+             Background="Transparent"
+             AutomationProperties.Name="Loaded plugins">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:PluginInfo">
+          <Grid ColumnDefinitions="*,Auto,80" Margin="8,6">
+            <StackPanel Grid.Column="0" Spacing="1">
+              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"
+                         Foreground="{DynamicResource ForegroundColor}"/>
+              <TextBlock Text="{Binding Author}" FontSize="10"
+                         Foreground="{DynamicResource ForegroundDimColor}"/>
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Version}"
+                       FontSize="11"
+                       Margin="8,0"
+                       Foreground="{DynamicResource AccentColor}"
+                       VerticalAlignment="Center"/>
+            <Border Grid.Column="2"
+                    Background="{DynamicResource CardBackground}"
+                    CornerRadius="10" Padding="6,2">
+              <TextBlock Text="Loaded" FontSize="10"
+                         Foreground="{DynamicResource AccentColor}"
+                         HorizontalAlignment="Center"/>
+            </Border>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- Status bar -->
+    <Border Grid.Row="2"
+            Background="{DynamicResource PanelBackground}"
+            BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}"
+            Padding="12,6">
+      <TextBlock Text="{Binding StatusText}"
+                 FontSize="11" Foreground="{DynamicResource ForegroundDimColor}"
+                 TextTrimming="CharacterEllipsis"/>
+    </Border>
+
+    <!-- Buttons -->
+    <Border Grid.Row="3"
+            Background="{DynamicResource PanelBackground}"
+            BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}"
+            Padding="12,8">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <Button Grid.Column="1"
+                Content="Unload Selected"
+                Command="{Binding UnloadSelectedCommand}"
+                IsEnabled="{Binding SelectedPlugin, Converter={x:Static ObjectConverters.IsNotNull}}"
+                Margin="0,0,8,0"
+                Background="{DynamicResource CardBackground}"
+                CornerRadius="4" Padding="10,6"/>
+        <Button Grid.Column="2"
+                Content="Close"
+                Command="{Binding CloseCommand}"
+                Background="{DynamicResource AccentColor}"
+                Foreground="White" CornerRadius="4" Padding="10,6"/>
+      </Grid>
+    </Border>
+
+  </Grid>
+</Window>

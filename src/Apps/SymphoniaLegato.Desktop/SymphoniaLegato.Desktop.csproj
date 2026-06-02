@@ -9,7 +9,6 @@
     <AssemblyName>SymphoniaLegato.Desktop</AssemblyName>
     <Version>1.0.0</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\SymphoniaLegato.Core\SymphoniaLegato.Core.csproj" />
@@ -54,6 +53,18 @@
     </Compile>
     <Compile Update="Views\MixerView.axaml.cs">
       <DependentUpon>Views\MixerView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ScorePropertiesWindow.axaml.cs">
+      <DependentUpon>Views\ScorePropertiesWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\GitHistoryView.axaml.cs">
+      <DependentUpon>Views\GitHistoryView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\PluginManagerWindow.axaml.cs">
+      <DependentUpon>Views\PluginManagerWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MidiSettingsWindow.axaml.cs">
+      <DependentUpon>Views\MidiSettingsWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

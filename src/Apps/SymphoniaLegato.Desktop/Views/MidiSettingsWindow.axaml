@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+        x:Class="SymphoniaLegato.Desktop.Views.MidiSettingsWindow"
+        x:DataType="vm:MidiSettingsViewModel"
+        Title="MIDI / Audio Settings"
+        Width="500" Height="340"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBackground}"
+        ShowInTaskbar="False">
+
+  <Grid RowDefinitions="*,Auto" Margin="0">
+
+    <ScrollViewer Grid.Row="0" Padding="24,20">
+      <StackPanel Spacing="16">
+
+        <TextBlock Text="MIDI Output Device"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AccentColor}"/>
+
+        <Grid ColumnDefinitions="*,34">
+          <ComboBox Grid.Column="0"
+                    ItemsSource="{Binding OutputDevices}"
+                    SelectedIndex="{Binding SelectedDeviceIndex}"
+                    AutomationProperties.Name="MIDI output device"
+                    Margin="0,0,8,0"/>
+          <Button Grid.Column="1"
+                  Content="&#x21BA;"
+                  Command="{Binding RefreshDevicesCommand}"
+                  ToolTip.Tip="Refresh device list"
+                  Classes="toolbar-btn"/>
+        </Grid>
+
+        <Separator Background="{DynamicResource BorderBrush}" Height="1"/>
+
+        <TextBlock Text="SoundFont (SF2)"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource AccentColor}"/>
+
+        <TextBlock TextWrapping="Wrap" FontSize="11"
+                   Foreground="{DynamicResource ForegroundDimColor}">
+          Install a virtual MIDI driver (e.g. CoolSoft VirtualMIDISynth) and load an
+          SF2 SoundFont file to get high-quality playback. Then select that driver as
+          your MIDI output device above.
+        </TextBlock>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox Grid.Column="0"
+                   Text="{Binding SoundFontPath}"
+                   Watermark="Path to .sf2 file (optional)"
+                   AutomationProperties.Name="SoundFont file path"
+                   IsReadOnly="True" Margin="0,0,8,0"/>
+          <Button Grid.Column="1"
+                  Content="Browse..."
+                  Command="{Binding BrowseSoundFontCommand}"
+                  Background="{DynamicResource CardBackground}"
+                  CornerRadius="4" Padding="10,6"/>
+        </Grid>
+
+        <TextBlock Text="{Binding StatusText}"
+                   FontSize="11" Foreground="{DynamicResource ForegroundDimColor}"
+                   FontStyle="Italic"/>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Buttons -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource PanelBackground}"
+            BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}"
+            Padding="24,10">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <Button Grid.Column="1"
+                Content="Apply"
+                Command="{Binding ApplyCommand}"
+                Margin="0,0,8,0"
+                Background="{DynamicResource AccentColor}"
+                Foreground="White" CornerRadius="4" Width="80"/>
+        <Button Grid.Column="2"
+                Content="Close"
+                Command="{Binding CloseCommand}"
+                Background="{DynamicResource CardBackground}"
+                CornerRadius="4" Width="80"/>
+      </Grid>
+    </Border>
+
+  </Grid>
+</Window>

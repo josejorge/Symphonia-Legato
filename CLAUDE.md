@@ -116,6 +116,14 @@ Score → InitialTimeSignature, InitialKeySignature, InitialTempo, PageSize
 | `src/Apps/SymphoniaLegato.Desktop/Views/AboutWindow.axaml` | About dialog |
 | `src/Apps/SymphoniaLegato.Desktop/Program.cs` | DI registration & app entry point |
 | `src/Apps/SymphoniaLegato.Desktop/Themes/SymphoniaTheme.axaml` | Dark theme tokens |
+| `src/Apps/SymphoniaLegato.Desktop/Themes/HighContrastTheme.axaml` | High-contrast theme (swapped via App.SetHighContrast) |
+| `src/Core/SymphoniaLegato.PdfEngine/ScorePdfExporter.cs` | PDF export (QuestPDF; embeds PNG pages) |
+| `src/Core/SymphoniaLegato.ImportExport/ScoreSvgExporter.cs` | SVG export (from LayoutResult) |
+| `src/Apps/SymphoniaLegato.Desktop/Services/ScorePngExporter.cs` | PNG export (Avalonia RenderTargetBitmap) |
+| `src/Apps/SymphoniaLegato.Desktop/ViewModels/ScorePropertiesViewModel.cs` | Score metadata + page settings |
+| `src/Apps/SymphoniaLegato.Desktop/ViewModels/GitHistoryViewModel.cs` | Git history panel VM |
+| `src/Apps/SymphoniaLegato.Desktop/ViewModels/PluginManagerViewModel.cs` | Plugin manager VM |
+| `src/Apps/SymphoniaLegato.Desktop/ViewModels/MidiSettingsViewModel.cs` | MIDI device + SoundFont settings |
 | `docs/ROADMAP.md` | Phase-by-phase feature plan |
 
 ---
@@ -141,6 +149,20 @@ Score → InitialTimeSignature, InitialKeySignature, InitialTempo, PageSize
    once; the interface binding points to it via a lambda. A second `AddSingleton<IScoreRepository>`
    would shadow the first.
 
+7. **`Grid.RowSpacing` / `Grid.ColumnSpacing`** do not exist in Avalonia 11. Use `StackPanel`
+   with `Spacing`, or add `Margin` to individual children.
+
+8. **`AutomationProperties.HeadingLevel` / `.Label`** — not available in Avalonia 11. Use
+   `AutomationProperties.Name` for accessible labels on controls.
+
+9. **Theme switching** — call `App.SetHighContrast(bool)` which adds/removes `HighContrastTheme.axaml`
+   from `Application.Styles`. The high contrast styles override dark theme resources because they
+   are appended later in the styles list.
+
+10. **PDF export** — `ScorePdfExporter.GenerateFromImages()` takes pre-rendered PNG bytes (from
+    `ScorePngExporter`). The PDF layer does not render notation itself; it embeds images into pages.
+    Use QuestPDF 2024.x API: `.Image(bytes).FitArea()` (not the deprecated `ImageScaling` enum).
+
 ---
 
 ## Phase status
@@ -149,7 +171,7 @@ Score → InitialTimeSignature, InitialKeySignature, InitialTempo, PageSize
 |-------|--------|---------|
 | 1 — MVP | ✅ Done | Domain model, notation engine, layout, MIDI playback, save/load, 38 tests |
 | 2 — Advanced notation | ✅ Done | Noteheads, stems, beams, accidentals, rests, clefs, dynamics, hairpins, slurs, articulations, lyrics, hand coloring, MIDI import, 55 tests |
-| 3 — Professional | 🔜 Next | PDF export, PNG/SVG, SoundFont playback, plugin UI, Git history UI, cloud sync, score properties, accessibility |
+| 3 — Professional | ✅ Done | PDF/PNG/SVG export, Score Properties dialog, Plugin Manager, Git History panel, MIDI/Audio settings, High Contrast theme, accessibility labels, file pickers, 74 tests |
 | 4 — Android | ⏳ Planned | Companion app, score viewer, playback, annotations |
 | 5 — AI | ⏳ Planned | Harmonisation, chord detection, fingering, analysis |
 

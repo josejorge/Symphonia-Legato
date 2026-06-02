@@ -1,0 +1,75 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ── High Contrast Palette (WCAG 2.1 AA+ compliant) ──────────── -->
+  <Style>
+    <Style.Resources>
+
+      <SolidColorBrush x:Key="SurfaceBackground"   Color="#000000"/>
+      <SolidColorBrush x:Key="EditorBackground"    Color="#000000"/>
+      <SolidColorBrush x:Key="PanelBackground"     Color="#0A0A0A"/>
+      <SolidColorBrush x:Key="ToolbarBackground"   Color="#000000"/>
+      <SolidColorBrush x:Key="MenuBackground"      Color="#000000"/>
+      <SolidColorBrush x:Key="StatusBarBackground" Color="#005ABB"/>
+      <SolidColorBrush x:Key="CardBackground"      Color="#1A1A1A"/>
+
+      <SolidColorBrush x:Key="ForegroundColor"     Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="ForegroundDimColor"  Color="#DDDDDD"/>
+      <SolidColorBrush x:Key="AccentColor"         Color="#FFFF00"/>
+      <SolidColorBrush x:Key="AccentHoverColor"    Color="#FFFF88"/>
+      <SolidColorBrush x:Key="BorderBrush"         Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="SelectionColor"      Color="#005ABB"/>
+
+    </Style.Resources>
+  </Style>
+
+  <!-- ── High contrast button styles ────────────────────────────── -->
+  <Style Selector="Button.toolbar-btn">
+    <Setter Property="Background"   Value="Transparent"/>
+    <Setter Property="Foreground"   Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="BorderBrush"  Value="{DynamicResource BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Width"        Value="32"/>
+    <Setter Property="Height"       Value="32"/>
+    <Setter Property="CornerRadius" Value="2"/>
+    <Setter Property="Padding"      Value="4"/>
+    <Setter Property="FontSize"     Value="14"/>
+  </Style>
+
+  <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentColor}"/>
+    <Setter Property="TextElement.Foreground" Value="#000000"/>
+  </Style>
+
+  <Style Selector="Button.playback-main">
+    <Setter Property="Width"        Value="38"/>
+    <Setter Property="Height"       Value="32"/>
+    <Setter Property="Background"   Value="{DynamicResource AccentColor}"/>
+    <Setter Property="Foreground"   Value="#000000"/>
+    <Setter Property="BorderBrush"  Value="White"/>
+    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="CornerRadius" Value="2"/>
+  </Style>
+
+  <!-- ── TextBlock ──────────────────────────────────────────────── -->
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+  </Style>
+
+  <!-- ── Menu ───────────────────────────────────────────────────── -->
+  <Style Selector="Menu">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
+  </Style>
+  <Style Selector="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
+  </Style>
+
+  <!-- ── RadioButton ─────────────────────────────────────────────── -->
+  <Style Selector="RadioButton">
+    <Setter Property="Foreground"  Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="Background"  Value="Transparent"/>
+  </Style>
+
+</Styles>
