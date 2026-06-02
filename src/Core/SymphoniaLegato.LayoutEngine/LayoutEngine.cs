@@ -5,48 +5,45 @@ using SymphoniaLegato.Core.Models;
 namespace SymphoniaLegato.LayoutEngine;
 
 /// <summary>
-/// Computes pixel-level layout for a score.
-/// Uses an automatic measure-spacing algorithm that distributes measures
-/// across systems to achieve balanced line lengths.
+/// Full Phase 2 layout engine.
+/// Computes pixel positions for every notational element including
+/// noteheads, stems, beams, accidentals, dynamics, slurs, and lyrics.
+/// Uses proportional spacing: longer notes get more horizontal space.
 /// </summary>
 public sealed class LayoutEngine : ILayoutEngine
 {
     private readonly ILogger<LayoutEngine> _logger;
 
-    private const double StaffLineCount = 5;
-    private const double LineSpacingDefault = 10.0; // px per staff space at 100% zoom
+    private const double StaffLines     = 5.0;
+    private const double LineSpacing    = 10.0;   // px per space at zoom=1
+    private const double StemLength     = 3.5;    // staff spaces
+    private const double ClefWidth      = 24.0;
+    private const double TimeSigWidth   = 14.0;
+    private const double KeySigWidth    = 10.0;   // per accidental
+    private const double NoteHeadRx     = 0.55;   // note head x-radius in spaces
+    private const double NoteHeadRy     = 0.40;   // note head y-radius in spaces
+    private const double AccidentalW    = 8.0;
+    private const double MinNoteW       = 12.0;
+    private const double BeamThickness  = 3.0;
 
     public LayoutEngine(ILogger<LayoutEngine> logger) => _logger = logger;
 
     public LayoutResult ComputeLayout(Score score, LayoutOptions options)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var pages = new List<RenderedPage>();
 
+        double sp = LineSpacing * options.Zoom; // staff space in px
         double pageW = score.PageWidthMm  * options.DPI / 25.4 * options.Zoom;
         double pageH = score.PageHeightMm * options.DPI / 25.4 * options.Zoom;
         double margin = options.PageMarginPx * options.Zoom;
         double usableW = pageW - 2 * margin;
-        double lineSpacing = LineSpacingDefault * options.Zoom;
 
-        var allMeasures = GetMeasureNumbers(score);
-        if (allMeasures.Count == 0)
-        {
-            pages.Add(new RenderedPage
-            {
-                PageNumber = 1,
-                WidthPx = pageW,
-                HeightPx = pageH,
-                Systems = []
-            });
-            return new LayoutResult { Pages = pages, ComputationTime = sw.Elapsed };
-        }
-
-        var systems = BuildSystems(score, allMeasures, usableW, lineSpacing, options);
-        pages.AddRange(PaginateSystems(systems, pageW, pageH, margin, lineSpacing, score, options));
+        var allMeasureNumbers = GetAllMeasureNumbers(score);
+        var systems = BuildSystems(score, allMeasureNumbers, usableW, sp, options);
+        var pages   = Paginate(systems, score, pageW, pageH, margin, sp, options);
 
         sw.Stop();
-        _logger.LogDebug("Layout computed: {Pages} pages, {Time}ms", pages.Count, sw.ElapsedMilliseconds);
+        _logger.LogDebug("Layout: {Pages} pages in {Ms}ms", pages.Count, sw.ElapsedMilliseconds);
         return new LayoutResult { Pages = pages, ComputationTime = sw.Elapsed };
     }
 
@@ -61,179 +58,414 @@ public sealed class LayoutEngine : ILayoutEngine
         };
     }
 
-    // ── Private helpers ────────────────────────────────────────────────
+    // ── Systems ───────────────────────────────────────────────────────
 
-    private static List<int> GetMeasureNumbers(Score score) =>
-        score.Parts
-             .SelectMany(p => p.Staves)
+    private static List<int> GetAllMeasureNumbers(Score score) =>
+        score.Parts.SelectMany(p => p.Staves)
              .SelectMany(s => s.Measures)
              .Select(m => m.Number)
-             .Distinct()
-             .OrderBy(n => n)
-             .ToList();
+             .Distinct().OrderBy(n => n).ToList();
 
-    private List<SystemLayout> BuildSystems(
-        Score score, List<int> measures, double usableW,
-        double lineSpacing, LayoutOptions options)
+    private List<SystemLayout> BuildSystems(Score score, List<int> measures,
+        double usableW, double sp, LayoutOptions options)
     {
-        var systems = new List<SystemLayout>();
-        double minMeasureW = lineSpacing * 8;  // minimum measure width
-        int measuresPerSystem = options.MeasuresPerSystemHint > 0
-            ? options.MeasuresPerSystemHint
-            : Math.Max(1, (int)(usableW / (minMeasureW * 1.5)));
+        if (measures.Count == 0) return [];
 
-        int i = 0;
-        while (i < measures.Count)
+        int hint = options.MeasuresPerSystemHint;
+        if (hint > 0)
         {
-            int end = Math.Min(i + measuresPerSystem, measures.Count);
-            systems.Add(new SystemLayout
-            {
-                FirstMeasure = measures[i],
-                LastMeasure  = measures[end - 1],
-                MeasureNumbers = measures[i..end]
-            });
-            i = end;
+            return measures.Chunk(hint)
+                .Select(chunk => new SystemLayout { MeasureNumbers = [.. chunk] })
+                .ToList();
         }
+
+        // Proportional layout: distribute measures until line is full
+        var systems = new List<SystemLayout>();
+        var currentSystem = new List<int>();
+        double currentW = 0;
+
+        foreach (int mNum in measures)
+        {
+            double mW = EstimateMeasureWidth(score, mNum, sp,
+                isFirst: currentSystem.Count == 0);
+            if (currentW + mW > usableW && currentSystem.Count > 0)
+            {
+                systems.Add(new SystemLayout { MeasureNumbers = [.. currentSystem] });
+                currentSystem.Clear();
+                currentW = 0;
+            }
+            currentSystem.Add(mNum);
+            currentW += mW;
+        }
+        if (currentSystem.Count > 0)
+            systems.Add(new SystemLayout { MeasureNumbers = [.. currentSystem] });
+
         return systems;
     }
 
-    private static List<RenderedPage> PaginateSystems(
-        List<SystemLayout> systems,
-        double pageW, double pageH, double margin,
-        double lineSpacing, Score score, LayoutOptions options)
+    private static double EstimateMeasureWidth(Score score, int measureNumber, double sp, bool isFirst)
+    {
+        var staff = score.Parts.SelectMany(p => p.Staves).FirstOrDefault();
+        var measure = staff?.GetMeasure(measureNumber);
+        if (measure is null) return sp * 8;
+
+        double accW  = isFirst ? ClefWidth * sp / LineSpacing : 0;
+        double ksW   = isFirst ? Math.Abs(score.InitialKeySignature.Fifths) * KeySigWidth * sp / LineSpacing : 0;
+        double tsW   = isFirst ? TimeSigWidth * sp / LineSpacing : 0;
+
+        // Proportional: each duration takes proportional space
+        double noteW = measure.Notes.Sum(n => NoteWidthPx(n.Duration, sp));
+        noteW = Math.Max(noteW, MinNoteW * sp / LineSpacing);
+
+        return accW + ksW + tsW + noteW + sp; // + barline padding
+    }
+
+    private static double NoteWidthPx(Duration d, double sp)
+    {
+        // Whole gets more space, shorter notes less
+        double quarters = (double)d.Ticks / 1024.0;
+        return Math.Max(MinNoteW, quarters * sp * 2.5);
+    }
+
+    // ── Pagination ────────────────────────────────────────────────────
+
+    private List<RenderedPage> Paginate(List<SystemLayout> systems, Score score,
+        double pageW, double pageH, double margin, double sp, LayoutOptions options)
     {
         var pages = new List<RenderedPage>();
-        var currentPageSystems = new List<RenderedSystem>();
-        double yPos = margin;
-        int pageNumber = 1;
+        var currentSystems = new List<RenderedSystem>();
 
         int staffCount = score.Parts.Sum(p => p.Staves.Count);
-        double systemHeight = staffCount * (StaffLineCount * lineSpacing + options.SystemSpacingPx * options.Zoom);
+        double staffH = (StaffLines - 1) * sp;
+        double partH  = staffH + sp * 2;  // staff + inter-staff gap
+        double sysH   = staffCount * partH + options.SystemSpacingPx * options.Zoom;
+
+        double yPos = margin;
+        int pageNum = 1;
 
         foreach (var sysLayout in systems)
         {
-            if (yPos + systemHeight > pageH - margin && currentPageSystems.Count > 0)
+            if (yPos + sysH > pageH - margin && currentSystems.Count > 0)
             {
-                pages.Add(BuildPage(pageNumber++, pageW, pageH, currentPageSystems));
-                currentPageSystems = [];
+                pages.Add(new RenderedPage
+                {
+                    PageNumber = pageNum++, WidthPx = pageW, HeightPx = pageH,
+                    Systems = currentSystems
+                });
+                currentSystems = [];
                 yPos = margin;
             }
 
-            var renderedSystem = BuildSystem(sysLayout, score, margin, yPos,
-                pageW - 2 * margin, lineSpacing, options);
-            currentPageSystems.Add(renderedSystem);
-            yPos += systemHeight + options.SystemSpacingPx * options.Zoom;
+            var rsys = BuildSystem(sysLayout, score, margin, yPos,
+                pageW - 2 * margin, sp, options, staffH, partH);
+            currentSystems.Add(rsys);
+            yPos += sysH;
         }
 
-        if (currentPageSystems.Count > 0)
-            pages.Add(BuildPage(pageNumber, pageW, pageH, currentPageSystems));
+        if (currentSystems.Count > 0)
+            pages.Add(new RenderedPage
+            {
+                PageNumber = pageNum, WidthPx = pageW, HeightPx = pageH,
+                Systems = currentSystems
+            });
 
         return pages;
     }
 
-    private static RenderedPage BuildPage(int number, double w, double h, List<RenderedSystem> systems) =>
-        new() { PageNumber = number, WidthPx = w, HeightPx = h, Systems = systems };
+    // ── System ────────────────────────────────────────────────────────
 
-    private static RenderedSystem BuildSystem(
-        SystemLayout sysLayout, Score score,
-        double x, double y, double width,
-        double lineSpacing, LayoutOptions options)
+    private RenderedSystem BuildSystem(SystemLayout sysLayout, Score score,
+        double x, double y, double usableW, double sp,
+        LayoutOptions options, double staffH, double partH)
     {
-        var staves = new List<RenderedStaff>();
+        var rStaves = new List<RenderedStaff>();
         double staffY = y;
+
+        // Compute measure widths for this system (stretch to fill usableW)
+        var mWidths = ComputeMeasureWidths(sysLayout.MeasureNumbers, score, sp, usableW);
 
         foreach (var part in score.Parts)
         foreach (var staff in part.Staves)
         {
-            double staffHeight = StaffLineCount * lineSpacing;
-            staves.Add(BuildStaff(staff, sysLayout, x, staffY, width, lineSpacing));
-            staffY += staffHeight + options.SystemSpacingPx * options.Zoom * 0.4;
+            var rStaff = BuildStaff(staff, sysLayout.MeasureNumbers, mWidths,
+                x, staffY, sp, score);
+            rStaves.Add(rStaff);
+            staffY += partH;
         }
 
         return new RenderedSystem
         {
-            X = x, Y = y, Width = width,
+            X = x, Y = y, Width = usableW,
             Height = staffY - y,
-            FirstMeasure = sysLayout.FirstMeasure,
-            LastMeasure  = sysLayout.LastMeasure,
-            Staves = staves
+            FirstMeasure = sysLayout.MeasureNumbers[0],
+            LastMeasure  = sysLayout.MeasureNumbers[^1],
+            Staves = rStaves
         };
     }
 
-    private static RenderedStaff BuildStaff(
-        Staff staff, SystemLayout sysLayout,
-        double x, double y, double width, double lineSpacing)
+    private Dictionary<int, double> ComputeMeasureWidths(List<int> measureNumbers,
+        Score score, double sp, double usableW)
     {
-        var measures = new List<RenderedMeasure>();
-        double measureCount = sysLayout.MeasureNumbers.Count;
-        double measureW = width / measureCount;
-        double measureX = x;
-
-        foreach (int mNum in sysLayout.MeasureNumbers)
+        bool isFirst = true;
+        var rawWidths = new Dictionary<int, double>();
+        double totalRaw = 0;
+        foreach (int mNum in measureNumbers)
         {
+            double w = EstimateMeasureWidth(score, mNum, sp, isFirst);
+            rawWidths[mNum] = w;
+            totalRaw += w;
+            isFirst = false;
+        }
+
+        // Stretch to fill usable width
+        double scale = totalRaw > 0 ? usableW / totalRaw : 1;
+        var result = new Dictionary<int, double>();
+        foreach (var kvp in rawWidths)
+            result[kvp.Key] = kvp.Value * scale;
+        return result;
+    }
+
+    // ── Staff ─────────────────────────────────────────────────────────
+
+    private RenderedStaff BuildStaff(Staff staff, List<int> measureNumbers,
+        Dictionary<int, double> mWidths, double startX, double y, double sp, Score score)
+    {
+        var rMeasures = new List<RenderedMeasure>();
+        double x = startX;
+        bool isFirst = true;
+
+        KeySignature currentKey = score.InitialKeySignature;
+        TimeSignature currentTs = score.InitialTimeSignature;
+        Clef currentClef = staff.DefaultClef;
+
+        foreach (int mNum in measureNumbers)
+        {
+            double w = mWidths.TryGetValue(mNum, out var mw) ? mw : sp * 8;
             var measure = staff.GetMeasure(mNum);
-            var elements = new List<RenderedNoteElement>();
 
-            if (measure is not null)
-            {
-                double noteAreaW = measureW - 16; // leave room for barline
-                double noteX = measureX + 16;     // offset for clef/time sig on first measure
+            if (measure?.KeySignatureChange.HasValue == true) currentKey = measure.KeySignatureChange.Value;
+            if (measure?.ClefChange.HasValue == true)         currentClef = measure.ClefChange.Value;
+            TimeSignature ts = measure?.TimeSignature ?? currentTs;
 
-                if (measure.Notes.Count > 0)
-                {
-                    double noteSpacing = noteAreaW / (measure.Notes.Count + 1);
-                    for (int i = 0; i < measure.Notes.Count; i++)
-                    {
-                        var note = measure.Notes[i];
-                        double nx = noteX + noteSpacing * (i + 1);
-                        double ny = y + NoteYOffset(note.StaffPosition, lineSpacing);
-                        var (lc, above) = note.IsRest ? (0, false)
-                            : (Math.Abs(note.StaffPosition) > 9 || note.StaffPosition < 1
-                                ? Math.Max(0, (note.StaffPosition < 1
-                                    ? Math.Abs(note.StaffPosition)
-                                    : (note.StaffPosition - 9 + 1) / 2))
-                                : 0, note.StaffPosition > 9);
+            var rMeasure = BuildMeasure(measure, mNum, x, y, w, sp,
+                currentClef, currentKey, ts, isFirst, staff.Id);
+            rMeasures.Add(rMeasure);
 
-                        elements.Add(new RenderedNoteElement
-                        {
-                            NoteId = note.Id,
-                            X = nx, Y = ny,
-                            StaffPosition = note.StaffPosition,
-                            NeedsLedgerLines = lc > 0,
-                            LedgerLineCount = lc
-                        });
-                    }
-                }
-            }
-
-            measures.Add(new RenderedMeasure
-            {
-                MeasureNumber = mNum,
-                X = measureX,
-                Width = measureW,
-                Elements = elements
-            });
-
-            measureX += measureW;
+            x += w;
+            isFirst = false;
+            currentTs = ts;
         }
 
         return new RenderedStaff
         {
             StaffId = staff.Id,
             Y = y,
-            Height = StaffLineCount * lineSpacing,
-            Measures = measures
+            Height = (StaffLines - 1) * sp,
+            Measures = rMeasures
         };
     }
 
-    private static double NoteYOffset(int staffPosition, double lineSpacing) =>
-        // staffPosition 1 = bottom line, increases up
-        (9 - staffPosition) * (lineSpacing / 2.0);
+    // ── Measure ───────────────────────────────────────────────────────
+
+    private RenderedMeasure BuildMeasure(Measure? measure, int mNum,
+        double x, double y, double w, double sp,
+        Clef clef, KeySignature key, TimeSignature ts,
+        bool isFirst, Guid staffId)
+    {
+        // Header decorations: clef, key sig, time sig
+        double headerX = x + 2;
+        if (isFirst)
+        {
+            headerX += ClefWidth  * sp / LineSpacing;
+            headerX += Math.Abs(key.Fifths) * KeySigWidth * sp / LineSpacing;
+            headerX += TimeSigWidth * sp / LineSpacing;
+        }
+
+        var elements = new List<RenderedNoteElement>();
+        var beams    = new List<RenderedBeam>();
+        var hairpins = new List<RenderedHairpin>();
+        var slurs    = new List<RenderedSlur>();
+        var dynamics = new List<RenderedDynamic>();
+        var tempos   = new List<RenderedTempo>();
+
+        if (measure is not null)
+        {
+            // Note positions (proportional within measure)
+            double noteAreaW = x + w - headerX - 4;
+            int totalTicks = measure.TimeSignature.TicksPerMeasure;
+            double tickWidth = totalTicks > 0 ? noteAreaW / totalTicks : noteAreaW;
+
+            // Place notes
+            var beamGroups = new Dictionary<int, List<(RenderedNoteElement elem, double stemX)>>();
+
+            foreach (var note in measure.Notes.OrderBy(n => n.TickOffset))
+            {
+                double nx = headerX + note.TickOffset * tickWidth + tickWidth * 0.5;
+
+                int pos    = note.StaffPosition;
+                double ny  = y + NoteY(pos, sp);
+                var (lc, above) = LedgerLines(pos);
+
+                StemDirection stemDir = note.Stem == StemDirection.Auto
+                    ? (pos >= 5 ? StemDirection.Down : StemDirection.Up)
+                    : note.Stem;
+
+                bool stemNone = note.Duration.Value == NoteValue.Whole || note.IsRest;
+                double stemEndY = stemNone ? ny : (stemDir == StemDirection.Up
+                    ? ny - StemLength * sp
+                    : ny + StemLength * sp);
+
+                var elem = new RenderedNoteElement
+                {
+                    NoteId          = note.Id,
+                    X               = nx, Y = ny,
+                    StaffPosition   = pos,
+                    IsRest          = note.IsRest,
+                    NeedsLedgerLines = lc > 0,
+                    LedgerLineCount  = lc,
+                    LedgerLinesAbove = above,
+                    NoteValue        = note.Duration.Value,
+                    Dots             = note.Duration.Dots,
+                    Stem             = stemNone ? StemDirection.None : stemDir,
+                    StemEndY         = stemEndY,
+                    BeamGroup        = note.BeamGroup,
+                    IsBeamStart      = note.IsBeamStart,
+                    IsBeamEnd        = note.IsBeamEnd,
+                    ShowAccidental   = note.ShowAccidental,
+                    Accidental       = note.Pitch?.Accidental ?? Accidental.Natural,
+                    Articulation     = note.Articulation,
+                    Hand             = note.Hand,
+                    Lyrics           = note.Lyrics
+                        .Select(l => (l.Verse, l.Text, l.Syllable)).ToList(),
+                    ChordPositions   = note.ChordNotes.Select(cp => (0, false, cp.Accidental)).ToList()
+                };
+                elements.Add(elem);
+
+                // Collect beam groups
+                if (note.BeamGroup > 0)
+                {
+                    if (!beamGroups.TryGetValue(note.BeamGroup, out var grp))
+                    {
+                        grp = new List<(RenderedNoteElement, double)>();
+                        beamGroups[note.BeamGroup] = grp;
+                    }
+                    grp.Add((elem, nx));
+                }
+            }
+
+            // Build beams
+            foreach (var (_, grp) in beamGroups)
+            {
+                if (grp.Count < 2) continue;
+                var first = grp[0];
+                var last  = grp[^1];
+                double beamY = first.elem.StemEndY; // use first note's stem tip
+                beams.Add(new RenderedBeam
+                {
+                    StartX = first.stemX, StartY = beamY,
+                    EndX   = last.stemX,  EndY   = last.elem.StemEndY,
+                    BeamLevel = 0
+                });
+                // Sixteenth sub-beams
+                if (grp[0].elem.NoteValue == NoteValue.Sixteenth)
+                {
+                    beams.Add(new RenderedBeam
+                    {
+                        StartX = first.stemX, StartY = beamY + (first.elem.Stem == StemDirection.Up ? BeamThickness * 2 : -BeamThickness * 2),
+                        EndX   = last.stemX,  EndY   = last.elem.StemEndY + (last.elem.Stem == StemDirection.Up ? BeamThickness * 2 : -BeamThickness * 2),
+                        BeamLevel = 1
+                    });
+                }
+            }
+
+            // Dynamics
+            double bottomY = y + (StaffLines - 1) * sp + sp * 1.5;
+            foreach (var dyn in measure.Dynamics)
+            {
+                double dx = headerX + dyn.TickOffset * tickWidth;
+                dynamics.Add(new RenderedDynamic { Symbol = dyn.Symbol, X = dx, Y = bottomY });
+            }
+
+            // Hairpins
+            foreach (var hp in measure.Hairpins)
+            {
+                double hx1 = headerX + hp.StartTick * tickWidth;
+                double hx2 = headerX + hp.EndTick   * tickWidth;
+                hairpins.Add(new RenderedHairpin
+                {
+                    StartX = hx1, EndX = hx2,
+                    Y = bottomY + sp,
+                    Type = hp.Type
+                });
+            }
+
+            // Slurs
+            foreach (var slur in measure.Slurs)
+            {
+                var startElem = elements.FirstOrDefault(e => e.NoteId == slur.StartNoteId);
+                var endElem   = elements.FirstOrDefault(e => e.NoteId == slur.EndNoteId);
+                if (startElem is null || endElem is null) continue;
+
+                bool curvesUp = slur.Direction == CurveDirection.Down ||
+                               (slur.Direction == CurveDirection.Auto &&
+                                startElem.Stem == StemDirection.Up);
+                double curveY = curvesUp ? startElem.Y - sp * 1.5 : startElem.Y + sp * 1.5;
+                slurs.Add(new RenderedSlur
+                {
+                    StartX = startElem.X, StartY = startElem.Y,
+                    EndX   = endElem.X,   EndY   = endElem.Y,
+                    Cp1X   = startElem.X + (endElem.X - startElem.X) * 0.25, Cp1Y = curveY,
+                    Cp2X   = startElem.X + (endElem.X - startElem.X) * 0.75, Cp2Y = curveY,
+                    CurvesUp = curvesUp
+                });
+            }
+
+            // Tempo markings
+            foreach (var tempo in measure.TempoMarkings)
+            {
+                tempos.Add(new RenderedTempo
+                {
+                    Text = tempo.Text, BPM = tempo.BPM,
+                    X = x + 2, Y = y - sp * 1.8
+                });
+            }
+        }
+
+        return new RenderedMeasure
+        {
+            MeasureNumber     = mNum,
+            X = x, Width = w,
+            StartBarline      = measure?.StartBarline ?? BarlineType.Single,
+            EndBarline        = measure?.EndBarline   ?? BarlineType.Single,
+            ShowClef          = isFirst,
+            ShowTimeSignature = isFirst,
+            ShowKeySignature  = isFirst && key.Fifths != 0,
+            TimeSignature     = measure?.TimeSignature ?? ts,
+            KeySignature      = key,
+            ClefType          = clef.Type,
+            Elements          = elements,
+            Beams             = beams,
+            Hairpins          = hairpins,
+            Slurs             = slurs,
+            Dynamics          = dynamics,
+            TempoMarkings     = tempos
+        };
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private static double NoteY(int staffPosition, double sp) =>
+        (9 - staffPosition) * (sp / 2.0);
+
+    private static (int count, bool above) LedgerLines(int pos)
+    {
+        if (pos <= 0)  return ((Math.Abs(pos) + 1) / 2, false);
+        if (pos > 9)   return ((pos - 9 + 1) / 2, true);
+        return (0, false);
+    }
 
     private sealed class SystemLayout
     {
-        public int FirstMeasure { get; init; }
-        public int LastMeasure { get; init; }
         public List<int> MeasureNumbers { get; init; } = [];
     }
 }

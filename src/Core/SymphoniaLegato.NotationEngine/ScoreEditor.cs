@@ -33,9 +33,30 @@ public sealed class ScoreEditor
         _undoStack.Push(command);
         _redoStack.Clear();
         IsDirty = true;
+        PostProcess();
         _logger.LogDebug("Executed: {Command}", command.Description);
         ScoreChanged?.Invoke(this, EventArgs.Empty);
         CommandExecuted?.Invoke(this, command.Description);
+    }
+
+    /// <summary>Runs beam and accidental processing after any mutation.</summary>
+    private void PostProcess()
+    {
+        var keySig = Score.InitialKeySignature;
+        foreach (var part in Score.Parts)
+        foreach (var staff in part.Staves)
+        foreach (var measure in staff.Measures)
+        {
+            var effectiveKey = measure.KeySignatureChange ?? keySig;
+            BeamCalculator.AssignBeams(measure);
+            AccidentalProcessor.Process(measure, effectiveKey);
+            if (measure.KeySignatureChange.HasValue)
+                keySig = measure.KeySignatureChange.Value;
+
+            // Set stem direction for non-beamed notes
+            foreach (var note in measure.Notes.Where(n => n.BeamGroup == 0))
+                note.Stem = StemDirectionCalculator.Calculate(note);
+        }
     }
 
     public void Undo()
@@ -81,4 +102,27 @@ public sealed class ScoreEditor
 
     public void DeleteMeasure(int measureNumber) =>
         Execute(new DeleteMeasureCommand(measureNumber));
+
+    // ── Phase 2 helpers ───────────────────────────────────────────────
+
+    public void AddDynamic(Guid staffId, int measureNumber, Dynamic dynamic) =>
+        Execute(new AddDynamicCommand(staffId, measureNumber, dynamic));
+
+    public void AddHairpin(Guid staffId, int measureNumber, Hairpin hairpin) =>
+        Execute(new AddHairpinCommand(staffId, measureNumber, hairpin));
+
+    public void AddSlur(Guid staffId, int measureNumber, Slur slur) =>
+        Execute(new AddSlurCommand(staffId, measureNumber, slur));
+
+    public void AddTempoMarking(int measureNumber, TempoMarking tempo) =>
+        Execute(new AddTempoMarkingCommand(measureNumber, tempo));
+
+    public void AddLyric(Guid staffId, int measureNumber, Guid noteId, Lyric lyric) =>
+        Execute(new AddLyricCommand(staffId, measureNumber, noteId, lyric));
+
+    public void SetArticulation(Guid staffId, int measureNumber, Guid noteId, Articulation articulation) =>
+        Execute(new SetArticulationCommand(staffId, measureNumber, noteId, articulation));
+
+    public void SetHand(Guid staffId, int measureNumber, Guid noteId, Hand hand) =>
+        Execute(new SetHandCommand(staffId, measureNumber, noteId, hand));
 }

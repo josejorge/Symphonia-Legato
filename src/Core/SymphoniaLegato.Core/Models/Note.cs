@@ -44,8 +44,24 @@ public sealed class Note
     /// <summary>Fingering suggestion (1–5, 0 = none).</summary>
     public int Fingering { get; set; }
 
-    /// <summary>Staff-line/space position from the bottom line of the staff (0-based).</summary>
+    /// <summary>Staff-line/space position from the bottom line of the staff (1 = bottom line).</summary>
     public int StaffPosition { get; set; }
+
+    // ── Beam group ──────────────────────────────────────────────────
+    /// <summary>0 = not in a beam group; same non-zero value = beamed together.</summary>
+    public int BeamGroup { get; set; }
+    public bool IsBeamStart { get; set; }
+    public bool IsBeamEnd { get; set; }
+
+    // ── Stem ────────────────────────────────────────────────────────
+    public StemDirection Stem { get; set; } = StemDirection.Auto;
+
+    // ── Accidentals ─────────────────────────────────────────────────
+    /// <summary>True when this note needs an explicit accidental drawn.</summary>
+    public bool ShowAccidental { get; set; }
+
+    // ── Lyrics ──────────────────────────────────────────────────────
+    public List<Lyric> Lyrics { get; init; } = [];
 
     public override string ToString() =>
         IsRest ? $"Rest({Duration})" : $"{Pitch}({Duration})";

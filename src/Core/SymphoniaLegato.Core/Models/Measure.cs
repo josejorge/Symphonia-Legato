@@ -21,8 +21,9 @@ public sealed class Measure
 
     public List<Note> Notes { get; init; } = [];
     public List<Dynamic> Dynamics { get; init; } = [];
+    public List<Hairpin> Hairpins { get; init; } = [];
     public List<TempoMarking> TempoMarkings { get; init; } = [];
-    public List<string> Lyrics { get; init; } = [];
+    public List<Slur> Slurs { get; init; } = [];
     public List<TextAnnotation> Annotations { get; init; } = [];
 
     public BarlineType StartBarline { get; set; } = BarlineType.Single;

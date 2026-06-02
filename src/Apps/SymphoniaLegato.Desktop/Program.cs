@@ -5,6 +5,7 @@ using SymphoniaLegato.Desktop;
 using SymphoniaLegato.Desktop.ViewModels;
 using SymphoniaLegato.ImportExport;
 using SymphoniaLegato.LayoutEngine;
+using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.PlaybackEngine;
 
 var services = BuildServices();
@@ -31,9 +32,9 @@ static IServiceProvider BuildServices()
 
     sc.AddSingleton<MusicXmlImporter>();
     sc.AddSingleton<MusicXmlExporter>();
+    sc.AddSingleton<MidiImporter>();
     sc.AddSingleton<EnScoreRepository>();
-    sc.AddSingleton<SymphoniaLegato.Core.Interfaces.IScoreRepository>(
-        sp => sp.GetRequiredService<EnScoreRepository>());
+    sc.AddSingleton<IScoreRepository>(sp => sp.GetRequiredService<EnScoreRepository>());
 
     sc.AddTransient<MainWindowViewModel>();
     sc.AddTransient<ScoreEditorViewModel>();
