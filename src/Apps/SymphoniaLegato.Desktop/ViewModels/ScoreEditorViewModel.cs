@@ -30,7 +30,7 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
     private KeySignature _activeKeySig = KeySignature.CMajor;
     private Clef _activeClef = Clef.Treble;
 
-    public Hand SelectedHand => _selectedHandIndex switch
+    public Hand SelectedHand => SelectedHandIndex switch
     {
         1 => Hand.Right,
         2 => Hand.Left,
