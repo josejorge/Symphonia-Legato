@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Android.ViewModels"
+             x:Class="SymphoniaLegato.Android.Views.PlayerView"
+             x:DataType="vm:MobilePlaybackViewModel"
+             Background="{DynamicResource SurfaceBackground}">
+
+  <StackPanel Spacing="24" Margin="20" VerticalAlignment="Center">
+
+    <!-- Position -->
+    <TextBlock HorizontalAlignment="Center" FontSize="40" FontWeight="Light"
+               Text="{Binding Position, StringFormat='{}{0:mm\\:ss}'}"
+               Foreground="{DynamicResource ForegroundColor}"/>
+
+    <!-- Playback controls -->
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="16">
+      <Button Content="⏮" Command="{Binding RewindCommand}"
+              FontSize="24" Width="64" Height="64" CornerRadius="32"
+              Background="{DynamicResource CardBackground}"/>
+      <Button Command="{Binding PlayPauseCommand}"
+              FontSize="28" Width="72" Height="72" CornerRadius="36"
+              Background="{DynamicResource AccentColor}" Foreground="White"
+              AutomationProperties.Name="Play or pause">
+        <Button.Content>
+          <TextBlock Text="{Binding IsPlaying, Converter={x:Static vm:BoolToPlayPauseConverter.Instance}}"/>
+        </Button.Content>
+      </Button>
+      <Button Content="⏹" Command="{Binding StopCommand}"
+              FontSize="24" Width="64" Height="64" CornerRadius="32"
+              Background="{DynamicResource CardBackground}"/>
+    </StackPanel>
+
+    <!-- Tempo multiplier -->
+    <StackPanel Spacing="6">
+      <TextBlock Text="{Binding TempoMultiplier, StringFormat='Speed: {0:P0}'}"
+                 HorizontalAlignment="Center" FontSize="14"
+                 Foreground="{DynamicResource ForegroundDimColor}"/>
+      <Slider Value="{Binding TempoMultiplier}"
+              Minimum="0.25" Maximum="2.0" TickFrequency="0.25"
+              IsSnapToTickEnabled="True"
+              AutomationProperties.Name="Playback speed"/>
+    </StackPanel>
+
+    <!-- Loop section -->
+    <Border Background="{DynamicResource CardBackground}" CornerRadius="10" Padding="16">
+      <StackPanel Spacing="10">
+        <Grid ColumnDefinitions="Auto,*">
+          <TextBlock Grid.Column="0" Text="Loop" FontSize="14" FontWeight="SemiBold"
+                     VerticalAlignment="Center" Margin="0,0,12,0"
+                     Foreground="{DynamicResource ForegroundColor}"/>
+          <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsLooping}"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.Name="Enable loop"/>
+        </Grid>
+        <Grid ColumnDefinitions="*,20,*" IsEnabled="{Binding IsLooping}">
+          <StackPanel Grid.Column="0" Spacing="4">
+            <TextBlock Text="Start measure" FontSize="11"
+                       Foreground="{DynamicResource ForegroundDimColor}"/>
+            <NumericUpDown Value="{Binding LoopStartMeasure}"
+                           Minimum="1" Maximum="999"
+                           AutomationProperties.Name="Loop start measure"/>
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="–" VerticalAlignment="Center"
+                     HorizontalAlignment="Center" FontSize="18"
+                     Foreground="{DynamicResource ForegroundDimColor}"/>
+          <StackPanel Grid.Column="2" Spacing="4">
+            <TextBlock Text="End measure" FontSize="11"
+                       Foreground="{DynamicResource ForegroundDimColor}"/>
+            <NumericUpDown Value="{Binding LoopEndMeasure}"
+                           Minimum="1" Maximum="999"
+                           AutomationProperties.Name="Loop end measure"/>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+  </StackPanel>
+</UserControl>

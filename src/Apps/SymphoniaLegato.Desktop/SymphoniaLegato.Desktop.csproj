@@ -66,5 +66,11 @@
     <Compile Update="Views\MidiSettingsWindow.axaml.cs">
       <DependentUpon>Views\MidiSettingsWindow.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\MetronomeView.axaml.cs">
+      <DependentUpon>Views\MetronomeView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\SyncSettingsWindow.axaml.cs">
+      <DependentUpon>Views\SyncSettingsWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

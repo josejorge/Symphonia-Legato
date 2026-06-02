@@ -59,6 +59,8 @@
         <MenuItem Header="Show _Piano Keyboard" Command="{Binding TogglePianoKeyboardCommand}"/>
         <MenuItem Header="Show _Git History"    Command="{Binding ToggleGitHistoryCommand}"
                   InputGesture="Ctrl+Shift+G"/>
+        <MenuItem Header="Show _Metronome"      Command="{Binding ToggleMetronomeCommand}"
+                  InputGesture="Ctrl+Shift+M"/>
         <Separator/>
         <MenuItem Header="_High Contrast Theme" Command="{Binding ToggleHighContrastCommand}"
                   AutomationProperties.Name="Toggle high contrast theme"/>
@@ -81,6 +83,11 @@
         <MenuItem Header="Metronome"/>
         <Separator/>
         <MenuItem Header="_MIDI / Audio Settings..." Command="{Binding ShowMidiSettingsCommand}"/>
+      </MenuItem>
+
+      <MenuItem Header="_Sync">
+        <MenuItem Header="Cloud _Sync Settings..." Command="{Binding ShowSyncSettingsCommand}"
+                  InputGesture="Ctrl+Shift+Y"/>
       </MenuItem>
 
       <MenuItem Header="P_lugins">
@@ -150,9 +157,14 @@
                       Classes="toolbar-btn" Content="&#x1F39A;" Margin="0"
                       AutomationProperties.Name="Toggle mixer"/>
         <ToggleButton IsChecked="{Binding ShowGitHistory}"
-                      ToolTip.Tip="Toggle Git History"
+                      ToolTip.Tip="Toggle Git History (Ctrl+Shift+G)"
                       Classes="toolbar-btn" Content="&#x23F3;" Margin="0"
                       AutomationProperties.Name="Toggle git history panel"/>
+        <ToggleButton IsChecked="{Binding ShowMetronome}"
+                      Command="{Binding ToggleMetronomeCommand}"
+                      ToolTip.Tip="Toggle Metronome (Ctrl+Shift+M)"
+                      Classes="toolbar-btn" Content="&#x1F941;" Margin="0"
+                      AutomationProperties.Name="Toggle metronome"/>
         <ToggleButton IsChecked="{Binding IsHighContrast}"
                       Command="{Binding ToggleHighContrastCommand}"
                       ToolTip.Tip="High Contrast Theme"
@@ -183,13 +195,23 @@
     <Grid RowDefinitions="*,Auto,Auto">
 
       <!-- Score editor + optional right panels -->
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
 
         <views:ScoreEditorView Grid.Column="0"
                                DataContext="{Binding ScoreEditor}"/>
 
-        <!-- Git History panel -->
+        <!-- Metronome panel -->
         <Border Grid.Column="1"
+                IsVisible="{Binding ShowMetronome}"
+                Width="220"
+                Background="{DynamicResource PanelBackground}"
+                BorderThickness="1,0,0,0"
+                BorderBrush="{DynamicResource BorderBrush}">
+          <views:MetronomeView DataContext="{Binding Metronome}"/>
+        </Border>
+
+        <!-- Git History panel -->
+        <Border Grid.Column="2"
                 IsVisible="{Binding ShowGitHistory}"
                 Width="260"
                 Background="{DynamicResource PanelBackground}"
@@ -199,7 +221,7 @@
         </Border>
 
         <!-- Mixer panel -->
-        <Border Grid.Column="2"
+        <Border Grid.Column="3"
                 IsVisible="{Binding ShowMixer}"
                 Width="220"
                 Background="{DynamicResource PanelBackground}"

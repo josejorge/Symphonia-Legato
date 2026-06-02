@@ -19,6 +19,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly GitHistoryViewModel _gitHistoryVm;
     private readonly PluginManagerViewModel _pluginManagerVm;
     private readonly MidiSettingsViewModel _midiSettingsVm;
+    private readonly SyncSettingsViewModel _syncSettingsVm;
 
     [ObservableProperty] private string _title = "Symphonia Legato";
     [ObservableProperty] private bool _isDirty;
@@ -30,11 +31,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _showMixer;
     [ObservableProperty] private bool _showPianoKeyboard = true;
     [ObservableProperty] private bool _showGitHistory;
+    [ObservableProperty] private bool _showMetronome;
     [ObservableProperty] private bool _isHighContrast;
     [ObservableProperty] private double _zoom = 1.0;
     [ObservableProperty] private string _statusMessage = "Ready";
 
-    public GitHistoryViewModel GitHistory => _gitHistoryVm;
+    public GitHistoryViewModel  GitHistory  => _gitHistoryVm;
+    public MetronomeViewModel   Metronome   { get; }
     public ObservableCollection<string> RecentFiles { get; } = [];
 
     public MainWindowViewModel(
@@ -49,6 +52,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         GitHistoryViewModel gitHistoryVm,
         PluginManagerViewModel pluginManagerVm,
         MidiSettingsViewModel midiSettingsVm,
+        SyncSettingsViewModel syncSettingsVm,
+        MetronomeViewModel metronomeVm,
         ILogger<MainWindowViewModel> logger)
     {
         _repository = repository;
@@ -59,6 +64,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _gitHistoryVm = gitHistoryVm;
         _pluginManagerVm = pluginManagerVm;
         _midiSettingsVm = midiSettingsVm;
+        _syncSettingsVm = syncSettingsVm;
+        Metronome = metronomeVm;
 
         ScoreEditor   = scoreEditor;
         PlaybackVm    = playbackVm;
@@ -158,7 +165,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void TogglePianoKeyboard() => ShowPianoKeyboard = !ShowPianoKeyboard;
     [RelayCommand]
-    private void ToggleGitHistory()    => ShowGitHistory    = !ShowGitHistory;
+    private void ToggleGitHistory()  => ShowGitHistory  = !ShowGitHistory;
+    [RelayCommand]
+    private void ToggleMetronome()   => ShowMetronome   = !ShowMetronome;
     [RelayCommand]
     private void ToggleHighContrast()
     {
@@ -207,6 +216,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void ShowMidiSettings() => MidiSettingsRequested?.Invoke(this, _midiSettingsVm);
 
+    [RelayCommand]
+    private void ShowSyncSettings() => SyncSettingsRequested?.Invoke(this, _syncSettingsVm);
+
     // ── Events (View opens the actual windows) ────────────────────────
 
     public event EventHandler? ExitRequested;
@@ -214,6 +226,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public event EventHandler<ScorePropertiesViewModel>? ScorePropertiesRequested;
     public event EventHandler<PluginManagerViewModel>? PluginManagerRequested;
     public event EventHandler<MidiSettingsViewModel>? MidiSettingsRequested;
+    public event EventHandler<SyncSettingsViewModel>? SyncSettingsRequested;
     public event EventHandler<string>? ExportRequested;   // payload: "pdf", "png", "svg", "musicxml", "midi"
     public event EventHandler? OpenFileRequested;
     public event EventHandler? SaveAsRequested;

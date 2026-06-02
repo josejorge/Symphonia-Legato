@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+             xmlns:conv="using:SymphoniaLegato.Desktop.Converters"
+             x:Class="SymphoniaLegato.Desktop.Views.MetronomeView"
+             x:DataType="vm:MetronomeViewModel"
+             MinWidth="200">
+
+  <UserControl.Resources>
+    <conv:BoolToStartStopConverter x:Key="StartStop"/>
+  </UserControl.Resources>
+
+  <StackPanel Spacing="10" Margin="12">
+
+    <!-- Beat number -->
+    <Border Background="{DynamicResource CardBackground}"
+            CornerRadius="8" Padding="16,10"
+            HorizontalAlignment="Center" MinWidth="100">
+      <TextBlock Text="{Binding CurrentBeat}"
+                 FontSize="42" FontWeight="Bold"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource AccentColor}"
+                 AutomationProperties.Name="Current beat"/>
+    </Border>
+
+    <!-- BPM -->
+    <StackPanel Spacing="4" HorizontalAlignment="Center">
+      <NumericUpDown Value="{Binding Bpm}"
+                     Minimum="20" Maximum="400"
+                     Width="120" FontSize="22" FontWeight="Bold"
+                     FormatString="0"
+                     AutomationProperties.Name="Tempo in BPM"/>
+      <TextBlock Text="BPM" FontSize="11" HorizontalAlignment="Center"
+                 Foreground="{DynamicResource ForegroundDimColor}"/>
+    </StackPanel>
+
+    <!-- Beats per measure + subdivision -->
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Text="Beats/bar:"
+                   VerticalAlignment="Center" FontSize="11"
+                   Foreground="{DynamicResource ForegroundDimColor}"
+                   Margin="0,0,8,0"/>
+        <NumericUpDown Grid.Column="1"
+                       Value="{Binding BeatsPerMeasure}"
+                       Minimum="1" Maximum="16"
+                       AutomationProperties.Name="Beats per measure"/>
+      </Grid>
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Text="Division:"
+                   VerticalAlignment="Center" FontSize="11"
+                   Foreground="{DynamicResource ForegroundDimColor}"
+                   Margin="0,0,8,0"/>
+        <ComboBox Grid.Column="1"
+                  ItemsSource="{x:Static vm:MetronomeViewModel.SubdivisionOptions}"
+                  SelectedIndex="{Binding SubdivisionIndex}"/>
+      </Grid>
+    </StackPanel>
+
+    <!-- Tap + Start/Stop -->
+    <Grid ColumnDefinitions="*,8,*">
+      <Button Grid.Column="0"
+              Content="TAP"
+              Command="{Binding TapCommand}"
+              HorizontalAlignment="Stretch"
+              Background="{DynamicResource CardBackground}"
+              CornerRadius="6" Padding="0,10" FontSize="12"
+              AutomationProperties.Name="Tap tempo"/>
+      <Button Grid.Column="2"
+              Content="{Binding IsRunning, Converter={StaticResource StartStop}}"
+              Command="{Binding StartStopCommand}"
+              HorizontalAlignment="Stretch"
+              Background="{DynamicResource AccentColor}"
+              Foreground="White"
+              CornerRadius="6" Padding="0,10" FontSize="12"
+              AutomationProperties.Name="Start or stop metronome"/>
+    </Grid>
+
+  </StackPanel>
+</UserControl>

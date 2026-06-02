@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Android.ViewModels"
+             xmlns:views="using:SymphoniaLegato.Android.Views"
+             x:Class="SymphoniaLegato.Android.Views.MainShellView"
+             x:DataType="vm:AndroidMainViewModel"
+             Background="{DynamicResource SurfaceBackground}">
+
+  <Grid RowDefinitions="*,Auto">
+
+    <!-- Page content -->
+    <Grid Grid.Row="0">
+      <views:FileBrowserView   DataContext="{Binding FileBrowser}"
+                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Zero}}"/>
+      <views:ScoreViewerView   DataContext="{Binding ScoreViewer}"
+                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.One}}"/>
+      <views:PlayerView        DataContext="{Binding Playback}"
+                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Two}}"/>
+      <views:MetronomeView     DataContext="{Binding Metronome}"
+                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Three}}"/>
+    </Grid>
+
+    <!-- Bottom navigation bar -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource ToolbarBackground}"
+            BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource BorderBrush}">
+      <Grid ColumnDefinitions="*,*,*,*" Height="60">
+        <Button Grid.Column="0" Content="&#x1F4DA; Library"
+                Command="{Binding NavigateToCommand}" CommandParameter="0"
+                Background="Transparent" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" Padding="0"
+                AutomationProperties.Name="Library tab"/>
+        <Button Grid.Column="1" Content="&#x1F3B5; Score"
+                Command="{Binding NavigateToCommand}" CommandParameter="1"
+                Background="Transparent" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" Padding="0"
+                AutomationProperties.Name="Score viewer tab"/>
+        <Button Grid.Column="2" Content="&#x25B6; Play"
+                Command="{Binding NavigateToCommand}" CommandParameter="2"
+                Background="Transparent" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" Padding="0"
+                AutomationProperties.Name="Playback tab"/>
+        <Button Grid.Column="3" Content="&#x1F941; Metro"
+                Command="{Binding NavigateToCommand}" CommandParameter="3"
+                Background="Transparent" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" Padding="0"
+                AutomationProperties.Name="Metronome tab"/>
+      </Grid>
+    </Border>
+
+  </Grid>
+</UserControl>

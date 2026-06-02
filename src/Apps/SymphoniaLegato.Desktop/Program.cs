@@ -47,6 +47,10 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<ScorePdfExporter>();
     sc.AddSingleton<ScorePngExporter>();
 
+    // ── Phase 4: Metronome + Sync ─────────────────────────────────
+    sc.AddSingleton<MetronomeEngine>();
+    sc.AddSingleton<ScoreSyncService>();
+
     // ── Plugin host ───────────────────────────────────────────────
     sc.AddSingleton<PluginHost>();
 
@@ -59,6 +63,8 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<GitHistoryViewModel>();
     sc.AddSingleton<PluginManagerViewModel>();
     sc.AddSingleton<MidiSettingsViewModel>();
+    sc.AddSingleton<SyncSettingsViewModel>();
+    sc.AddSingleton<MetronomeViewModel>();
     sc.AddTransient<MainWindowViewModel>();
     sc.AddTransient<ScoreEditorViewModel>();
     sc.AddTransient<PlaybackViewModel>();

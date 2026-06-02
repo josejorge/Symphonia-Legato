@@ -52,15 +52,25 @@
 - [x] Export menu items fully wired (MusicXML, MIDI, PDF, PNG, SVG)
 - [x] 74 passing tests (19 new Phase 3 integration tests)
 
-## Phase 4 — Android Companion ⏳ Planned
+## Phase 4 — Android Companion ✅
 
-- [ ] Android app skeleton
-- [ ] Score viewing (read-only render)
-- [ ] Playback
-- [ ] Metronome
-- [ ] Loop sections
-- [ ] Pencil annotations
-- [ ] Cloud sync with desktop
+- [x] Desktop: Metronome panel (BPM, subdivision, tap tempo, beat display) — sidebar in Desktop app
+- [x] Desktop: Cloud Sync dialog (push/pull .enscore to OneDrive / Dropbox / Nextcloud folder)
+- [x] Core: MetronomeEngine (cross-platform, `System.Timers.Timer`, configurable BPM + subdivision)
+- [x] Core: ScoreAnnotation model (freehand pencil strokes per page, normalised coords)
+- [x] Core: ScoreSyncService (folder-based bidirectional sync, newer-wins strategy)
+- [x] Android app scaffold — complete Avalonia Android project in `SymphoniaLegato.Android.sln`
+  - [x] MainActivity + MainApplication (Avalonia Android entry points)
+  - [x] Bottom-navigation shell (Library / Score / Play / Metronome tabs)
+  - [x] Library browser (scan folder for .enscore, open scores)
+  - [x] Score Viewer (ScoreCanvas read-only, page nav, zoom, pinch-to-zoom)
+  - [x] Playback screen (transport controls + loop section with measure bounds)
+  - [x] Metronome screen (tap tempo, subdivision, beat display)
+  - [x] Annotation ViewModel (pencil strokes, colour picker, clear page/all)
+  - [x] Mobile theme (touch-optimised: 48px tap targets, larger fonts)
+- [x] `docs/ANDROID.md` — full build + deploy guide
+- [x] 88 passing tests (14 new Phase 4 integration tests)
+- ⚠️  **Android build requires:** `dotnet workload install android` — see `docs/ANDROID.md`
 
 ## Phase 5 — AI Extensions ⏳ Planned
 

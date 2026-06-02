@@ -172,7 +172,7 @@ Score → InitialTimeSignature, InitialKeySignature, InitialTempo, PageSize
 | 1 — MVP | ✅ Done | Domain model, notation engine, layout, MIDI playback, save/load, 38 tests |
 | 2 — Advanced notation | ✅ Done | Noteheads, stems, beams, accidentals, rests, clefs, dynamics, hairpins, slurs, articulations, lyrics, hand coloring, MIDI import, 55 tests |
 | 3 — Professional | ✅ Done | PDF/PNG/SVG export, Score Properties dialog, Plugin Manager, Git History panel, MIDI/Audio settings, High Contrast theme, accessibility labels, file pickers, 74 tests |
-| 4 — Android | ⏳ Planned | Companion app, score viewer, playback, annotations |
+| 4 — Android | ✅ Done | Metronome engine + Desktop panel, cloud sync service + Desktop dialog, ScoreAnnotation model, full Android Avalonia app in SymphoniaLegato.Android.sln (needs `dotnet workload install android`), 88 tests |
 | 5 — AI | ⏳ Planned | Harmonisation, chord detection, fingering, analysis |
 
 ---

@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Android.ViewModels"
+             xmlns:controls="using:SymphoniaLegato.Desktop.Controls"
+             x:Class="SymphoniaLegato.Android.Views.ScoreViewerView"
+             x:DataType="vm:ScoreViewerViewModel"
+             Background="{DynamicResource SurfaceBackground}">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- Top bar: title + page nav -->
+    <Border Grid.Row="0" Background="{DynamicResource ToolbarBackground}" Padding="12,8">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   Text="{Binding StatusText}"
+                   FontSize="14" FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+          <Button Content="‹"
+                  Command="{Binding PrevPageCommand}"
+                  Classes="toolbar-btn" FontSize="18"/>
+          <TextBlock VerticalAlignment="Center" FontSize="13">
+            <Run Text="{Binding CurrentPage}"/>
+            <Run Text=" / "/>
+            <Run Text="{Binding TotalPages}"/>
+          </TextBlock>
+          <Button Content="›"
+                  Command="{Binding NextPageCommand}"
+                  Classes="toolbar-btn" FontSize="18"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Score canvas (read-only — no NoteClicked handler wired) -->
+    <ScrollViewer Grid.Row="1"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto">
+      <controls:ScoreCanvas LayoutResult="{Binding LayoutResult}"
+                             Zoom="{Binding Zoom}"
+                             ShowHandColoring="False"/>
+    </ScrollViewer>
+
+    <!-- Zoom controls -->
+    <Border Grid.Row="2" Background="{DynamicResource ToolbarBackground}" Padding="12,6">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+        <ProgressBar Grid.Column="0"
+                     IsIndeterminate="True"
+                     IsVisible="{Binding IsLoading}"
+                     Height="4" VerticalAlignment="Center"/>
+        <Button Grid.Column="1" Content="−"
+                Command="{Binding ZoomOutCommand}"
+                Classes="toolbar-btn"/>
+        <TextBlock Grid.Column="2"
+                   Text="{Binding Zoom, StringFormat='{}{0:P0}'}"
+                   VerticalAlignment="Center" Width="50" TextAlignment="Center"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+        <Button Grid.Column="3" Content="+"
+                Command="{Binding ZoomInCommand}"
+                Classes="toolbar-btn"/>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

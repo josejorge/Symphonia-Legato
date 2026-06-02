@@ -29,6 +29,18 @@ public sealed class Score
 
     public List<Part> Parts { get; init; } = [];
 
+    // Phase 4: freehand annotations per page
+    public List<ScoreAnnotation> Annotations { get; init; } = [];
+
+    public ScoreAnnotation GetOrCreateAnnotation(int pageNumber)
+    {
+        var ann = Annotations.FirstOrDefault(a => a.PageNumber == pageNumber);
+        if (ann is not null) return ann;
+        ann = new ScoreAnnotation { PageNumber = pageNumber };
+        Annotations.Add(ann);
+        return ann;
+    }
+
     // Page / layout settings
     public PageSize PageSize { get; set; } = PageSize.A4;
     public double PageWidthMm { get; set; } = 210;

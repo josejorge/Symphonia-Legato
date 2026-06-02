@@ -41,6 +41,7 @@ public sealed partial class MainWindow : Window
         vm.ScorePropertiesRequested += (_, propsVm)  => new ScorePropertiesWindow(propsVm).ShowDialog(this);
         vm.PluginManagerRequested   += (_, pluginVm) => new PluginManagerWindow(pluginVm).ShowDialog(this);
         vm.MidiSettingsRequested    += (_, midiVm)   => new MidiSettingsWindow(midiVm).ShowDialog(this);
+        vm.SyncSettingsRequested    += (_, syncVm)   => new SyncSettingsWindow(syncVm).ShowDialog(this);
         vm.OpenFileRequested        += async (_, __) => await OnOpenFileAsync(vm);
         vm.SaveAsRequested          += async (_, __) => await OnSaveAsAsync(vm);
         vm.ExportRequested          += async (_, fmt) => await OnExportAsync(vm, fmt);

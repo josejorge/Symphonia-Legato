@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Android.ViewModels"
+             x:Class="SymphoniaLegato.Android.Views.FileBrowserView"
+             x:DataType="vm:FileBrowserViewModel"
+             Background="{DynamicResource SurfaceBackground}">
+
+  <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- Header -->
+    <Border Grid.Row="0" Background="{DynamicResource ToolbarBackground}"
+            Padding="16,12">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Score Library" FontSize="20" FontWeight="Bold"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox Grid.Column="0"
+                   Text="{Binding SearchFolder}"
+                   Watermark="Folder path"
+                   Margin="0,0,8,0"/>
+          <Button Grid.Column="1"
+                  Content="Scan"
+                  Command="{Binding ScanFolderCommand}"
+                  Background="{DynamicResource AccentColor}"
+                  Foreground="White" CornerRadius="6" Padding="16,0"/>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <!-- Score list -->
+    <ListBox Grid.Row="1"
+             ItemsSource="{Binding Scores}"
+             SelectedItem="{Binding SelectedScore}"
+             Background="Transparent">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ScoreFileInfo">
+          <Grid ColumnDefinitions="*,Auto" Margin="16,12">
+            <StackPanel Grid.Column="0" Spacing="3">
+              <TextBlock Text="{Binding DisplayName}" FontSize="16" FontWeight="SemiBold"
+                         Foreground="{DynamicResource ForegroundColor}"/>
+              <TextBlock Text="{Binding Modified, StringFormat='{}{0:yyyy-MM-dd}'}"
+                         FontSize="12" Foreground="{DynamicResource ForegroundDimColor}"/>
+            </StackPanel>
+            <TextBlock Grid.Column="1" Text="›" FontSize="22"
+                       Foreground="{DynamicResource AccentColor}"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <!-- Status + Open button -->
+    <Border Grid.Row="2" Background="{DynamicResource PanelBackground}"
+            Padding="16,10">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding StatusText}"
+                   FontSize="12" Foreground="{DynamicResource ForegroundDimColor}"
+                   VerticalAlignment="Center"/>
+        <Button Grid.Column="1"
+                Content="Open Score"
+                Command="{Binding OpenSelectedCommand}"
+                IsEnabled="{Binding SelectedScore, Converter={x:Static ObjectConverters.IsNotNull}}"
+                Background="{DynamicResource AccentColor}"
+                Foreground="White" CornerRadius="6" Padding="20,0"/>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>
