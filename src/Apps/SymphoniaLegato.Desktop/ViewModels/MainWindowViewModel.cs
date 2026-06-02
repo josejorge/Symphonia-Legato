@@ -75,6 +75,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         var score = Score.CreatePianoScore("Untitled");
         LoadScore(score);
+        // Add 4 empty measures so the canvas has content to render
+        ScoreEditor?.Editor?.AddMeasures(0, 4);
         CurrentFilePath = null;
         StatusMessage = "New score created";
     }
@@ -194,6 +196,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // ── Dialogs ───────────────────────────────────────────────────────
 
     [RelayCommand]
+    private void Exit() => ExitRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
     private void ShowAbout() => AboutRequested?.Invoke(this, _aboutVm);
 
     [RelayCommand]
@@ -204,6 +209,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     // ── Events (View opens the actual windows) ────────────────────────
 
+    public event EventHandler? ExitRequested;
     public event EventHandler<AboutViewModel>? AboutRequested;
     public event EventHandler<ScorePropertiesViewModel>? ScorePropertiesRequested;
     public event EventHandler<PluginManagerViewModel>? PluginManagerRequested;

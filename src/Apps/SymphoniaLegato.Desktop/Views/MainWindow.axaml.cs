@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
     {
         if (DataContext is not MainWindowViewModel vm) return;
 
+        vm.ExitRequested            += (_, _)         => Close();
         vm.AboutRequested           += (_, aboutVm)  => new AboutWindow(aboutVm).ShowDialog(this);
         vm.ScorePropertiesRequested += (_, propsVm)  => new ScorePropertiesWindow(propsVm).ShowDialog(this);
         vm.PluginManagerRequested   += (_, pluginVm) => new PluginManagerWindow(pluginVm).ShowDialog(this);
