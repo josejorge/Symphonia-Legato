@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using SymphoniaLegato.Desktop.Controls;
+using SymphoniaLegato.Rendering;
 using SymphoniaLegato.Desktop.ViewModels;
 
 namespace SymphoniaLegato.Desktop.Views;

@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Media.Imaging;
 using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.Core.Models;
-using SymphoniaLegato.Desktop.Controls;
+using SymphoniaLegato.Rendering;
 
 namespace SymphoniaLegato.Desktop.Services;
 

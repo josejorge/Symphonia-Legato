@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymphoniaLegato.LayoutEngin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymphoniaLegato.ImportExport", "src\Core\SymphoniaLegato.ImportExport\SymphoniaLegato.ImportExport.csproj", "{AA000006-0006-0006-0006-000000000006}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SymphoniaLegato.Rendering", "src\Core\SymphoniaLegato.Rendering\SymphoniaLegato.Rendering.csproj", "{AA000007-0007-0007-0007-000000000007}"
+EndProject
 
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,5 +48,9 @@ Global
         {AA000006-0006-0006-0006-000000000006}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {AA000006-0006-0006-0006-000000000006}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {AA000006-0006-0006-0006-000000000006}.Release|Any CPU.Build.0 = Release|Any CPU
+        {AA000007-0007-0007-0007-000000000007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {AA000007-0007-0007-0007-000000000007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {AA000007-0007-0007-0007-000000000007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {AA000007-0007-0007-0007-000000000007}.Release|Any CPU.Build.0 = Release|Any CPU
     EndGlobalSection
 EndGlobal

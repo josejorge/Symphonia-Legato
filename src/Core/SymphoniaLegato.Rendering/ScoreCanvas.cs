@@ -6,7 +6,7 @@ using Avalonia.Media.Immutable;
 using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.Core.Models;
 
-namespace SymphoniaLegato.Desktop.Controls;
+namespace SymphoniaLegato.Rendering;
 
 public sealed class NoteClickedEventArgs(Guid noteId, int measureNumber, Guid staffId) : EventArgs
 {

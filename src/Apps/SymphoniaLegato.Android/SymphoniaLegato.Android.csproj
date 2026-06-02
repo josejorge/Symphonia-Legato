@@ -13,6 +13,12 @@
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Workaround for Avalonia.Android 11.2.x + Android SDK 35 (XAPRAS7023):
+         Avalonia.Android computes an intermediate assembly staging path that the
+         Android SDK's ProcessAssemblies task then doubles (Avalonia/Avalonia/).
+         Pre-creating the directory and symlinking the DLL unblocks the build.
+         Fixed in Avalonia 11.3.x — remove this block when upgrading. -->
+    <AndroidUseAssemblyStore>false</AndroidUseAssemblyStore>
 
     <!--
       BUILD REQUIREMENT:
@@ -27,6 +33,7 @@
     <ProjectReference Include="..\..\Core\SymphoniaLegato.PlaybackEngine\SymphoniaLegato.PlaybackEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.ImportExport\SymphoniaLegato.ImportExport.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.Rendering\SymphoniaLegato.Rendering.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,4 +45,19 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
   </ItemGroup>
+  <!-- Workaround target: pre-create the doubled Avalonia path that ProcessAssemblies
+       looks for due to the Avalonia.Android 11.2.x / Android SDK 35 path bug. -->
+  <Target Name="FixAvaloniaAndroidDoubledPath"
+          AfterTargets="CoreCompile"
+          BeforeTargets="ProcessAssemblies">
+    <MakeDir Directories="$(IntermediateOutputPath)Avalonia\Avalonia" Condition="Exists('$(IntermediateOutputPath)Avalonia')"/>
+    <Copy SourceFiles="$(IntermediateOutputPath)Avalonia\$(AssemblyName).dll"
+          DestinationFolder="$(IntermediateOutputPath)Avalonia\Avalonia"
+          Condition="Exists('$(IntermediateOutputPath)Avalonia\$(AssemblyName).dll')"
+          SkipUnchangedFiles="true"/>
+    <Copy SourceFiles="$(IntermediateOutputPath)Avalonia\$(AssemblyName).pdb"
+          DestinationFolder="$(IntermediateOutputPath)Avalonia\Avalonia"
+          Condition="Exists('$(IntermediateOutputPath)Avalonia\$(AssemblyName).pdb')"
+          SkipUnchangedFiles="true"/>
+  </Target>
 </Project>

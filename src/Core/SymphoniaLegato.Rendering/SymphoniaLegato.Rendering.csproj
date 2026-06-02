@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SymphoniaLegato.Rendering</RootNamespace>
+    <AssemblyName>SymphoniaLegato.Rendering</AssemblyName>
+    <Version>1.0.0</Version>
+    <!-- Controls must live in a class library so both Desktop and Android can reference them. -->
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SymphoniaLegato.Core\SymphoniaLegato.Core.csproj" />
+    <ProjectReference Include="..\SymphoniaLegato.NotationEngine\SymphoniaLegato.NotationEngine.csproj" />
+    <ProjectReference Include="..\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+  </ItemGroup>
+</Project>

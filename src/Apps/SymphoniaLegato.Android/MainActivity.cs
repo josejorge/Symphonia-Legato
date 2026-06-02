@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content.PM;
+using Avalonia;
 using Avalonia.Android;
 
 namespace SymphoniaLegato.Android;
@@ -7,7 +8,6 @@ namespace SymphoniaLegato.Android;
 [Activity(
     Label = "Symphonia Legato",
     Theme = "@style/Theme.AppCompat.NoActionBar",
-    Icon = "@mipmap/ic_launcher",
     MainLauncher = true,
     ConfigurationChanges =
         ConfigChanges.Orientation | ConfigChanges.ScreenSize |

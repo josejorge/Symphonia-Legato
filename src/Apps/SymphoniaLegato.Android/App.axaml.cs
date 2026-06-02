@@ -6,13 +6,15 @@ using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Android.ViewModels;
 using SymphoniaLegato.Android.Views;
 using SymphoniaLegato.ImportExport;
-using SymphoniaLegato.LayoutEngine;
 using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.PlaybackEngine;
+using LayoutEngineImpl = SymphoniaLegato.LayoutEngine.LayoutEngine;
 
 namespace SymphoniaLegato.Android;
 
-public sealed class App : Application
+// App inherits Avalonia.Application — explicitly qualified to avoid ambiguity
+// with Android.App.Application which is also visible in this target framework.
+public sealed class App : Avalonia.Application
 {
     private IServiceProvider? _services;
 
@@ -37,9 +39,9 @@ public sealed class App : Application
     {
         var sc = new ServiceCollection();
 
-        sc.AddLogging(b => b.AddDebug().SetMinimumLevel(LogLevel.Debug));
+        sc.AddLogging(b => b.SetMinimumLevel(LogLevel.Debug));
 
-        sc.AddSingleton<ILayoutEngine, LayoutEngine>();
+        sc.AddSingleton<ILayoutEngine, LayoutEngineImpl>();
         sc.AddSingleton<MusicXmlImporter>();
         sc.AddSingleton<EnScoreRepository>();
         sc.AddSingleton<IScoreRepository>(sp => sp.GetRequiredService<EnScoreRepository>());

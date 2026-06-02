@@ -8,17 +8,8 @@
 
   <Grid RowDefinitions="*,Auto">
 
-    <!-- Page content -->
-    <Grid Grid.Row="0">
-      <views:FileBrowserView   DataContext="{Binding FileBrowser}"
-                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Zero}}"/>
-      <views:ScoreViewerView   DataContext="{Binding ScoreViewer}"
-                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.One}}"/>
-      <views:PlayerView        DataContext="{Binding Playback}"
-                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Two}}"/>
-      <views:MetronomeView     DataContext="{Binding Metronome}"
-                               IsVisible="{Binding SelectedTabIndex, Converter={x:Static vm:IndexEqualsConverter.Three}}"/>
-    </Grid>
+    <!-- Page content — switched by SelectedTabIndex in code-behind -->
+    <Panel Grid.Row="0" x:Name="PageHost"/>
 
     <!-- Bottom navigation bar -->
     <Border Grid.Row="1"

@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SymphoniaLegato.Android.ViewModels"
-             xmlns:controls="using:SymphoniaLegato.Desktop.Controls"
+             xmlns:controls="using:SymphoniaLegato.Rendering"
              x:Class="SymphoniaLegato.Android.Views.ScoreViewerView"
              x:DataType="vm:ScoreViewerViewModel"
              Background="{DynamicResource SurfaceBackground}">

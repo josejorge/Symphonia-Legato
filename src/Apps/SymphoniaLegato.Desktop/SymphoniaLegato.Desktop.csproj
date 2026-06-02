@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\SymphoniaLegato.Core\SymphoniaLegato.Core.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.Rendering\SymphoniaLegato.Rendering.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.NotationEngine\SymphoniaLegato.NotationEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.PlaybackEngine\SymphoniaLegato.PlaybackEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj" />
