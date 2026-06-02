@@ -10,7 +10,7 @@
 
 Please **do not** open a public GitHub issue for security vulnerabilities.
 
-Email: security@symphonia-legato.example.com
+Email: symphonia-legato@josejorge.com
 
 Include:
 - Description of the vulnerability
