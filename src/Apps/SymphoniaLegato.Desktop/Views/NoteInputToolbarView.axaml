@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+             xmlns:models="using:SymphoniaLegato.Core.Models"
+             x:Class="SymphoniaLegato.Desktop.Views.NoteInputToolbarView"
+             x:DataType="vm:ScoreEditorViewModel">
+
+  <StackPanel Orientation="Horizontal" Spacing="4" Margin="8,0" VerticalAlignment="Center">
+
+    <!-- Duration selection -->
+    <TextBlock Text="Duration:" VerticalAlignment="Center"
+               Foreground="{DynamicResource ForegroundDimColor}" FontSize="11" Margin="0,0,4,0"/>
+
+    <RadioButton GroupName="duration" Content="𝅜" FontSize="18" ToolTip.Tip="Whole"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.Whole}"
+                 VerticalAlignment="Center"/>
+    <RadioButton GroupName="duration" Content="𝅗𝅥" FontSize="18" ToolTip.Tip="Half"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.Half}"
+                 VerticalAlignment="Center"/>
+    <RadioButton GroupName="duration" Content="𝅘𝅥" FontSize="18" ToolTip.Tip="Quarter" IsChecked="True"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.Quarter}"
+                 VerticalAlignment="Center"/>
+    <RadioButton GroupName="duration" Content="𝅘𝅥𝅮" FontSize="18" ToolTip.Tip="Eighth"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.Eighth}"
+                 VerticalAlignment="Center"/>
+    <RadioButton GroupName="duration" Content="𝅘𝅥𝅯" FontSize="18" ToolTip.Tip="16th"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.Sixteenth}"
+                 VerticalAlignment="Center"/>
+    <RadioButton GroupName="duration" Content="𝅘𝅥𝅰" FontSize="18" ToolTip.Tip="32nd"
+                 Command="{Binding SelectDurationCommand}"
+                 CommandParameter="{x:Static models:NoteValue.ThirtySecond}"
+                 VerticalAlignment="Center"/>
+
+    <Separator Width="1" Margin="4,4" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Dot & Rest -->
+    <ToggleButton IsChecked="{Binding Dotted}"
+                  Command="{Binding ToggleDotCommand}"
+                  ToolTip.Tip="Dotted note" Content="·" FontSize="20"
+                  Width="30" Height="30"/>
+    <ToggleButton IsChecked="{Binding InputRest}"
+                  Command="{Binding ToggleRestCommand}"
+                  ToolTip.Tip="Rest input mode" Content="𝄽" FontSize="20"
+                  Width="30" Height="30"/>
+
+    <Separator Width="1" Margin="4,4" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Hand coloring toggle -->
+    <ToggleButton IsChecked="{Binding ShowHandColoring}"
+                  ToolTip.Tip="Show hand coloring" Content="🤚" FontSize="16"
+                  Width="30" Height="30"/>
+
+    <!-- Hand selection -->
+    <ComboBox SelectedIndex="0" Width="80" FontSize="11"
+              IsVisible="{Binding ShowHandColoring}">
+      <ComboBoxItem Content="Both"/>
+      <ComboBoxItem Content="Right"/>
+      <ComboBoxItem Content="Left"/>
+    </ComboBox>
+  </StackPanel>
+</UserControl>

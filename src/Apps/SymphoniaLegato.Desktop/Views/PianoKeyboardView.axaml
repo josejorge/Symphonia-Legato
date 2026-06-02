@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+             xmlns:controls="using:SymphoniaLegato.Desktop.Controls"
+             x:Class="SymphoniaLegato.Desktop.Views.PianoKeyboardView"
+             x:DataType="vm:PianoKeyboardViewModel"
+             ClipToBounds="True">
+
+  <Grid RowDefinitions="*,Auto">
+
+    <!-- Piano key control -->
+    <controls:PianoKeyboardControl Grid.Row="0"
+                                   Keys="{Binding Keys}"
+                                   KeyPressed="OnKeyPressed"/>
+
+    <!-- Octave navigation -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal"
+                HorizontalAlignment="Center" Spacing="8" Margin="0,4">
+      <TextBlock Text="Octave:" VerticalAlignment="Center"
+                 Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
+      <NumericUpDown Value="{Binding StartOctave}" Minimum="0" Maximum="7"
+                     Width="70" FontSize="11"/>
+      <TextBlock Text="Range:" VerticalAlignment="Center"
+                 Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
+      <NumericUpDown Value="{Binding OctaveCount}" Minimum="1" Maximum="8"
+                     Width="70" FontSize="11"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

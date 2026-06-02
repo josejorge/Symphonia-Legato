@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>SymphoniaLegato.Desktop</RootNamespace>
+    <AssemblyName>SymphoniaLegato.Desktop</AssemblyName>
+    <Version>1.0.0</Version>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.Core\SymphoniaLegato.Core.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.NotationEngine\SymphoniaLegato.NotationEngine.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.PlaybackEngine\SymphoniaLegato.PlaybackEngine.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.ImportExport\SymphoniaLegato.ImportExport.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.PdfEngine\SymphoniaLegato.PdfEngine.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.PluginEngine\SymphoniaLegato.PluginEngine.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.GitIntegration\SymphoniaLegato.GitIntegration.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.3" Condition="'$(Configuration)' == 'Debug'" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="App.axaml.cs">
+      <DependentUpon>App.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainWindow.axaml.cs">
+      <DependentUpon>Views\MainWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ScoreEditorView.axaml.cs">
+      <DependentUpon>Views\ScoreEditorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\PianoKeyboardView.axaml.cs">
+      <DependentUpon>Views\PianoKeyboardView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\PlaybackControlsView.axaml.cs">
+      <DependentUpon>Views\PlaybackControlsView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MixerView.axaml.cs">
+      <DependentUpon>Views\MixerView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>

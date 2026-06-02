@@ -1,0 +1,15 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:SymphoniaLegato.Desktop"
+             x:Class="SymphoniaLegato.Desktop.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://SymphoniaLegato.Desktop/Themes/SymphoniaTheme.axaml"/>
+  </Application.Styles>
+</Application>

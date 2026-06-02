@@ -1,0 +1,176 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+        xmlns:views="using:SymphoniaLegato.Desktop.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        x:Class="SymphoniaLegato.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Title}"
+        Width="1400" Height="900"
+        MinWidth="900" MinHeight="600"
+        Background="{DynamicResource SurfaceBackground}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome">
+
+  <Window.Styles>
+    <Style Selector="MenuItem">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+
+    <!-- Menu Bar -->
+    <Menu DockPanel.Dock="Top" Background="{DynamicResource MenuBackground}">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New Score"    Command="{Binding NewScoreCommand}"   InputGesture="Ctrl+N"/>
+        <MenuItem Header="_Open..."      Command="{Binding OpenCommand}"       InputGesture="Ctrl+O"/>
+        <Separator/>
+        <MenuItem Header="_Save"         Command="{Binding SaveCommand}"       InputGesture="Ctrl+S"/>
+        <MenuItem Header="Save _As..."   InputGesture="Ctrl+Shift+S"/>
+        <Separator/>
+        <MenuItem Header="E_xport">
+          <MenuItem Header="MusicXML..."/>
+          <MenuItem Header="MIDI..."/>
+          <MenuItem Header="PDF..."/>
+          <MenuItem Header="PNG..."/>
+          <MenuItem Header="SVG..."/>
+        </MenuItem>
+        <Separator/>
+        <MenuItem Header="E_xit"         InputGesture="Alt+F4"/>
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="_Undo"   Command="{Binding UndoCommand}"  InputGesture="Ctrl+Z"/>
+        <MenuItem Header="_Redo"   Command="{Binding RedoCommand}"  InputGesture="Ctrl+Y"/>
+        <Separator/>
+        <MenuItem Header="Score _Settings..."/>
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="_Zoom In"    Command="{Binding ZoomInCommand}"    InputGesture="Ctrl+Plus"/>
+        <MenuItem Header="Zoom _Out"   Command="{Binding ZoomOutCommand}"   InputGesture="Ctrl+Minus"/>
+        <MenuItem Header="Zoom _Reset" Command="{Binding ZoomResetCommand}" InputGesture="Ctrl+0"/>
+        <Separator/>
+        <MenuItem Header="Show _Mixer"         Command="{Binding ToggleMixerCommand}"/>
+        <MenuItem Header="Show _Piano Keyboard" Command="{Binding TogglePianoKeyboardCommand}"/>
+        <MenuItem Header="Show Piano _Roll"    Command="{Binding TogglePianoKeyboardCommand}"/>
+      </MenuItem>
+      <MenuItem Header="_Score">
+        <MenuItem Header="Add _Measures"/>
+        <MenuItem Header="Score _Properties..."/>
+        <Separator/>
+        <MenuItem Header="Key Signature..."/>
+        <MenuItem Header="Time Signature..."/>
+        <MenuItem Header="Clef..."/>
+      </MenuItem>
+      <MenuItem Header="_Playback">
+        <MenuItem Header="_Play / Pause"   InputGesture="Space"/>
+        <MenuItem Header="_Stop"           InputGesture="Escape"/>
+        <MenuItem Header="_Loop"           InputGesture="Ctrl+L"/>
+        <Separator/>
+        <MenuItem Header="Metronome"/>
+      </MenuItem>
+      <MenuItem Header="_Help">
+        <MenuItem Header="_User Manual"/>
+        <MenuItem Header="_About Symphonia Legato"/>
+      </MenuItem>
+    </Menu>
+
+    <!-- Toolbar -->
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource ToolbarBackground}"
+            BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource BorderBrush}"
+            Height="44">
+      <StackPanel Orientation="Horizontal" Spacing="4" Margin="8,0">
+
+        <!-- File ops -->
+        <Button Command="{Binding NewScoreCommand}" ToolTip.Tip="New Score (Ctrl+N)"  Classes="toolbar-btn" Content="&#x2B;"/>
+        <Button Command="{Binding OpenCommand}"     ToolTip.Tip="Open (Ctrl+O)"       Classes="toolbar-btn" Content="&#x1F4C2;"/>
+        <Button Command="{Binding SaveCommand}"     ToolTip.Tip="Save (Ctrl+S)"       Classes="toolbar-btn" Content="&#x1F4BE;"/>
+        <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+        <!-- Undo/Redo -->
+        <Button Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"  Classes="toolbar-btn" Content="&#x21B6;"/>
+        <Button Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Y)"  Classes="toolbar-btn" Content="&#x21B7;"/>
+        <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+        <!-- Playback -->
+        <views:PlaybackControlsView DataContext="{Binding PlaybackVm}"/>
+        <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+        <!-- Zoom -->
+        <Button Command="{Binding ZoomOutCommand}"   ToolTip.Tip="Zoom Out"   Classes="toolbar-btn" Content="&#x2212;"/>
+        <TextBlock Text="{Binding Zoom, StringFormat='{}{0:P0}'}"
+                   VerticalAlignment="Center" Width="50" TextAlignment="Center"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+        <Button Command="{Binding ZoomInCommand}"    ToolTip.Tip="Zoom In"    Classes="toolbar-btn" Content="&#x2B;"/>
+        <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+        <!-- View toggles -->
+        <ToggleButton IsChecked="{Binding ShowPianoKeyboard}"
+                      ToolTip.Tip="Toggle Piano Keyboard"
+                      Classes="toolbar-btn" Content="&#x1F3B9;" Margin="0"/>
+        <ToggleButton IsChecked="{Binding ShowMixer}"
+                      ToolTip.Tip="Toggle Mixer"
+                      Classes="toolbar-btn" Content="&#x1F39A;" Margin="0"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom"
+            Background="{DynamicResource StatusBarBackground}"
+            Height="24" Padding="8,0">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding StatusMessage}"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   FontSize="11"/>
+        <TextBlock Grid.Column="1"
+                   Text="{Binding ScoreEditor.SelectedMeasure, StringFormat='Measure: {0}'}"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource ForegroundDimColor}"
+                   FontSize="11"/>
+      </Grid>
+    </Border>
+
+    <!-- Main content -->
+    <Grid RowDefinitions="*,Auto,Auto">
+
+      <!-- Score editor + optional right panel -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+
+        <views:ScoreEditorView Grid.Column="0"
+                               DataContext="{Binding ScoreEditor}"/>
+
+        <!-- Mixer panel -->
+        <Border Grid.Column="1"
+                IsVisible="{Binding ShowMixer}"
+                Width="220"
+                Background="{DynamicResource PanelBackground}"
+                BorderThickness="1,0,0,0"
+                BorderBrush="{DynamicResource BorderBrush}">
+          <views:MixerView DataContext="{Binding MixerVm}"/>
+        </Border>
+      </Grid>
+
+      <!-- Note input toolbar -->
+      <Border Grid.Row="1"
+              Background="{DynamicResource ToolbarBackground}"
+              BorderThickness="0,1,0,0"
+              BorderBrush="{DynamicResource BorderBrush}"
+              Height="40">
+        <views:NoteInputToolbarView DataContext="{Binding ScoreEditor}"/>
+      </Border>
+
+      <!-- Piano keyboard -->
+      <Border Grid.Row="2"
+              IsVisible="{Binding ShowPianoKeyboard}"
+              Background="{DynamicResource PanelBackground}"
+              BorderThickness="0,1,0,0"
+              BorderBrush="{DynamicResource BorderBrush}"
+              Height="120">
+        <views:PianoKeyboardView DataContext="{Binding PianoKeyboard}"/>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>

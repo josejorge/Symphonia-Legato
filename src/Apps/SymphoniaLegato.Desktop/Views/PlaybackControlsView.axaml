@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+             x:Class="SymphoniaLegato.Desktop.Views.PlaybackControlsView"
+             x:DataType="vm:PlaybackViewModel">
+
+  <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+
+    <Button Command="{Binding RewindCommand}"
+            ToolTip.Tip="Rewind"
+            Classes="toolbar-btn" Content="&#x23EE;"/>
+
+    <Button Command="{Binding PlayPauseCommand}"
+            ToolTip.Tip="Play / Pause (Space)"
+            Classes="toolbar-btn playback-main">
+      <TextBlock Text="{Binding IsPlaying, Converter={StaticResource BoolToPlayPauseConverter}}"/>
+    </Button>
+
+    <Button Command="{Binding StopCommand}"
+            ToolTip.Tip="Stop"
+            Classes="toolbar-btn" Content="&#x23F9;"/>
+
+    <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Tempo multiplier -->
+    <TextBlock Text="Tempo:" VerticalAlignment="Center"
+               Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
+    <Slider Minimum="0.25" Maximum="4.0" Value="{Binding TempoMultiplier}"
+            Width="80" VerticalAlignment="Center" ToolTip.Tip="Tempo multiplier"/>
+    <TextBlock Text="{Binding TempoMultiplier, StringFormat='{}{0:P0}'}"
+               VerticalAlignment="Center" Width="42" FontSize="11"
+               Foreground="{DynamicResource ForegroundColor}"/>
+
+    <Separator Width="1" Margin="4,6" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Position -->
+    <TextBlock Text="{Binding Position, StringFormat='{}{0:mm\\:ss}'}"
+               VerticalAlignment="Center" FontSize="11"
+               Foreground="{DynamicResource ForegroundDimColor}"/>
+
+    <!-- Loop toggle -->
+    <ToggleButton IsChecked="{Binding IsLooping}"
+                  ToolTip.Tip="Loop" Classes="toolbar-btn" Content="&#x1F501;"/>
+  </StackPanel>
+</UserControl>

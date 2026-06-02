@@ -1,0 +1,102 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ── Color Palette ──────────────────────────────────────────── -->
+  <Style>
+    <Style.Resources>
+
+      <!-- Dark theme palette (VS Code / Obsidian inspired) -->
+      <SolidColorBrush x:Key="SurfaceBackground"  Color="#1E1E1E"/>
+      <SolidColorBrush x:Key="EditorBackground"   Color="#252526"/>
+      <SolidColorBrush x:Key="PanelBackground"    Color="#2D2D2D"/>
+      <SolidColorBrush x:Key="ToolbarBackground"  Color="#333333"/>
+      <SolidColorBrush x:Key="MenuBackground"     Color="#2C2C2C"/>
+      <SolidColorBrush x:Key="StatusBarBackground" Color="#007ACC"/>
+      <SolidColorBrush x:Key="CardBackground"     Color="#3A3A3A"/>
+
+      <SolidColorBrush x:Key="ForegroundColor"    Color="#D4D4D4"/>
+      <SolidColorBrush x:Key="ForegroundDimColor" Color="#858585"/>
+      <SolidColorBrush x:Key="AccentColor"        Color="#007ACC"/>
+      <SolidColorBrush x:Key="AccentHoverColor"   Color="#1A8AD4"/>
+      <SolidColorBrush x:Key="BorderBrush"        Color="#464646"/>
+      <SolidColorBrush x:Key="SelectionColor"     Color="#264F78"/>
+
+    </Style.Resources>
+  </Style>
+
+  <!-- ── Button styles ─────────────────────────────────────────── -->
+  <Style Selector="Button.toolbar-btn">
+    <Setter Property="Background"   Value="Transparent"/>
+    <Setter Property="Foreground"   Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="BorderBrush"  Value="Transparent"/>
+    <Setter Property="Width"        Value="32"/>
+    <Setter Property="Height"       Value="32"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="Padding"      Value="4"/>
+    <Setter Property="FontSize"     Value="14"/>
+  </Style>
+
+  <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+  </Style>
+
+  <Style Selector="Button.toolbar-btn:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SelectionColor}"/>
+  </Style>
+
+  <Style Selector="Button.playback-main">
+    <Setter Property="Width"        Value="38"/>
+    <Setter Property="Height"       Value="32"/>
+    <Setter Property="Background"   Value="{DynamicResource AccentColor}"/>
+    <Setter Property="Foreground"   Value="White"/>
+    <Setter Property="CornerRadius" Value="4"/>
+  </Style>
+
+  <!-- ── ToggleButton ──────────────────────────────────────────── -->
+  <Style Selector="ToggleButton.toolbar-btn">
+    <Setter Property="Background"   Value="Transparent"/>
+    <Setter Property="Foreground"   Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="BorderBrush"  Value="Transparent"/>
+    <Setter Property="Width"        Value="32"/>
+    <Setter Property="Height"       Value="32"/>
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="Padding"      Value="4"/>
+    <Setter Property="FontSize"     Value="14"/>
+  </Style>
+
+  <Style Selector="ToggleButton.toolbar-btn:checked /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SelectionColor}"/>
+  </Style>
+
+  <!-- ── Slider ────────────────────────────────────────────────── -->
+  <Style Selector="Slider">
+    <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+  </Style>
+
+  <!-- ── TextBlock default ─────────────────────────────────────── -->
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+  </Style>
+
+  <!-- ── Menu ──────────────────────────────────────────────────── -->
+  <Style Selector="Menu">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+  </Style>
+
+  <Style Selector="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+    <Setter Property="Background" Value="{DynamicResource MenuBackground}"/>
+  </Style>
+
+  <!-- ── RadioButton (duration selection) ─────────────────────── -->
+  <Style Selector="RadioButton">
+    <Setter Property="Foreground"  Value="{DynamicResource ForegroundDimColor}"/>
+    <Setter Property="Background"  Value="Transparent"/>
+    <Setter Property="Padding"     Value="2"/>
+    <Setter Property="FontFamily"  Value="Segoe UI Symbol, Noto Music, sans-serif"/>
+  </Style>
+
+  <Style Selector="RadioButton:checked">
+    <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+  </Style>
+</Styles>

@@ -1,0 +1,57 @@
+## .NET / C#
+*.user
+*.suo
+*.userprefs
+.vs/
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+*.cache
+*.log
+TestResults/
+coverage/
+*.coverage
+.DS_Store
+Thumbs.db
+
+## NuGet
+*.nupkg
+*.snupkg
+**/packages/
+*.lock.json
+!packages.lock.json
+
+## Build artifacts
+artifacts/
+publish/
+dist/
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Android
+*.apk
+*.aab
+local.properties
+
+## User secrets & keys
+*.pfx
+*.p12
+*.key
+appsettings.*.json
+!appsettings.Development.json
+secrets.json
+
+## SoundFont large files (store reference, not binary)
+assets/soundfonts/*.sf2
+assets/soundfonts/*.sf3

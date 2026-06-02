@@ -1,0 +1,6 @@
+<Project>
+  <!-- Ensures obj/ and bin/ are not committed -->
+  <Target Name="CleanArtifacts" AfterTargets="Clean">
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" />
+  </Target>
+</Project>
