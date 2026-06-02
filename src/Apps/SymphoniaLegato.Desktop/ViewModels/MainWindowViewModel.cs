@@ -14,6 +14,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IScoreRepository _repository;
     private readonly IPlaybackEngine _playback;
     private readonly ILogger<MainWindowViewModel> _logger;
+    private readonly AboutViewModel _aboutVm;
 
     [ObservableProperty] private string _title = "Symphonia Legato";
     [ObservableProperty] private bool _isDirty;
@@ -37,11 +38,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         PlaybackViewModel playbackVm,
         MixerViewModel mixerVm,
         PianoKeyboardViewModel pianoKeyboard,
+        AboutViewModel aboutVm,
         ILogger<MainWindowViewModel> logger)
     {
         _repository = repository;
         _playback = playback;
         _logger = logger;
+        _aboutVm = aboutVm;
 
         ScoreEditor   = scoreEditor;
         PlaybackVm    = playbackVm;
@@ -97,9 +100,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void ZoomReset() => Zoom = 1.0;
 
     [RelayCommand]
-    private void ToggleMixer()        => ShowMixer        = !ShowMixer;
+    private void ToggleMixer()         => ShowMixer         = !ShowMixer;
     [RelayCommand]
     private void TogglePianoKeyboard() => ShowPianoKeyboard = !ShowPianoKeyboard;
+
+    [RelayCommand]
+    private void ShowAbout() => AboutRequested?.Invoke(this, _aboutVm);
+
+    public event EventHandler<AboutViewModel>? AboutRequested;
 
     private void LoadScore(Score score)
     {

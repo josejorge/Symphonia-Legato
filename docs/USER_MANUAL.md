@@ -1,4 +1,7 @@
-# User Manual
+# User Manual — Symphonia Legato
+
+*Created by Jose Jorge Hernandez*
+
 
 ## Getting Started
 

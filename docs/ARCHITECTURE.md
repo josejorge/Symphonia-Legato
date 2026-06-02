@@ -1,5 +1,8 @@
 # Architecture
 
+**Symphonia Legato** — by Jose Jorge Hernandez
+
+
 ## Overview
 
 Symphonia Legato follows a clean layered architecture with strict dependency rules:

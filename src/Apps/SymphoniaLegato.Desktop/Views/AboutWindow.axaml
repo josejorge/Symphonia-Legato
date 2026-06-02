@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+        x:Class="SymphoniaLegato.Desktop.Views.AboutWindow"
+        x:DataType="vm:AboutViewModel"
+        Title="About Symphonia Legato"
+        Width="480" Height="380"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBackground}"
+        ShowInTaskbar="False">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="32">
+
+    <!-- Header: logo area + name -->
+    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="8">
+
+      <!-- Treble clef as big decorative symbol -->
+      <TextBlock Text="𝄞"
+                 FontSize="72"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource AccentColor}"/>
+
+      <TextBlock Text="{Binding AppName}"
+                 FontSize="26"
+                 FontWeight="Bold"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource ForegroundColor}"/>
+
+      <TextBlock Text="{Binding Version, StringFormat='Version {0}'}"
+                 FontSize="12"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource ForegroundDimColor}"/>
+    </StackPanel>
+
+    <!-- Body -->
+    <StackPanel Grid.Row="1" Spacing="12" Margin="0,24,0,0">
+
+      <!-- Description -->
+      <TextBlock Text="{Binding Description}"
+                 TextWrapping="Wrap"
+                 TextAlignment="Center"
+                 FontSize="12"
+                 Foreground="{DynamicResource ForegroundColor}"/>
+
+      <Separator Background="{DynamicResource BorderBrush}" Height="1" Margin="0,4"/>
+
+      <!-- Author / copyright -->
+      <StackPanel Spacing="4">
+        <TextBlock HorizontalAlignment="Center"
+                   Foreground="{DynamicResource ForegroundDimColor}"
+                   FontSize="11">
+          <Run Text="Created by "/>
+          <Run Text="{Binding Author}" FontWeight="SemiBold"
+               Foreground="{DynamicResource ForegroundColor}"/>
+        </TextBlock>
+        <TextBlock Text="{Binding Copyright}"
+                   HorizontalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{DynamicResource ForegroundDimColor}"/>
+        <TextBlock Text="{Binding License}"
+                   HorizontalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{DynamicResource ForegroundDimColor}"/>
+      </StackPanel>
+
+      <Separator Background="{DynamicResource BorderBrush}" Height="1" Margin="0,4"/>
+
+      <!-- Tech stack -->
+      <TextBlock Text="{Binding TechStack}"
+                 TextWrapping="Wrap"
+                 TextAlignment="Center"
+                 FontSize="10"
+                 Foreground="{DynamicResource ForegroundDimColor}"/>
+    </StackPanel>
+
+    <!-- Close button -->
+    <Button Grid.Row="2"
+            Content="Close"
+            Command="{Binding CloseCommand}"
+            HorizontalAlignment="Center"
+            Width="100"
+            Margin="0,16,0,0"
+            Background="{DynamicResource AccentColor}"
+            Foreground="White"
+            CornerRadius="4"/>
+  </Grid>
+</Window>

@@ -36,6 +36,7 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<EnScoreRepository>();
     sc.AddSingleton<IScoreRepository>(sp => sp.GetRequiredService<EnScoreRepository>());
 
+    sc.AddSingleton<AboutViewModel>();
     sc.AddTransient<MainWindowViewModel>();
     sc.AddTransient<ScoreEditorViewModel>();
     sc.AddTransient<PlaybackViewModel>();

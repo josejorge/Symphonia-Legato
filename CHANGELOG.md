@@ -1,6 +1,7 @@
 # Changelog
 
-All notable changes to Symphonia Legato are documented here.
+**Symphonia Legato** by Jose Jorge Hernandez.
+All notable changes are documented here.
 Format: [Semantic Versioning](https://semver.org/).
 
 ---

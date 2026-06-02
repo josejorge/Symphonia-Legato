@@ -2,6 +2,8 @@
 
 **Modern open-source music notation software for 2026.**
 
+Created by **Jose Jorge Hernandez**
+
 Symphonia Legato is a cross-platform, piano-first music notation editor inspired by the classic Encore application. It is built with C# (.NET 9), Avalonia UI, and a clean MVVM architecture — lightweight, fast, and fully git-friendly.
 
 ---
@@ -143,6 +145,10 @@ my-piece.enscore
 MIT — see [LICENSE.md](LICENSE.md)
 
 ---
+
+## Author
+
+**Jose Jorge Hernandez** — creator and lead developer of Symphonia Legato.
 
 ## Contributing
 

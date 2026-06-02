@@ -1,6 +1,6 @@
 # MIT License
 
-Copyright (c) 2026 Symphonia Legato Contributors
+Copyright (c) 2026 Jose Jorge Hernandez and Symphonia Legato Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

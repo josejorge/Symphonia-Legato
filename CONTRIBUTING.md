@@ -1,6 +1,6 @@
 # Contributing to Symphonia Legato
 
-Thank you for your interest in contributing!
+**Created by Jose Jorge Hernandez.** Thank you for your interest in contributing!
 
 ## How to Contribute
 

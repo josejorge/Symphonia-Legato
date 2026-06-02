@@ -71,7 +71,7 @@
       </MenuItem>
       <MenuItem Header="_Help">
         <MenuItem Header="_User Manual"/>
-        <MenuItem Header="_About Symphonia Legato"/>
+        <MenuItem Header="_About Symphonia Legato" Command="{Binding ShowAboutCommand}"/>
       </MenuItem>
     </Menu>
 
