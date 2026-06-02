@@ -111,7 +111,7 @@ public sealed class RenderedBeam
     public int BeamLevel { get; init; }  // 0 = primary beam, 1 = secondary (16th), etc.
 }
 
-/// <summary>A note/rest/chord element with its absolute render position and all Phase 2 metadata.</summary>
+/// <summary>A note/rest/chord element with its absolute render position and all notation metadata.</summary>
 public sealed class RenderedNoteElement
 {
     public Guid NoteId { get; init; }

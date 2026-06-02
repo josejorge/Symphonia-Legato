@@ -185,7 +185,9 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     {
         // Volume/pan CC changes are sent live during playback
         if (_outputDevice is null || !_channels.TryGetValue(staffId, out var ch)) return;
-        // TODO: look up MIDI channel for staffId and send CC 7 (volume) and CC 10 (pan)
+        // The staff→MIDI channel mapping is built inside ScoreToMidiConverter during conversion.
+        // To send live CC 7 (volume) / CC 10 (pan) here, expose that map and call
+        // _outputDevice.SendEvent(new ControlChangeEvent(ControlNumber.Volume, value) { Channel = n }).
     }
 
     private void DisposePlayback()

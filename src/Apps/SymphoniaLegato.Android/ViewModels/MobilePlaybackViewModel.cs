@@ -14,9 +14,8 @@ public sealed partial class MobilePlaybackViewModel : ViewModelBase
     [ObservableProperty] private TimeSpan _position;
     [ObservableProperty] private TimeSpan _duration;
 
-    // Android playback uses MediaPlayer / MIDI through MidiManager;
-    // for Phase 4 the play/pause/loop state is fully modelled but audio
-    // is wired when a platform MIDI service is injected (Phase 4 extension).
+    // Playback state is fully modelled. Audio output requires an AndroidMidiEngine
+    // injected here — Android's MidiManager API differs from DryWetMidi's desktop OutputDevice.
 
     [RelayCommand]
     private void PlayPause() => IsPlaying = !IsPlaying;

@@ -29,7 +29,6 @@ public sealed class Score
 
     public List<Part> Parts { get; init; } = [];
 
-    // Phase 4: freehand annotations per page
     public List<ScoreAnnotation> Annotations { get; init; } = [];
 
     public ScoreAnnotation GetOrCreateAnnotation(int pageNumber)

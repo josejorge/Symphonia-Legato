@@ -103,7 +103,7 @@ public sealed class ScoreEditor
     public void DeleteMeasure(int measureNumber) =>
         Execute(new DeleteMeasureCommand(measureNumber));
 
-    // ── Phase 2 helpers ───────────────────────────────────────────────
+    // ── Notation helpers ──────────────────────────────────────────────
 
     public void AddDynamic(Guid staffId, int measureNumber, Dynamic dynamic) =>
         Execute(new AddDynamicCommand(staffId, measureNumber, dynamic));

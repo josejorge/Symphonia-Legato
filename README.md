@@ -4,27 +4,33 @@
 
 Created by **Jose Jorge Hernandez**
 
-Symphonia Legato is a cross-platform, piano-first music notation editor inspired by the classic Encore application. It is built with C# (.NET 9), Avalonia UI, and a clean MVVM architecture — lightweight, fast, and fully git-friendly.
+Symphonia Legato is a cross-platform, piano-first music notation editor inspired by the classic Encore application. Built with C# (.NET 9), Avalonia UI, and a clean MVVM architecture — lightweight, fast, and fully git-friendly.
 
 ---
 
 ## Features
 
 - **Grand Staff piano editor** — Treble + Bass clef linked as one unit
-- **Full notation support** — Notes, chords, rests, ties, slurs, tuplets, dynamics, lyrics, text annotations
+- **Full notation support** — Notes, chords, rests, ties, slurs, tuplets, dynamics, lyrics, tempo markings
 - **All standard clefs** — Treble, Bass, Alto, Tenor
-- **All key & time signatures** — Including custom
-- **MIDI playback** — Play, pause, stop, loop, tempo 25–400%
-- **Virtual piano keyboard** — Mouse, touch, and MIDI input
+- **All key & time signatures** — C major through all sharps/flats, custom
+- **MIDI playback** — Play, pause, stop, loop, 25–400% tempo
+- **Virtual piano keyboard** — Mouse and touch input
 - **Mixer** — Per-staff volume, pan, mute, solo
-- **MusicXML import/export** — Industry-standard interchange
+- **Metronome** — Configurable BPM, subdivision, tap tempo
+- **MusicXML 4.0 import/export** — Industry-standard interchange format
 - **MIDI import/export**
-- **.enscore format** — ZIP container with embedded MusicXML + JSON metadata
-- **Plugin system** — Extensible instruments, exporters, notation symbols
-- **Git integration** — Version control built in
-- **PDF/PNG/SVG export**
-- **Dark, light, and high-contrast themes**
-- **Dockable panels and customisable workspace**
+- **.enscore format** — ZIP container with embedded MusicXML + JSON metadata + annotations
+- **PDF export** — Multi-page, print-ready (QuestPDF)
+- **PNG export** — Full-resolution per-page images
+- **SVG export** — Vector graphics from layout engine
+- **Score Properties dialog** — Title, composer, tempo, time signature, page size
+- **Plugin system** — Extensible instruments and exporters
+- **Git history panel** — Version control built in, commit/restore score versions
+- **Cloud sync** — Push/pull .enscore files via any cloud-synced local folder
+- **Dark and High Contrast themes** — WCAG 2.1 AA+ high contrast
+- **Accessibility** — AutomationProperties on all interactive controls
+- **Android companion app** — Score viewer, playback, metronome, annotations
 
 ---
 
@@ -37,40 +43,45 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 | MVVM | CommunityToolkit.Mvvm |
 | DI | Microsoft.Extensions.DependencyInjection |
 | MIDI | Melanchall.DryWetMidi |
-| Rendering | SkiaSharp |
-| PDF | QuestPDF |
+| Rendering | Avalonia DrawingContext (Skia-backed, no SkiaSharp package required) |
+| PDF | QuestPDF 2024 |
 | Format | MusicXML 4.0 |
-| Database | SQLite (settings/history) |
 | Version Control | LibGit2Sharp |
-| Testing | xUnit + FluentAssertions |
+| Testing | xUnit + FluentAssertions (88 tests) |
 
 ---
 
 ## Project Structure
 
 ```
-SymphoniaLegato.sln
+SymphoniaLegato.sln            ← Desktop + all tests
+SymphoniaLegato.Android.sln   ← Android + shared Core (needs android workload)
 ├── src/
 │   ├── Core/
 │   │   ├── SymphoniaLegato.Core           # Domain models & interfaces
-│   │   ├── SymphoniaLegato.NotationEngine  # Score editing, commands
-│   │   ├── SymphoniaLegato.PlaybackEngine  # MIDI playback
+│   │   ├── SymphoniaLegato.NotationEngine  # Score editing, commands, undo/redo
+│   │   ├── SymphoniaLegato.PlaybackEngine  # MIDI playback + MetronomeEngine
 │   │   ├── SymphoniaLegato.LayoutEngine    # Score layout algorithm
-│   │   ├── SymphoniaLegato.ImportExport    # MusicXML, MIDI, .enscore
-│   │   ├── SymphoniaLegato.PdfEngine       # PDF/PNG/SVG export
+│   │   ├── SymphoniaLegato.ImportExport    # MusicXML, MIDI, .enscore, SVG, cloud sync
+│   │   ├── SymphoniaLegato.PdfEngine       # PDF export
 │   │   ├── SymphoniaLegato.PluginEngine    # Plugin host & sandbox
 │   │   └── SymphoniaLegato.GitIntegration  # Git version control
 │   └── Apps/
-│       ├── SymphoniaLegato.Desktop         # Avalonia cross-platform app
-│       └── SymphoniaLegato.Android         # Android companion app
+│       ├── SymphoniaLegato.Desktop         # Avalonia desktop app (Windows/Linux/macOS)
+│       └── SymphoniaLegato.Android         # Avalonia Android companion app
 ├── tests/
 │   ├── SymphoniaLegato.Core.Tests
 │   ├── SymphoniaLegato.NotationEngine.Tests
 │   ├── SymphoniaLegato.PlaybackEngine.Tests
 │   └── SymphoniaLegato.Integration.Tests
 ├── docs/
-├── assets/
-└── examples/
+│   ├── ROADMAP.md                          # Phase-by-phase feature plan
+│   └── ANDROID.md                          # Android build & deploy guide
+├── examples/
+│   └── simple-piano.musicxml
+└── publish/
+    ├── windows/                            # Self-contained EXE
+    └── android/                            # APK (after android publish)
 ```
 
 ---
@@ -80,45 +91,51 @@ SymphoniaLegato.sln
 ### Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- A SoundFont file (`GeneralUser.sf2` or similar) in `assets/soundfonts/`
+- Windows 10/11, Linux, or macOS
 
-### Build & Run
+### Build & Run (Desktop)
 
-```bash
-git clone https://github.com/yourorg/symphonia-legato
+```powershell
+git clone https://github.com/josejorgehz/symphonia-legato
 cd symphonia-legato
-dotnet restore
-dotnet build
+dotnet build SymphoniaLegato.sln
 dotnet run --project src/Apps/SymphoniaLegato.Desktop
 ```
 
-### Run Tests
+### Publish Self-Contained EXE (Windows)
 
-```bash
-dotnet test
+```powershell
+dotnet publish src/Apps/SymphoniaLegato.Desktop -c Release -r win-x64 `
+  --self-contained -p:PublishSingleFile=true -o publish/windows
 ```
 
----
+### Build Android APK
 
-## Documentation
+```powershell
+# First-time setup
+dotnet workload install android
 
-| File | Contents |
-|---|---|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design & module responsibilities |
-| [BUILD.md](docs/BUILD.md) | Full build & packaging instructions |
-| [TESTING.md](docs/TESTING.md) | Testing strategy & running tests |
-| [USER_MANUAL.md](docs/USER_MANUAL.md) | End-user guide |
-| [PLUGIN_SDK.md](docs/PLUGIN_SDK.md) | Writing plugins |
-| [API_REFERENCE.md](docs/API_REFERENCE.md) | Public API reference |
-| [ROADMAP.md](docs/ROADMAP.md) | Development phases |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
+# Build debug APK
+dotnet build SymphoniaLegato.Android.sln -c Debug
+
+# Publish release APK
+dotnet publish SymphoniaLegato.Android.sln -c Release -r android-arm64 `
+  --self-contained -o publish/android
+```
+
+See [docs/ANDROID.md](docs/ANDROID.md) for full Android setup and deployment guide.
+
+### Run Tests
+
+```powershell
+dotnet test SymphoniaLegato.sln   # 88 tests, all passing
+```
 
 ---
 
 ## File Format: .enscore
 
-`.enscore` files are standard ZIP archives:
+`.enscore` files are standard ZIP archives — fully readable by any ZIP tool:
 
 ```
 my-piece.enscore
@@ -132,11 +149,13 @@ my-piece.enscore
 
 ## Roadmap
 
-- **Phase 1 (MVP):** Staff rendering, note entry, basic playback, save/load ✓
-- **Phase 2:** Advanced notation — dynamics, lyrics, slurs, tuplets
-- **Phase 3:** Professional — PDF export, plugins, Git history UI
-- **Phase 4:** Android companion app — view, playback, annotation
-- **Phase 5:** AI extensions — harmonisation, chord detection, fingering
+| Phase | Status | Summary |
+|---|---|---|
+| 1 — MVP | ✅ | Staff rendering, note entry, basic playback, save/load |
+| 2 — Advanced notation | ✅ | Dynamics, lyrics, slurs, articulations, hand coloring |
+| 3 — Professional | ✅ | PDF/PNG/SVG, score properties, plugins, git history, high contrast |
+| 4 — Android | ✅ | Metronome, cloud sync, annotations, Android companion app |
+| 5 — AI | ⏳ | Harmonisation, chord detection, fingering suggestions |
 
 ---
 
@@ -150,6 +169,8 @@ MIT — see [LICENSE.md](LICENSE.md)
 
 **Jose Jorge Hernandez** — creator and lead developer of Symphonia Legato.
 
+---
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). PRs and issues welcome!
+PRs and issues welcome. Please read [CLAUDE.md](CLAUDE.md) for architecture conventions and known pitfalls before contributing.

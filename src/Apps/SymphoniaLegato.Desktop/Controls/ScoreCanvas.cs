@@ -27,10 +27,10 @@ public sealed class StaffPositionClickedEventArgs(
 }
 
 /// <summary>
-/// Full-featured score canvas with Phase 2 rendering:
-/// noteheads (open/filled), stems, beams, flags, accidentals,
-/// rests, clefs, time/key signatures, dynamics, hairpins, slurs,
-/// articulations, tempo markings, lyrics, hand coloring, selection.
+/// Score canvas rendering all notation elements from a <see cref="LayoutResult"/>:
+/// noteheads, stems, beams, flags, accidentals, rests, clefs,
+/// time/key signatures, dynamics, hairpins, slurs, articulations,
+/// tempo markings, lyrics, hand coloring, and note selection.
 /// </summary>
 public sealed class ScoreCanvas : Control
 {

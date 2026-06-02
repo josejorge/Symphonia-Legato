@@ -5,7 +5,7 @@ using SymphoniaLegato.Core.Models;
 namespace SymphoniaLegato.LayoutEngine;
 
 /// <summary>
-/// Full Phase 2 layout engine.
+/// Proportional layout engine.
 /// Computes pixel positions for every notational element including
 /// noteheads, stems, beams, accidentals, dynamics, slurs, and lyrics.
 /// Uses proportional spacing: longer notes get more horizontal space.

@@ -47,7 +47,7 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<ScorePdfExporter>();
     sc.AddSingleton<ScorePngExporter>();
 
-    // ── Phase 4: Metronome + Sync ─────────────────────────────────
+    // ── Metronome + Cloud Sync ───────────────────────────────────
     sc.AddSingleton<MetronomeEngine>();
     sc.AddSingleton<ScoreSyncService>();
 
