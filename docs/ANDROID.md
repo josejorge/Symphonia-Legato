@@ -95,9 +95,9 @@ src/Apps/SymphoniaLegato.Android/
   `LayoutEngine`, `ImportExport`, `PlaybackEngine`) are shared between Desktop and Android.
   They target `net9.0` and work cross-platform.
 
-- **Score rendering** — The Android Score Viewer reuses `ScoreCanvas` from the Desktop
-  project. The AXAML references `using:SymphoniaLegato.Desktop.Controls` — this is allowed
-  because ScoreCanvas has no Android-specific dependencies.
+- **Score rendering** — `ScoreCanvas` lives in the shared `SymphoniaLegato.Rendering` library
+  (not in Desktop). Both Desktop and Android reference it via `using:SymphoniaLegato.Rendering`.
+  It was extracted from Desktop.Controls during Phase 4 to avoid a WinExe reference in Android.
 
 - **Playback** — `MidiPlaybackEngine` uses DryWetMidi's `OutputDevice`, which is not
   available on Android. The `MobilePlaybackViewModel` models all state but defers audio to

@@ -131,7 +131,7 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | `src/Core/SymphoniaLegato.ImportExport/ScoreSyncService.cs` | Cloud sync (folder-based, newer-wins) |
 | `src/Core/SymphoniaLegato.PlaybackEngine/MetronomeEngine.cs` | Cross-platform timer-based metronome |
 | `src/Core/SymphoniaLegato.PdfEngine/ScorePdfExporter.cs` | PDF export (QuestPDF; embeds PNG pages) |
-| `src/Apps/SymphoniaLegato.Desktop/Controls/ScoreCanvas.cs` | Score rendering (DrawingContext) |
+| `src/Core/SymphoniaLegato.Rendering/ScoreCanvas.cs` | Score rendering (DrawingContext) — shared library |
 | `src/Apps/SymphoniaLegato.Desktop/Controls/PianoKeyboardControl.cs` | Piano keyboard rendering |
 | `src/Apps/SymphoniaLegato.Desktop/Services/ScorePngExporter.cs` | PNG export (Avalonia RenderTargetBitmap) |
 | `src/Apps/SymphoniaLegato.Desktop/Views/MainWindow.axaml` | Main window layout |
@@ -214,6 +214,18 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
     in `AIEngine`). This avoids the circular-dependency that would arise if `Core.Interfaces.IAIEngine`
     imported from `AIEngine`.
 
+17. **`RenderedMeasure.ClefType` is the enum, not the struct** — When converting a click position to a
+    note, `measure.ClefType` is `ClefType` (enum) but `StaffPositionClickedEventArgs` expects `Clef`
+    (struct). Convert with a switch: `Clef.Bass`, `Clef.Alto`, `Clef.Tenor`, default `Clef.Treble`.
+
+18. **`ScoreCanvas` must override `MeasureOverride`** — Without it the control reports zero size to the
+    `ScrollViewer` and the score never scrolls. Return `new Size(maxPageWidth, totalPagesHeight)` from
+    the `LayoutResult`. The `Render` override alone is not enough to size the control.
+
+19. **Chord notes in `Note.ChordNotes` store `Pitch`, not `Note`** — They have no `StaffPosition`
+    property. The layout engine must compute staff positions via `PitchToStaffPosition(pitch, clef)`
+    using diatonic distance from the clef's `BottomLineMidi` reference note.
+
 ---
 
 ## Phase status
@@ -225,6 +237,7 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | 3 — Professional | ✅ Done | PDF/PNG/SVG export, Score Properties dialog, Plugin Manager, Git History panel, MIDI/Audio settings, High Contrast theme, accessibility labels, file pickers, 74 tests |
 | 4 — Android | ✅ Done | MetronomeEngine + Desktop panel, ScoreSyncService + Desktop dialog, ScoreAnnotation model, full Android Avalonia app in `SymphoniaLegato.Android.sln`, 88 tests |
 | 5 — AI | ✅ Done | `SymphoniaLegato.AIEngine`: chord detection + fingering (offline), harmonisation + score analysis + practice plan (Claude API), Desktop AI Assistant panel, 104 tests |
+| Bugfix | ✅ Done | Score editing: correct clef/key on click, chord note positions, canvas scroll; toolbar: accidentals, slur, tie, mode toggle |
 
 ---
 

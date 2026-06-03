@@ -31,6 +31,7 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 - **Dark and High Contrast themes** — WCAG 2.1 AA+ high contrast
 - **Accessibility** — AutomationProperties on all interactive controls
 - **Android companion app** — Score viewer, playback, metronome, annotations
+- **AI Assistant** — Chord detection, fingering suggestions (offline); harmonisation, score analysis, practice recommendations (Claude API, API key required)
 
 ---
 
@@ -47,7 +48,7 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 | PDF | QuestPDF 2024 |
 | Format | MusicXML 4.0 |
 | Version Control | LibGit2Sharp |
-| Testing | xUnit + FluentAssertions (88 tests) |
+| Testing | xUnit + FluentAssertions (104 tests) |
 
 ---
 
@@ -63,9 +64,11 @@ SymphoniaLegato.Android.sln   ← Android + shared Core (needs android workload)
 │   │   ├── SymphoniaLegato.PlaybackEngine  # MIDI playback + MetronomeEngine
 │   │   ├── SymphoniaLegato.LayoutEngine    # Score layout algorithm
 │   │   ├── SymphoniaLegato.ImportExport    # MusicXML, MIDI, .enscore, SVG, cloud sync
+│   │   ├── SymphoniaLegato.Rendering       # ScoreCanvas (shared between Desktop + Android)
 │   │   ├── SymphoniaLegato.PdfEngine       # PDF export
 │   │   ├── SymphoniaLegato.PluginEngine    # Plugin host & sandbox
-│   │   └── SymphoniaLegato.GitIntegration  # Git version control
+│   │   ├── SymphoniaLegato.GitIntegration  # Git version control
+│   │   └── SymphoniaLegato.AIEngine        # Chord detection, fingering, Claude AI integration
 │   └── Apps/
 │       ├── SymphoniaLegato.Desktop         # Avalonia desktop app (Windows/Linux/macOS)
 │       └── SymphoniaLegato.Android         # Avalonia Android companion app
@@ -128,7 +131,7 @@ See [docs/ANDROID.md](docs/ANDROID.md) for full Android setup and deployment gui
 ### Run Tests
 
 ```powershell
-dotnet test SymphoniaLegato.sln   # 88 tests, all passing
+dotnet test SymphoniaLegato.sln   # 104 tests, all passing
 ```
 
 ---
@@ -155,7 +158,7 @@ my-piece.enscore
 | 2 — Advanced notation | ✅ | Dynamics, lyrics, slurs, articulations, hand coloring |
 | 3 — Professional | ✅ | PDF/PNG/SVG, score properties, plugins, git history, high contrast |
 | 4 — Android | ✅ | Metronome, cloud sync, annotations, Android companion app |
-| 5 — AI | ⏳ | Harmonisation, chord detection, fingering suggestions |
+| 5 — AI | ✅ | Chord detection, fingering (offline) + harmonisation, analysis, practice plan (Claude API) |
 
 ---
 
