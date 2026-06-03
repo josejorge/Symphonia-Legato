@@ -1,13 +1,14 @@
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SymphoniaLegato.AIEngine;
+using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.Desktop;
 using SymphoniaLegato.Desktop.Services;
 using SymphoniaLegato.Desktop.ViewModels;
 using SymphoniaLegato.GitIntegration;
 using SymphoniaLegato.ImportExport;
 using SymphoniaLegato.LayoutEngine;
-using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.PdfEngine;
 using SymphoniaLegato.PlaybackEngine;
 using SymphoniaLegato.PluginEngine;
@@ -47,7 +48,7 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<ScorePdfExporter>();
     sc.AddSingleton<ScorePngExporter>();
 
-    // ── Metronome + Cloud Sync ───────────────────────────────────
+    // ── Metronome + Cloud Sync ────────────────────────────────────
     sc.AddSingleton<MetronomeEngine>();
     sc.AddSingleton<ScoreSyncService>();
 
@@ -57,6 +58,10 @@ static IServiceProvider BuildServices()
     // ── Git integration ───────────────────────────────────────────
     sc.AddSingleton<ScoreVersionControl>();
 
+    // ── AI engine ─────────────────────────────────────────────────
+    sc.AddSingleton<ClaudeAIEngine>();
+    sc.AddSingleton<IAIEngine>(sp => sp.GetRequiredService<ClaudeAIEngine>());
+
     // ── ViewModels ────────────────────────────────────────────────
     sc.AddSingleton<AboutViewModel>();
     sc.AddSingleton<ScorePropertiesViewModel>();
@@ -65,6 +70,7 @@ static IServiceProvider BuildServices()
     sc.AddSingleton<MidiSettingsViewModel>();
     sc.AddSingleton<SyncSettingsViewModel>();
     sc.AddSingleton<MetronomeViewModel>();
+    sc.AddSingleton<AIAssistantViewModel>();
     sc.AddTransient<MainWindowViewModel>();
     sc.AddTransient<ScoreEditorViewModel>();
     sc.AddTransient<PlaybackViewModel>();

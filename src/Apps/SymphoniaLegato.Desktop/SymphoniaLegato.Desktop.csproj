@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\Core\SymphoniaLegato.PdfEngine\SymphoniaLegato.PdfEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.PluginEngine\SymphoniaLegato.PluginEngine.csproj" />
     <ProjectReference Include="..\..\Core\SymphoniaLegato.GitIntegration\SymphoniaLegato.GitIntegration.csproj" />
+    <ProjectReference Include="..\..\Core\SymphoniaLegato.AIEngine\SymphoniaLegato.AIEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.3" />
@@ -72,6 +73,9 @@
     </Compile>
     <Compile Update="Views\SyncSettingsWindow.axaml.cs">
       <DependentUpon>Views\SyncSettingsWindow.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\AIAssistantPanel.axaml.cs">
+      <DependentUpon>Views\AIAssistantPanel.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

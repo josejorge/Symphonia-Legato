@@ -72,11 +72,16 @@
 - [x] 88 passing tests (14 new Phase 4 integration tests)
 - ⚠️  **Android build requires:** `dotnet workload install android` — see `docs/ANDROID.md`
 
-## Phase 5 — AI Extensions ⏳ Planned
+## Phase 5 — AI Extensions ✅
 
-- [ ] Harmonisation suggestions
-- [ ] Chord detection
-- [ ] Fingering suggestions
-- [ ] Automatic accompaniment
-- [ ] Score analysis
-- [ ] Practice recommendations
+- [x] Chord detection (algorithmic — offline, no API key needed)
+- [x] Fingering suggestions (algorithmic — offline, no API key needed)
+- [x] Harmonisation suggestions (Claude AI — requires API key)
+- [x] Score analysis: key, form, style, difficulty, challenges (Claude AI)
+- [x] Practice recommendations: steps, focus areas, tempo plan (Claude AI)
+- [x] `SymphoniaLegato.AIEngine` — new Core library with `ClaudeAIEngine`, `ChordDetector`, `FingeringAdvisor`
+- [x] `IAIEngine` interface in Core.Interfaces
+- [x] Desktop: AI Assistant panel with API key field, offline + AI buttons
+- [x] Desktop: AI menu (AI → Detect Chords, Suggest Fingering, Harmonise, Analyse, Practice Plan)
+- [x] Desktop: AI toolbar toggle button (✨)
+- [x] 16 new Phase 5 tests — 104 total passing

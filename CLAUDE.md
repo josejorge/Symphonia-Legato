@@ -23,7 +23,7 @@ dotnet build SymphoniaLegato.sln -c Debug
 # Run the desktop app
 dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build
 
-# Run all tests (88 passing)
+# Run all tests (104 passing)
 dotnet test SymphoniaLegato.sln --no-build
 
 # Publish self-contained Windows EXE
@@ -54,6 +54,7 @@ src/
     SymphoniaLegato.PdfEngine         # PDF export (QuestPDF, embeds PNG pages)
     SymphoniaLegato.PluginEngine      # Plugin host & sandbox
     SymphoniaLegato.GitIntegration    # LibGit2Sharp wrapper
+    SymphoniaLegato.AIEngine          # ChordDetector, FingeringAdvisor, ClaudeAIEngine (Phase 5)
   Apps/
     SymphoniaLegato.Desktop           # Avalonia MVVM desktop app (Windows/Linux/macOS)
     SymphoniaLegato.Android           # Avalonia Android companion app
@@ -140,6 +141,12 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | `src/Apps/SymphoniaLegato.Desktop/Themes/HighContrastTheme.axaml` | High-contrast theme |
 | `src/Apps/SymphoniaLegato.Desktop/ViewModels/MetronomeViewModel.cs` | Metronome sidebar VM |
 | `src/Apps/SymphoniaLegato.Desktop/ViewModels/SyncSettingsViewModel.cs` | Cloud sync settings VM |
+| `src/Apps/SymphoniaLegato.Desktop/ViewModels/AIAssistantViewModel.cs` | AI assistant sidebar VM |
+| `src/Apps/SymphoniaLegato.Desktop/Views/AIAssistantPanel.axaml` | AI assistant sidebar panel |
+| `src/Core/SymphoniaLegato.AIEngine/ClaudeAIEngine.cs` | `IAIEngine` implementation (Claude API + offline) |
+| `src/Core/SymphoniaLegato.AIEngine/ChordDetector.cs` | Algorithmic chord detection |
+| `src/Core/SymphoniaLegato.AIEngine/FingeringAdvisor.cs` | Algorithmic fingering suggestions |
+| `src/Core/SymphoniaLegato.Core/Models/AIModels.cs` | AI result types (ChordLabel, FingeringResult, etc.) |
 | `src/Apps/SymphoniaLegato.Android/App.axaml.cs` | Android DI wiring & app entry |
 | `src/Apps/SymphoniaLegato.Android/Views/MainShellView.axaml` | Android bottom-nav shell |
 | `docs/ROADMAP.md` | Phase-by-phase feature plan |
@@ -198,6 +205,15 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
     ViewModels must marshal to the UI thread via `Dispatcher.UIThread.Post(...)` before touching
     observable properties.
 
+15. **Raw interpolated string literals with JSON examples (CS9006)** — In `$"""..."""`, any `{`
+    in content starts an interpolation; you cannot have literal `{`. Use `$$"""..."""` instead:
+    single `{`/`}` in content becomes literal, and `{{expr}}` is interpolation. See `ClaudeAIEngine.cs`.
+
+16. **`IAIEngine` AI models live in `Core.Models`** — `ChordLabel`, `FingeringResult`, `AIAnalysisResult`,
+    `PracticeRecommendation`, `HarmonyMeasure` are in `SymphoniaLegato.Core.Models.AIModels.cs` (not
+    in `AIEngine`). This avoids the circular-dependency that would arise if `Core.Interfaces.IAIEngine`
+    imported from `AIEngine`.
+
 ---
 
 ## Phase status
@@ -208,7 +224,7 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | 2 — Advanced notation | ✅ Done | Noteheads, stems, beams, accidentals, rests, clefs, dynamics, hairpins, slurs, articulations, lyrics, hand coloring, MIDI import, 55 tests |
 | 3 — Professional | ✅ Done | PDF/PNG/SVG export, Score Properties dialog, Plugin Manager, Git History panel, MIDI/Audio settings, High Contrast theme, accessibility labels, file pickers, 74 tests |
 | 4 — Android | ✅ Done | MetronomeEngine + Desktop panel, ScoreSyncService + Desktop dialog, ScoreAnnotation model, full Android Avalonia app in `SymphoniaLegato.Android.sln`, 88 tests |
-| 5 — AI | ⏳ Planned | Harmonisation, chord detection, fingering, analysis |
+| 5 — AI | ✅ Done | `SymphoniaLegato.AIEngine`: chord detection + fingering (offline), harmonisation + score analysis + practice plan (Claude API), Desktop AI Assistant panel, 104 tests |
 
 ---
 

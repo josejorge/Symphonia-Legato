@@ -20,6 +20,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly PluginManagerViewModel _pluginManagerVm;
     private readonly MidiSettingsViewModel _midiSettingsVm;
     private readonly SyncSettingsViewModel _syncSettingsVm;
+    private readonly AIAssistantViewModel _aiVm;
 
     [ObservableProperty] private string _title = "Symphonia Legato";
     [ObservableProperty] private bool _isDirty;
@@ -32,12 +33,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _showPianoKeyboard = true;
     [ObservableProperty] private bool _showGitHistory;
     [ObservableProperty] private bool _showMetronome;
+    [ObservableProperty] private bool _showAIAssistant;
     [ObservableProperty] private bool _isHighContrast;
     [ObservableProperty] private double _zoom = 1.0;
     [ObservableProperty] private string _statusMessage = "Ready";
 
-    public GitHistoryViewModel  GitHistory  => _gitHistoryVm;
-    public MetronomeViewModel   Metronome   { get; }
+    public GitHistoryViewModel   GitHistory   => _gitHistoryVm;
+    public MetronomeViewModel    Metronome    { get; }
+    public AIAssistantViewModel  AIAssistant  => _aiVm;
     public ObservableCollection<string> RecentFiles { get; } = [];
 
     public MainWindowViewModel(
@@ -54,6 +57,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         MidiSettingsViewModel midiSettingsVm,
         SyncSettingsViewModel syncSettingsVm,
         MetronomeViewModel metronomeVm,
+        AIAssistantViewModel aiAssistantVm,
         ILogger<MainWindowViewModel> logger)
     {
         _repository = repository;
@@ -65,6 +69,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _pluginManagerVm = pluginManagerVm;
         _midiSettingsVm = midiSettingsVm;
         _syncSettingsVm = syncSettingsVm;
+        _aiVm = aiAssistantVm;
         Metronome = metronomeVm;
 
         ScoreEditor   = scoreEditor;
@@ -167,7 +172,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleGitHistory()  => ShowGitHistory  = !ShowGitHistory;
     [RelayCommand]
-    private void ToggleMetronome()   => ShowMetronome   = !ShowMetronome;
+    private void ToggleMetronome()     => ShowMetronome     = !ShowMetronome;
+    [RelayCommand]
+    private void ToggleAIAssistant()   => ShowAIAssistant   = !ShowAIAssistant;
     [RelayCommand]
     private void ToggleHighContrast()
     {
@@ -242,6 +249,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ScoreEditor?.Initialize(editor);
         Title = $"{score.Title} — Symphonia Legato";
         IsDirty = false;
+
+        // Notify AI assistant with the first treble staff (if any)
+        var firstStaff = score.Parts.SelectMany(p => p.Staves).FirstOrDefault();
+        if (firstStaff is not null)
+            _aiVm.LoadScore(score, firstStaff.Id);
     }
 
     private void OnScoreChanged(object? sender, EventArgs e)

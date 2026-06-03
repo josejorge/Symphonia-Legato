@@ -94,6 +94,22 @@
         <MenuItem Header="_Plugin Manager..." Command="{Binding ShowPluginManagerCommand}"/>
       </MenuItem>
 
+      <MenuItem Header="_AI">
+        <MenuItem Header="Show _AI Assistant"    Command="{Binding ToggleAIAssistantCommand}"
+                  InputGesture="Ctrl+Shift+A"
+                  AutomationProperties.Name="Toggle AI assistant panel"/>
+        <Separator/>
+        <MenuItem Header="_Detect Chords (offline)"  Command="{Binding AIAssistant.DetectChordsCommand}"/>
+        <MenuItem Header="Suggest _Fingering (offline)" Command="{Binding AIAssistant.SuggestFingeringCommand}"/>
+        <Separator/>
+        <MenuItem Header="_Harmonise Melody…"    Command="{Binding AIAssistant.GetHarmonisationCommand}"
+                  IsEnabled="{Binding AIAssistant.IsConfigured}"/>
+        <MenuItem Header="_Analyse Score…"       Command="{Binding AIAssistant.GetAnalysisCommand}"
+                  IsEnabled="{Binding AIAssistant.IsConfigured}"/>
+        <MenuItem Header="_Practice Plan…"       Command="{Binding AIAssistant.GetPracticeCommand}"
+                  IsEnabled="{Binding AIAssistant.IsConfigured}"/>
+      </MenuItem>
+
       <MenuItem Header="_Help">
         <MenuItem Header="_User Manual"/>
         <Separator/>
@@ -165,6 +181,11 @@
                       ToolTip.Tip="Toggle Metronome (Ctrl+Shift+M)"
                       Classes="toolbar-btn" Content="&#x1F941;" Margin="0"
                       AutomationProperties.Name="Toggle metronome"/>
+        <ToggleButton IsChecked="{Binding ShowAIAssistant}"
+                      Command="{Binding ToggleAIAssistantCommand}"
+                      ToolTip.Tip="Toggle AI Assistant (Ctrl+Shift+A)"
+                      Classes="toolbar-btn" Content="&#x2728;" Margin="0"
+                      AutomationProperties.Name="Toggle AI assistant"/>
         <ToggleButton IsChecked="{Binding IsHighContrast}"
                       Command="{Binding ToggleHighContrastCommand}"
                       ToolTip.Tip="High Contrast Theme"
@@ -195,7 +216,7 @@
     <Grid RowDefinitions="*,Auto,Auto">
 
       <!-- Score editor + optional right panels -->
-      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto">
 
         <views:ScoreEditorView Grid.Column="0"
                                DataContext="{Binding ScoreEditor}"/>
@@ -228,6 +249,16 @@
                 BorderThickness="1,0,0,0"
                 BorderBrush="{DynamicResource BorderBrush}">
           <views:MixerView DataContext="{Binding MixerVm}"/>
+        </Border>
+
+        <!-- AI Assistant panel -->
+        <Border Grid.Column="4"
+                IsVisible="{Binding ShowAIAssistant}"
+                Width="280"
+                Background="{DynamicResource PanelBackground}"
+                BorderThickness="1,0,0,0"
+                BorderBrush="{DynamicResource BorderBrush}">
+          <views:AIAssistantPanel DataContext="{Binding AIAssistant}"/>
         </Border>
       </Grid>
 

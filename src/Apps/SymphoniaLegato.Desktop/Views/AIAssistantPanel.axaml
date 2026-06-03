@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+             x:Class="SymphoniaLegato.Desktop.Views.AIAssistantPanel"
+             x:DataType="vm:AIAssistantViewModel">
+
+  <ScrollViewer>
+    <StackPanel Spacing="10" Margin="10">
+
+      <!-- Header -->
+      <TextBlock Text="AI Assistant"
+                 FontWeight="Bold" FontSize="14"
+                 Foreground="{DynamicResource ForegroundColor}"/>
+
+      <!-- API Key -->
+      <StackPanel Spacing="4">
+        <TextBlock Text="Claude API Key"
+                   FontSize="11" Opacity="0.7"
+                   Foreground="{DynamicResource ForegroundColor}"/>
+        <TextBox Watermark="sk-ant-..."
+                 Text="{Binding ApiKey}"
+                 PasswordChar="•"
+                 FontFamily="Consolas,Monospace"
+                 FontSize="11"
+                 AutomationProperties.Name="Claude API key input"/>
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="11" Opacity="0.8"
+                   TextWrapping="Wrap"
+                   Foreground="{DynamicResource AccentColor}"/>
+      </StackPanel>
+
+      <Separator/>
+
+      <!-- Offline Analysis -->
+      <TextBlock Text="Offline Analysis"
+                 FontWeight="SemiBold" FontSize="12"
+                 Foreground="{DynamicResource ForegroundColor}"/>
+
+      <StackPanel Spacing="6">
+        <Button Content="Detect Chords"
+                Command="{Binding DetectChordsCommand}"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="Detect chords (offline)"/>
+
+        <TextBlock Text="{Binding ChordSummary}"
+                   FontSize="11" TextWrapping="Wrap"
+                   FontFamily="Consolas,Monospace"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   IsVisible="{Binding ChordSummary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="6">
+        <Button Content="Suggest Fingering"
+                Command="{Binding SuggestFingeringCommand}"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="Suggest fingering (offline)"/>
+
+        <TextBlock Text="{Binding FingeringSummary}"
+                   FontSize="11" TextWrapping="Wrap"
+                   FontFamily="Consolas,Monospace"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   IsVisible="{Binding FingeringSummary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+      </StackPanel>
+
+      <Separator/>
+
+      <!-- AI-Powered (Claude) -->
+      <TextBlock Text="AI-Powered (Claude)"
+                 FontWeight="SemiBold" FontSize="12"
+                 Foreground="{DynamicResource ForegroundColor}"/>
+
+      <StackPanel Spacing="6">
+        <Button Content="Harmonise Melody"
+                Command="{Binding GetHarmonisationCommand}"
+                IsEnabled="{Binding IsConfigured}"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="Get harmonisation suggestions from Claude"/>
+
+        <TextBlock Text="{Binding HarmonisationText}"
+                   FontSize="11" TextWrapping="Wrap"
+                   FontFamily="Consolas,Monospace"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   IsVisible="{Binding HarmonisationText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="6">
+        <Button Content="Analyse Score"
+                Command="{Binding GetAnalysisCommand}"
+                IsEnabled="{Binding IsConfigured}"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="Analyse score with Claude"/>
+
+        <TextBlock Text="{Binding AnalysisText}"
+                   FontSize="11" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   IsVisible="{Binding AnalysisText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="6">
+        <Button Content="Practice Plan"
+                Command="{Binding GetPracticeCommand}"
+                IsEnabled="{Binding IsConfigured}"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="Get practice recommendations from Claude"/>
+
+        <TextBlock Text="{Binding PracticeText}"
+                   FontSize="11" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ForegroundColor}"
+                   IsVisible="{Binding PracticeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+      </StackPanel>
+
+      <!-- Busy indicator -->
+      <ProgressBar IsIndeterminate="True"
+                   IsVisible="{Binding IsBusy}"
+                   Height="4" Margin="0,4"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
