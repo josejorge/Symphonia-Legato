@@ -95,6 +95,17 @@ public sealed class ScoreCanvas : Control
         this.AddHandler(PointerPressedEvent, OnPointerPressed);
     }
 
+    // ── Size ─────────────────────────────────────────────────────────
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var layout = LayoutResult;
+        if (layout is null || layout.Pages.Count == 0) return base.MeasureOverride(availableSize);
+        double w = layout.Pages.Max(p => p.WidthPx);
+        double h = layout.Pages.Sum(p => p.HeightPx);
+        return new Size(w, h);
+    }
+
     // ── Render ────────────────────────────────────────────────────────
 
     public override void Render(DrawingContext ctx)
@@ -698,14 +709,21 @@ public sealed class ScoreCanvas : Control
                     }
                 }
 
-                // Staff click → note entry
+                // Staff click → note entry (use actual clef/key from this measure)
                 if (pos.X >= measure.X && pos.X < measure.X + measure.Width
                     && pos.Y >= staff.Y && pos.Y <= staff.Y + staff.Height)
                 {
                     int staffPos = YToStaffPosition(pos.Y, staff.Y, sp);
+                    Clef clef = measure.ClefType switch
+                    {
+                        ClefType.Bass  => Clef.Bass,
+                        ClefType.Alto  => Clef.Alto,
+                        ClefType.Tenor => Clef.Tenor,
+                        _              => Clef.Treble
+                    };
                     StaffPositionClicked?.Invoke(this, new StaffPositionClickedEventArgs(
                         staff.StaffId, measure.MeasureNumber, staffPos,
-                        Clef.Treble, KeySignature.CMajor));
+                        clef, measure.KeySignature));
                     return;
                 }
             }

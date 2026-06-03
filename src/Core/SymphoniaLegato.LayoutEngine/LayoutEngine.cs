@@ -337,7 +337,9 @@ public sealed class LayoutEngine : ILayoutEngine
                     Hand             = note.Hand,
                     Lyrics           = note.Lyrics
                         .Select(l => (l.Verse, l.Text, l.Syllable)).ToList(),
-                    ChordPositions   = note.ChordNotes.Select(cp => (0, false, cp.Accidental)).ToList()
+                    ChordPositions   = note.ChordNotes
+                        .Select(cp => (PitchToStaffPosition(cp, clef), false, cp.Accidental))
+                        .ToList()
                 };
                 elements.Add(elem);
 
@@ -462,6 +464,18 @@ public sealed class LayoutEngine : ILayoutEngine
         if (pos <= 0)  return ((Math.Abs(pos) + 1) / 2, false);
         if (pos > 9)   return ((pos - 9 + 1) / 2, true);
         return (0, false);
+    }
+
+    /// <summary>
+    /// Converts a pitch to a staff position (1 = bottom line, 9 = top line)
+    /// for the given clef, using diatonic distance from the clef's bottom-line reference note.
+    /// </summary>
+    private static int PitchToStaffPosition(Pitch pitch, Clef clef)
+    {
+        var bottomRef = Pitch.FromMidi(clef.BottomLineMidi);
+        int diatonicSteps = 7 * (pitch.Octave - bottomRef.Octave)
+                          + (int)pitch.Name - (int)bottomRef.Name;
+        return 1 + diatonicSteps;
     }
 
     private sealed class SystemLayout

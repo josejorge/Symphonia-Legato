@@ -18,8 +18,16 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
     [ObservableProperty] private Duration _selectedDuration = Duration.Quarter;
     [ObservableProperty] private bool _inputRest;
     [ObservableProperty] private bool _dotted;
+    [ObservableProperty] private bool _inputMode = true;   // true = note entry, false = selection
     [ObservableProperty] private bool _showHandColoring;
-    [ObservableProperty] private int _selectedHandIndex;  // 0=Both,1=Right,2=Left
+    [ObservableProperty] private int _selectedHandIndex;   // 0=Both,1=Right,2=Left
+
+    // Accidental override (applied to the next entered note, then cleared)
+    [ObservableProperty] private Accidental? _accidentalOverride;
+
+    // Slur/tie entry state
+    [ObservableProperty] private bool _enteringSlur;
+    [ObservableProperty] private bool _enteringTie;
 
     // Selection
     [ObservableProperty] private Guid? _selectedNoteId;
@@ -53,6 +61,11 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
         LayoutResult = _layout.ComputeLayout(Editor.Score, opts);
     }
 
+    // ── Mode ─────────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private void ToggleInputMode() => InputMode = !InputMode;
+
     // ── Duration ──────────────────────────────────────────────────────
 
     [RelayCommand]
@@ -69,12 +82,25 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleRest() => InputRest = !InputRest;
 
+    [RelayCommand]
+    private void SetAccidentalOverride(Accidental acc)
+    {
+        // Toggle off if already selected
+        AccidentalOverride = AccidentalOverride == acc ? null : acc;
+    }
+
+    [RelayCommand]
+    private void ToggleSlur() => EnteringSlur = !EnteringSlur;
+
+    [RelayCommand]
+    private void ToggleTie() => EnteringTie = !EnteringTie;
+
     // ── Note entry ────────────────────────────────────────────────────
 
     public void EnterNoteAtPosition(Guid staffId, int measureNumber,
         int staffPosition, Clef clef, KeySignature keySig)
     {
-        if (Editor is null) return;
+        if (Editor is null || !InputMode) return;
         _activeClef   = clef;
         _activeKeySig = keySig;
 
@@ -86,7 +112,16 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
         };
 
         if (!InputRest)
-            note.Pitch = StaffPositionCalculator.FromStaffPosition(staffPosition, clef, keySig);
+        {
+            var pitch = StaffPositionCalculator.FromStaffPosition(staffPosition, clef, keySig);
+            // Apply accidental override if set, then clear it
+            if (AccidentalOverride.HasValue)
+            {
+                pitch = new Pitch(pitch.Name, AccidentalOverride.Value, pitch.Octave);
+                AccidentalOverride = null;
+            }
+            note.Pitch = pitch;
+        }
 
         Editor.AddNote(staffId, measureNumber, note);
         SelectedNoteId  = note.Id;

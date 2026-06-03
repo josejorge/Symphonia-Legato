@@ -7,6 +7,19 @@
 
   <StackPanel Orientation="Horizontal" Spacing="3" Margin="8,0" VerticalAlignment="Center">
 
+    <!-- Input mode toggle -->
+    <ToggleButton IsChecked="{Binding InputMode}"
+                  Command="{Binding ToggleInputModeCommand}"
+                  ToolTip.Tip="Note entry mode (N) — click to toggle selection mode"
+                  Classes="toolbar-btn" Width="32" Height="26" Margin="0,0,2,0"
+                  AutomationProperties.Name="Toggle note entry mode">
+      <ToggleButton.Content>
+        <TextBlock Text="✏" FontSize="13"/>
+      </ToggleButton.Content>
+    </ToggleButton>
+
+    <Separator Width="1" Margin="2,4" Background="{DynamicResource BorderBrush}"/>
+
     <!-- Duration -->
     <TextBlock Text="Note:" VerticalAlignment="Center"
                Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
@@ -33,10 +46,39 @@
     <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
 
     <!-- Dot / Rest -->
-    <ToggleButton IsChecked="{Binding Dotted}"     Command="{Binding ToggleDotCommand}"
-                  ToolTip.Tip="Dotted (D)" Content="." FontSize="18" Width="26" Height="26"/>
-    <ToggleButton IsChecked="{Binding InputRest}"   Command="{Binding ToggleRestCommand}"
-                  ToolTip.Tip="Rest (R)" Content="𝄽" FontSize="16" Width="26" Height="26"/>
+    <ToggleButton IsChecked="{Binding Dotted}"    Command="{Binding ToggleDotCommand}"
+                  ToolTip.Tip="Dotted (D)" Content="." FontSize="18" Width="26" Height="26"
+                  AutomationProperties.Name="Toggle dotted"/>
+    <ToggleButton IsChecked="{Binding InputRest}"  Command="{Binding ToggleRestCommand}"
+                  ToolTip.Tip="Rest (R)" Content="𝄽" FontSize="16" Width="26" Height="26"
+                  AutomationProperties.Name="Toggle rest"/>
+
+    <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Accidentals (click once to arm for next note entry, click again to cancel) -->
+    <TextBlock Text="Acc:" VerticalAlignment="Center"
+               Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
+    <Button ToolTip.Tip="Force Sharp on next note"
+            FontSize="15" Width="26" Height="26" Classes="toolbar-btn"
+            Command="{Binding SetAccidentalOverrideCommand}"
+            CommandParameter="{x:Static models:Accidental.Sharp}"
+            AutomationProperties.Name="Force sharp accidental">
+      <TextBlock Text="♯"/>
+    </Button>
+    <Button ToolTip.Tip="Force Flat on next note"
+            FontSize="15" Width="26" Height="26" Classes="toolbar-btn"
+            Command="{Binding SetAccidentalOverrideCommand}"
+            CommandParameter="{x:Static models:Accidental.Flat}"
+            AutomationProperties.Name="Force flat accidental">
+      <TextBlock Text="♭"/>
+    </Button>
+    <Button ToolTip.Tip="Force Natural on next note"
+            FontSize="15" Width="26" Height="26" Classes="toolbar-btn"
+            Command="{Binding SetAccidentalOverrideCommand}"
+            CommandParameter="{x:Static models:Accidental.Natural}"
+            AutomationProperties.Name="Force natural accidental">
+      <TextBlock Text="♮"/>
+    </Button>
 
     <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
 
@@ -45,19 +87,40 @@
                Foreground="{DynamicResource ForegroundDimColor}" FontSize="11"/>
     <Button ToolTip.Tip="Staccato"  Content="·"  FontSize="20" Width="26" Height="26" Classes="toolbar-btn"
             Command="{Binding SetArticulationCommand}"
-            CommandParameter="{x:Static models:Articulation.Staccato}"/>
+            CommandParameter="{x:Static models:Articulation.Staccato}"
+            AutomationProperties.Name="Staccato"/>
     <Button ToolTip.Tip="Accent"    Content="&gt;" FontSize="14" Width="26" Height="26" Classes="toolbar-btn"
             Command="{Binding SetArticulationCommand}"
-            CommandParameter="{x:Static models:Articulation.Accent}"/>
+            CommandParameter="{x:Static models:Articulation.Accent}"
+            AutomationProperties.Name="Accent"/>
     <Button ToolTip.Tip="Tenuto"    Content="—"  FontSize="14" Width="26" Height="26" Classes="toolbar-btn"
             Command="{Binding SetArticulationCommand}"
-            CommandParameter="{x:Static models:Articulation.Tenuto}"/>
+            CommandParameter="{x:Static models:Articulation.Tenuto}"
+            AutomationProperties.Name="Tenuto"/>
     <Button ToolTip.Tip="Fermata"   Content="𝄐"  FontSize="14" Width="26" Height="26" Classes="toolbar-btn"
             Command="{Binding SetArticulationCommand}"
-            CommandParameter="{x:Static models:Articulation.Fermata}"/>
+            CommandParameter="{x:Static models:Articulation.Fermata}"
+            AutomationProperties.Name="Fermata"/>
     <Button ToolTip.Tip="Marcato"   Content="^"  FontSize="14" Width="26" Height="26" Classes="toolbar-btn"
             Command="{Binding SetArticulationCommand}"
-            CommandParameter="{x:Static models:Articulation.Marcato}"/>
+            CommandParameter="{x:Static models:Articulation.Marcato}"
+            AutomationProperties.Name="Marcato"/>
+
+    <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
+
+    <!-- Slur / Tie -->
+    <ToggleButton IsChecked="{Binding EnteringSlur}" Command="{Binding ToggleSlurCommand}"
+                  ToolTip.Tip="Slur (S) — click a note to start, click another to end"
+                  FontSize="13" Width="26" Height="26"
+                  AutomationProperties.Name="Toggle slur entry">
+      <TextBlock Text="⌣"/>
+    </ToggleButton>
+    <ToggleButton IsChecked="{Binding EnteringTie}" Command="{Binding ToggleTieCommand}"
+                  ToolTip.Tip="Tie (T) — ties selected note to next note of same pitch"
+                  FontSize="13" Width="26" Height="26"
+                  AutomationProperties.Name="Toggle tie entry">
+      <TextBlock Text="∪"/>
+    </ToggleButton>
 
     <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
 
@@ -67,34 +130,35 @@
     <Button Content="pp"  FontSize="10" Width="24" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.Pp}"
-            FontStyle="Italic" ToolTip.Tip="Piano piano"/>
+            FontStyle="Italic" ToolTip.Tip="Pianissimo" AutomationProperties.Name="pp"/>
     <Button Content="p"   FontSize="11" Width="22" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.P}"
-            FontStyle="Italic" ToolTip.Tip="Piano"/>
+            FontStyle="Italic" ToolTip.Tip="Piano" AutomationProperties.Name="p"/>
     <Button Content="mp"  FontSize="10" Width="24" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.Mp}"
-            FontStyle="Italic" ToolTip.Tip="Mezzo piano"/>
+            FontStyle="Italic" ToolTip.Tip="Mezzo piano" AutomationProperties.Name="mp"/>
     <Button Content="mf"  FontSize="10" Width="24" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.Mf}"
-            FontStyle="Italic" ToolTip.Tip="Mezzo forte"/>
+            FontStyle="Italic" ToolTip.Tip="Mezzo forte" AutomationProperties.Name="mf"/>
     <Button Content="f"   FontSize="11" Width="22" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.F}"
-            FontStyle="Italic" ToolTip.Tip="Forte"/>
+            FontStyle="Italic" ToolTip.Tip="Forte" AutomationProperties.Name="f"/>
     <Button Content="ff"  FontSize="10" Width="24" Height="26" Classes="toolbar-btn"
             Command="{Binding AddDynamicCommand}"
             CommandParameter="{x:Static models:DynamicLevel.Ff}"
-            FontStyle="Italic" ToolTip.Tip="Fortissimo"/>
+            FontStyle="Italic" ToolTip.Tip="Fortissimo" AutomationProperties.Name="ff"/>
 
     <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
 
     <!-- Hand coloring -->
     <ToggleButton IsChecked="{Binding ShowHandColoring}"
                   ToolTip.Tip="Hand coloring" Content="✋" FontSize="13"
-                  Width="26" Height="26"/>
+                  Width="26" Height="26"
+                  AutomationProperties.Name="Toggle hand coloring"/>
 
     <ComboBox SelectedIndex="{Binding SelectedHandIndex}" Width="64" FontSize="10"
               IsVisible="{Binding ShowHandColoring}" VerticalAlignment="Center">
@@ -102,5 +166,14 @@
       <ComboBoxItem Content="Right ●" Foreground="#6495ED"/>
       <ComboBoxItem Content="Left ●"  Foreground="#CD5C5C"/>
     </ComboBox>
+
+    <!-- Delete -->
+    <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
+    <Button ToolTip.Tip="Delete selected note (Delete)"
+            Content="✕" FontSize="12" Width="26" Height="26"
+            Classes="toolbar-btn"
+            Command="{Binding DeleteSelectedNoteCommand}"
+            AutomationProperties.Name="Delete selected note"/>
+
   </StackPanel>
 </UserControl>
