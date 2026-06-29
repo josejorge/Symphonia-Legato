@@ -77,6 +77,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         MixerVm       = mixerVm;
         PianoKeyboard = pianoKeyboard;
 
+        // Playback always rebuilds from the live score when Play is pressed.
+        PlaybackVm.ScoreProvider = () => ScoreEditor?.Editor?.Score;
+
         NewScore();
     }
 
@@ -156,14 +159,33 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     // ── View ──────────────────────────────────────────────────────────
 
+    // Zoom must drive the score editor's own Zoom (which recomputes layout);
+    // the toolbar/menu used to change only this local Zoom value, so the canvas
+    // never actually zoomed. We delegate to the editor and mirror its value
+    // back here for the percentage label.
     [RelayCommand]
-    private void ZoomIn()  => Zoom = Math.Min(8.0, Zoom * 1.25);
+    private void ZoomIn()
+    {
+        if (ScoreEditor is null) return;
+        ScoreEditor.ZoomInCommand.Execute(null);
+        Zoom = ScoreEditor.Zoom;
+    }
 
     [RelayCommand]
-    private void ZoomOut() => Zoom = Math.Max(0.25, Zoom / 1.25);
+    private void ZoomOut()
+    {
+        if (ScoreEditor is null) return;
+        ScoreEditor.ZoomOutCommand.Execute(null);
+        Zoom = ScoreEditor.Zoom;
+    }
 
     [RelayCommand]
-    private void ZoomReset() => Zoom = 1.0;
+    private void ZoomReset()
+    {
+        if (ScoreEditor is null) return;
+        ScoreEditor.ZoomResetCommand.Execute(null);
+        Zoom = ScoreEditor.Zoom;
+    }
 
     [RelayCommand]
     private void ToggleMixer()         => ShowMixer         = !ShowMixer;
@@ -249,6 +271,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ScoreEditor?.Initialize(editor);
         Title = $"{score.Title} — Symphonia Legato";
         IsDirty = false;
+
+        // Populate the mixer with this score's staves (was never called, so the
+        // mixer panel was always empty).
+        MixerVm?.LoadScore(score);
 
         // Notify AI assistant with the first treble staff (if any)
         var firstStaff = score.Parts.SelectMany(p => p.Staves).FirstOrDefault();

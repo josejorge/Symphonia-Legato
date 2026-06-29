@@ -40,18 +40,14 @@ public sealed partial class PianoKeyboardViewModel : ViewModelBase
         {
             foreach (NoteName name in Enum.GetValues<NoteName>())
             {
-                bool isBlack = name is NoteName.C or NoteName.D or NoteName.F or NoteName.G or NoteName.A
-                    ? false
-                    : false; // Recalculate properly below
-
-                // Black keys: C#, D#, F#, G#, A#
-                bool needsSharp = name is NoteName.C or NoteName.D or NoteName.F or NoteName.G or NoteName.A;
                 Keys.Add(new PianoKey
                 {
                     Pitch = new Pitch(name, Accidental.Natural, oct),
                     IsBlack = false
                 });
-                if (needsSharp && !(name == NoteName.E || name == NoteName.B))
+
+                // A black key (sharp) follows C, D, F, G, A — but not E or B.
+                if (name is NoteName.C or NoteName.D or NoteName.F or NoteName.G or NoteName.A)
                 {
                     Keys.Add(new PianoKey
                     {

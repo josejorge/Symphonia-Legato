@@ -57,28 +57,35 @@ public sealed class ScoreCanvas : Control
 
     // ── Brushes & pens ────────────────────────────────────────────────
 
-    private static readonly IBrush PageBrush       = new SolidColorBrush(Color.FromRgb(38, 38, 38));
-    private static readonly IBrush NoteBrush       = new SolidColorBrush(Color.FromRgb(220, 220, 220));
-    private static readonly IBrush RestBrush       = new SolidColorBrush(Color.FromRgb(180, 180, 180));
-    private static readonly IBrush SelectBrush     = new SolidColorBrush(Color.FromArgb(190, 100, 149, 237));
-    private static readonly IBrush RightHandBrush  = new SolidColorBrush(Color.FromRgb(100, 149, 237));
-    private static readonly IBrush LeftHandBrush   = new SolidColorBrush(Color.FromRgb(205, 92, 92));
-    private static readonly IBrush DynBrush        = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-    private static readonly IBrush TempoBrush      = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-    private static readonly IBrush MeasureNumBrush = new SolidColorBrush(Color.FromRgb(100, 100, 100));
-    private static readonly IBrush LyricBrush      = new SolidColorBrush(Color.FromRgb(180, 180, 180));
-    private static readonly IBrush AccBrush        = new SolidColorBrush(Color.FromRgb(200, 200, 200));
-    private static readonly IBrush ClefBrush       = new SolidColorBrush(Color.FromRgb(200, 200, 200));
+    // White "paper" with black ink — classic engraving look (Encore-style),
+    // deliberately independent of the dark application chrome so the score is
+    // always legible. (The page used to be dark grey on a dark editor background,
+    // which made the whole sheet invisible.)
+    private static readonly IBrush InkBrush        = new SolidColorBrush(Color.FromRgb(20, 20, 20));
+    private static readonly IBrush PageBrush       = new SolidColorBrush(Color.FromRgb(252, 251, 248));
+    private static readonly IBrush PageShadowBrush = new SolidColorBrush(Color.FromArgb(70, 0, 0, 0));
+    private static readonly IBrush NoteBrush       = InkBrush;
+    private static readonly IBrush RestBrush       = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+    private static readonly IBrush SelectBrush     = new SolidColorBrush(Color.FromArgb(210, 30, 110, 215));
+    private static readonly IBrush RightHandBrush  = new SolidColorBrush(Color.FromRgb(40, 90, 200));
+    private static readonly IBrush LeftHandBrush   = new SolidColorBrush(Color.FromRgb(190, 50, 50));
+    private static readonly IBrush DynBrush        = InkBrush;
+    private static readonly IBrush TempoBrush      = InkBrush;
+    private static readonly IBrush MeasureNumBrush = new SolidColorBrush(Color.FromRgb(120, 120, 120));
+    private static readonly IBrush LyricBrush      = new SolidColorBrush(Color.FromRgb(30, 30, 30));
+    private static readonly IBrush AccBrush        = InkBrush;
+    private static readonly IBrush ClefBrush       = InkBrush;
 
-    private static readonly Pen StaffPen      = new(new SolidColorBrush(Color.FromRgb(130, 130, 130)), 0.8);
-    private static readonly Pen BarlinePen    = new(new SolidColorBrush(Color.FromRgb(130, 130, 130)), 1.5);
-    private static readonly Pen FinalBarPen   = new(new SolidColorBrush(Color.FromRgb(180, 180, 180)), 4.0);
-    private static readonly Pen LedgerPen     = new(new SolidColorBrush(Color.FromRgb(130, 130, 130)), 0.8);
-    private static readonly Pen StemPen       = new(new SolidColorBrush(Color.FromRgb(200, 200, 200)), 1.2);
-    private static readonly Pen NoteOutline   = new(new SolidColorBrush(Color.FromRgb(150, 150, 150)), 1.0);
-    private static readonly Pen HairpinPen    = new(new SolidColorBrush(Color.FromRgb(180, 180, 180)), 1.5);
-    private static readonly Pen SlurPen       = new(new SolidColorBrush(Color.FromRgb(180, 180, 180)), 1.5);
-    private static readonly Pen RepeatBarPen  = new(new SolidColorBrush(Color.FromRgb(160, 160, 160)), 3.0);
+    private static readonly Pen StaffPen      = new(new SolidColorBrush(Color.FromRgb(40, 40, 40)), 1.0);
+    private static readonly Pen BarlinePen    = new(new SolidColorBrush(Color.FromRgb(30, 30, 30)), 1.5);
+    private static readonly Pen FinalBarPen   = new(new SolidColorBrush(Color.FromRgb(20, 20, 20)), 4.0);
+    private static readonly Pen LedgerPen     = new(new SolidColorBrush(Color.FromRgb(40, 40, 40)), 1.0);
+    private static readonly Pen StemPen       = new(new SolidColorBrush(Color.FromRgb(25, 25, 25)), 1.4);
+    private static readonly Pen NoteOutline   = new(new SolidColorBrush(Color.FromRgb(20, 20, 20)), 1.2);
+    private static readonly Pen HairpinPen    = new(new SolidColorBrush(Color.FromRgb(30, 30, 30)), 1.5);
+    private static readonly Pen SlurPen       = new(new SolidColorBrush(Color.FromRgb(30, 30, 30)), 1.5);
+    private static readonly Pen RepeatBarPen  = new(new SolidColorBrush(Color.FromRgb(30, 30, 30)), 3.0);
+    private static readonly Pen PageBorderPen = new(new SolidColorBrush(Color.FromRgb(205, 205, 205)), 1.0);
 
     private static readonly Typeface MusicTypeface  = new(FontFamily.Default, FontStyle.Normal, FontWeight.Normal);
     private static readonly Typeface BoldTypeface   = new(FontFamily.Default, FontStyle.Normal, FontWeight.Bold);
@@ -88,8 +95,12 @@ public sealed class ScoreCanvas : Control
 
     public ScoreCanvas()
     {
-        LayoutResultProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
-        ZoomProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
+        // Layout/zoom changes alter the control's desired size, so they must
+        // invalidate *measure* (to update the ScrollViewer extent) as well as
+        // the visual. Without InvalidateMeasure the scroll area never resizes
+        // when zooming or adding measures.
+        LayoutResultProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => { s.InvalidateMeasure(); s.InvalidateVisual(); });
+        ZoomProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => { s.InvalidateMeasure(); s.InvalidateVisual(); });
         SelectedNoteIdProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
         ShowHandColoringProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
         this.AddHandler(PointerPressedEvent, OnPointerPressed);
@@ -118,8 +129,18 @@ public sealed class ScoreCanvas : Control
 
     private void DrawPage(DrawingContext ctx, RenderedPage page)
     {
-        ctx.FillRectangle(PageBrush,
-            new Rect(page.WidthPx * 0.04, 16, page.WidthPx * 0.92, page.HeightPx - 32));
+        const double pad = 12;
+        var pageRect = new Rect(pad, pad,
+            Math.Max(0, page.WidthPx - pad * 2),
+            Math.Max(0, page.HeightPx - pad * 2));
+
+        // Drop shadow, then the white paper with a crisp border, so the sheet
+        // reads as a physical page sitting on the (dark) editor workspace.
+        ctx.FillRectangle(PageShadowBrush,
+            new Rect(pageRect.X + 4, pageRect.Y + 4, pageRect.Width, pageRect.Height));
+        ctx.FillRectangle(PageBrush, pageRect);
+        ctx.DrawRectangle(null, PageBorderPen, pageRect);
+
         foreach (var system in page.Systems)
             DrawSystem(ctx, system);
     }

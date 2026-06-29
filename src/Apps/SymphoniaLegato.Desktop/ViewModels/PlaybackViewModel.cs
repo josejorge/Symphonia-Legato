@@ -22,6 +22,13 @@ public sealed partial class PlaybackViewModel : ViewModelBase
     public bool IsPlaying => State == PlaybackState.Playing;
     public bool IsStopped => State == PlaybackState.Stopped;
 
+    /// <summary>
+    /// Supplies the score to (re)load into the engine when playback starts.
+    /// Set by <c>MainWindowViewModel</c> so that pressing Play always renders
+    /// the *current* edited score (notes added since the last play included).
+    /// </summary>
+    public Func<Score?>? ScoreProvider { get; set; }
+
     public PlaybackViewModel(IPlaybackEngine engine)
     {
         _engine = engine;
@@ -33,11 +40,21 @@ public sealed partial class PlaybackViewModel : ViewModelBase
     private async Task PlayPauseAsync()
     {
         if (State == PlaybackState.Playing)
+        {
             await _engine.PauseAsync();
+        }
         else
+        {
+            // Starting fresh (not resuming a pause): rebuild the MIDI from the
+            // current score so freshly entered notes are heard. Without this the
+            // engine's MIDI file is never populated and Play is silent.
+            if (State != PlaybackState.Paused && ScoreProvider?.Invoke() is { } score)
+                await _engine.LoadScoreAsync(score);
             await _engine.PlayAsync();
+        }
         State = _engine.State;
         OnPropertyChanged(nameof(IsPlaying));
+        OnPropertyChanged(nameof(IsStopped));
     }
 
     [RelayCommand]

@@ -226,6 +226,30 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
     property. The layout engine must compute staff positions via `PitchToStaffPosition(pitch, clef)`
     using diatonic distance from the clef's `BottomLineMidi` reference note.
 
+20. **The score page is white paper / black ink — by design.** `ScoreCanvas` deliberately renders
+    the sheet as off-white paper (`RGB 252,251,248`) with near-black notation, *independent* of the
+    dark app chrome. Do **not** "theme" it dark to match the menus — that is exactly the bug that
+    made the whole sheet invisible (the page colour matched `EditorBackground` `#252526`). See
+    `docs/BUGFIXES.md` #1.
+
+21. **Playback must (re)load the current score before Play.** The MIDI engine's `_midiFile` is built
+    only by `LoadScoreAsync`. `PlaybackViewModel` reloads from `ScoreProvider` (wired in
+    `MainWindowViewModel` to the live `ScoreEditor.Editor.Score`) at the start of playback, so newly
+    entered notes are heard. Never assume the engine already has the current score.
+
+22. **MIDI output device is opened lazily via `MidiPlaybackEngine.EnsureOutputDevice()`** — shared by
+    `PlayAsync` *and* `PreviewNoteAsync` (the piano keyboard). Don't open the device only in `PlayAsync`
+    or key preview goes silent until the first Play.
+
+23. **`ScoreCanvas` property changes must `InvalidateMeasure()` too**, not just `InvalidateVisual()`.
+    `MeasureOverride` feeds the `ScrollViewer` extent; without re-measuring, the scroll area is stale
+    after zoom or adding measures (pairs with pitfall #18).
+
+24. **There are two `Zoom` properties.** `ScoreCanvas` binds to `ScoreEditorViewModel.Zoom` (recomputes
+    layout); the toolbar/menu live on `MainWindowViewModel`. Route window-level zoom commands through
+    `ScoreEditor.ZoomInCommand/…` and mirror the value back for the percentage label — don't set only
+    the window's local `Zoom`.
+
 ---
 
 ## Phase status
@@ -238,6 +262,7 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | 4 — Android | ✅ Done | MetronomeEngine + Desktop panel, ScoreSyncService + Desktop dialog, ScoreAnnotation model, full Android Avalonia app in `SymphoniaLegato.Android.sln`, 88 tests |
 | 5 — AI | ✅ Done | `SymphoniaLegato.AIEngine`: chord detection + fingering (offline), harmonisation + score analysis + practice plan (Claude API), Desktop AI Assistant panel, 104 tests |
 | Bugfix | ✅ Done | Score editing: correct clef/key on click, chord note positions, canvas scroll; toolbar: accidentals, slur, tie, mode toggle |
+| Bugfix 2 | ✅ Done | Rendering & playback pass (2026-06-28): white-paper/black-ink canvas (was invisible dark-on-dark), Play now loads the live score (sound), piano-preview device, mixer populated, zoom actually zooms, canvas re-measures on zoom, MIDI tempo honoured. See `docs/BUGFIXES.md`. |
 
 ---
 

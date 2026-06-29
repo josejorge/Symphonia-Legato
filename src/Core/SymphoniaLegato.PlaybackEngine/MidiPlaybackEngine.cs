@@ -53,15 +53,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     {
         if (_midiFile is null) return;
 
-        try
-        {
-            _outputDevice ??= OutputDevice.GetByIndex(0);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "No MIDI output device available — using null device");
-            // Fallback: no-op output
-        }
+        EnsureOutputDevice();
 
         if (State == PlaybackState.Paused && _playback is not null)
         {
@@ -141,6 +133,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
 
     public async Task PreviewNoteAsync(Pitch pitch, int velocity = 80, int durationMs = 300)
     {
+        EnsureOutputDevice();
         if (_outputDevice is null) return;
         try
         {
@@ -153,6 +146,24 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Preview note failed");
+        }
+    }
+
+    /// <summary>
+    /// Lazily opens the system's first MIDI output device (index 0 — the
+    /// Microsoft GS Wavetable Synth on Windows). Shared by playback and the
+    /// piano-keyboard preview so both produce sound. Safe to call repeatedly.
+    /// </summary>
+    private void EnsureOutputDevice()
+    {
+        if (_outputDevice is not null) return;
+        try
+        {
+            _outputDevice = OutputDevice.GetByIndex(0);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No MIDI output device available — playback will be silent");
         }
     }
 

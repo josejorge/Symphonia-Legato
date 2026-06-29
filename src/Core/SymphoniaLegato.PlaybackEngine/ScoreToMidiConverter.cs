@@ -28,7 +28,10 @@ public sealed class ScoreToMidiConverter
             if (channelIndex >= 16) break;
             if (channelIndex == 9) channelIndex++; // skip percussion channel
 
-            var track = BuildTrack(staff, channelIndex, score.InitialTempo);
+            // Emit the tempo on the first track so the score's InitialTempo is
+            // honoured (otherwise DryWetMidi defaults every score to 120 BPM).
+            var track = BuildTrack(staff, channelIndex, score.InitialTempo,
+                includeTempo: file.Chunks.Count == 0);
             file.Chunks.Add(track);
             channelIndex++;
         }
@@ -37,9 +40,16 @@ public sealed class ScoreToMidiConverter
         return file;
     }
 
-    private TrackChunk BuildTrack(Staff staff, int channel, int bpm)
+    private TrackChunk BuildTrack(Staff staff, int channel, int bpm, bool includeTempo)
     {
         var events = new List<MidiEvent>();
+
+        // Tempo (microseconds per quarter note) — only on the first track.
+        if (includeTempo)
+        {
+            long microsecondsPerQuarter = 60_000_000L / Math.Max(1, bpm);
+            events.Add(new SetTempoEvent(microsecondsPerQuarter) { DeltaTime = 0 });
+        }
 
         // Program change
         events.Add(new ProgramChangeEvent((SevenBitNumber)staff.Instrument.MidiProgram)
