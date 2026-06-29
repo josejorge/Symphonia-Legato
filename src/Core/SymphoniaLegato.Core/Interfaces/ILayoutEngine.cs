@@ -45,6 +45,10 @@ public sealed class RenderedMeasure
     public int MeasureNumber { get; init; }
     public double X { get; init; }
     public double Width { get; init; }
+    /// <summary>Left edge of the note area (right of the clef/key/time header).</summary>
+    public double NotesStartX { get; init; }
+    /// <summary>Right edge of the note area (just inside the closing bar line).</summary>
+    public double NotesEndX { get; init; }
     public BarlineType StartBarline { get; init; }
     public BarlineType EndBarline { get; init; }
     public bool ShowClef { get; init; }
@@ -118,6 +122,10 @@ public sealed class RenderedNoteElement
     public double X { get; init; }
     public double Y { get; init; }
     public int StaffPosition { get; init; }
+    /// <summary>Tick offset of this note within its measure (for the playback cursor).</summary>
+    public int TickOffset { get; init; }
+    /// <summary>Duration of this note in ticks (for the playback cursor).</summary>
+    public int DurationTicks { get; init; }
     public bool IsRest { get; init; }
 
     // Ledger lines

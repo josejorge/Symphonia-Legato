@@ -21,6 +21,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     private OutputDevice? _outputDevice;
     private MidiFile? _midiFile;
     private Score? _score;
+    private System.Timers.Timer? _positionTimer;
 
     public PlaybackState State { get; private set; } = PlaybackState.Stopped;
     public TimeSpan Position => _playback?.GetCurrentTime(TimeSpanType.Metric) as MetricTimeSpan ?? TimeSpan.Zero;
@@ -29,6 +30,10 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     public bool IsLooping { get; set; }
     public TimeSpan LoopStart { get; set; }
     public TimeSpan LoopEnd { get; set; }
+    public bool MetronomeEnabled { get; set; }
+    public bool CountInEnabled { get; set; }
+
+    private TimeSpan _pendingSeek = TimeSpan.Zero;  // start position applied when (re)building playback
 
     public event EventHandler<PlaybackPositionChangedEventArgs>? PositionChanged;
     public event EventHandler<NotePlayedEventArgs>? NotePlayed;
@@ -44,7 +49,9 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     {
         await StopAsync();
         _score = score;
-        _midiFile = _converter.Convert(score);
+        // Bake the metronome track into the MIDI when enabled, so beat clicks are
+        // sample-accurate rather than fired from the (jittery) UI position timer.
+        _midiFile = _converter.Convert(score, MetronomeEnabled);
         Duration = _midiFile.GetDuration<MetricTimeSpan>();
         _logger.LogInformation("Score loaded for playback. Duration: {Duration}", Duration);
     }
@@ -59,6 +66,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         {
             _playback.Start();
             State = PlaybackState.Playing;
+            StartPositionTimer();
             return;
         }
 
@@ -80,17 +88,23 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         _playback.Finished += OnPlaybackFinished;
         _playback.EventPlayed += OnEventPlayed;
 
+        if (_pendingSeek > TimeSpan.Zero)
+            _playback.MoveToTime((MetricTimeSpan)_pendingSeek);
+
+        if (CountInEnabled)
+            await PlayCountInAsync();
+
         _playback.Start();
         State = PlaybackState.Playing;
+        StartPositionTimer();
         _logger.LogInformation("Playback started");
-
-        await Task.CompletedTask;
     }
 
     public Task PauseAsync()
     {
         _playback?.Stop();
         State = PlaybackState.Paused;
+        StopPositionTimer();
         _logger.LogDebug("Playback paused at {Position}", Position);
         return Task.CompletedTask;
     }
@@ -99,11 +113,16 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     {
         DisposePlayback();
         State = PlaybackState.Stopped;
+        StopPositionTimer();
+        _pendingSeek = TimeSpan.Zero;
         return Task.CompletedTask;
     }
 
     public Task SeekAsync(TimeSpan position)
     {
+        // Remember the position so it is applied when playback is (re)built,
+        // and apply it live if playback already exists.
+        _pendingSeek = position;
         _playback?.MoveToTime((MetricTimeSpan)position);
         return Task.CompletedTask;
     }
@@ -167,9 +186,90 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         }
     }
 
+    // ── Position reporting ───────────────────────────────────────────
+
+    private void StartPositionTimer()
+    {
+        _positionTimer ??= new System.Timers.Timer(50) { AutoReset = true };
+        _positionTimer.Elapsed -= OnPositionTimer;
+        _positionTimer.Elapsed += OnPositionTimer;
+        _positionTimer.Start();
+    }
+
+    private void StopPositionTimer() => _positionTimer?.Stop();
+
+    private void OnPositionTimer(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (State != PlaybackState.Playing) return;
+        var pos = Position;
+        var (measure, beat) = ComputeMeasureBeat(pos);
+        // (The per-beat metronome click is baked into the MIDI in LoadScoreAsync —
+        //  no timer-driven click here. The count-in still uses SendClick below.)
+        PositionChanged?.Invoke(this, new PlaybackPositionChangedEventArgs(pos, measure, beat));
+    }
+
+    /// <summary>Plays one bar of metronome clicks before playback begins.</summary>
+    private async Task PlayCountInAsync()
+    {
+        var ts = _score?.Parts.SelectMany(p => p.Staves).FirstOrDefault()?.Measures.FirstOrDefault()?.TimeSignature
+                 ?? _score?.InitialTimeSignature ?? SymphoniaLegato.Core.Models.TimeSignature.Common;
+        double bpm = Math.Max(1, _score?.InitialTempo ?? 120);
+        int beats = Math.Max(1, ts.Numerator);
+        int beatMs = (int)(60_000.0 / bpm * (4.0 / ts.Denominator));
+        for (int b = 0; b < beats; b++)
+        {
+            SendClick(accent: b == 0);
+            await Task.Delay(beatMs);
+        }
+    }
+
+    /// <summary>Sends a single metronome click on the GM percussion channel (10).</summary>
+    private void SendClick(bool accent)
+    {
+        if (_outputDevice is null) return;
+        try
+        {
+            var note = (Melanchall.DryWetMidi.Common.SevenBitNumber)(byte)(accent ? 76 : 77); // hi/lo wood block
+            var vel  = (Melanchall.DryWetMidi.Common.SevenBitNumber)(byte)(accent ? 115 : 85);
+            _outputDevice.SendEvent(new NoteOnEvent(note, vel)
+            {
+                Channel = (Melanchall.DryWetMidi.Common.FourBitNumber)9
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Metronome click failed");
+        }
+    }
+
+    /// <summary>Maps an elapsed playback time to (measure number, beat) using the score's tempo.</summary>
+    private (int measure, int beat) ComputeMeasureBeat(TimeSpan pos)
+    {
+        var staff = _score?.Parts.SelectMany(p => p.Staves).FirstOrDefault();
+        if (_score is null || staff is null) return (1, 1);
+
+        double bpm = Math.Max(1, _score.InitialTempo);
+        double totalTicks = pos.TotalSeconds * bpm / 60.0 * 1024.0;
+
+        double acc = 0;
+        foreach (var m in staff.Measures.OrderBy(m => m.Number))
+        {
+            int cap = Math.Max(1, m.TimeSignature.TicksPerMeasure);
+            if (totalTicks < acc + cap)
+            {
+                int ticksPerBeat = Math.Max(1, cap / Math.Max(1, m.TimeSignature.Numerator));
+                int beat = (int)((totalTicks - acc) / ticksPerBeat) + 1;
+                return (m.Number, beat);
+            }
+            acc += cap;
+        }
+        return (staff.Measures.Count, 1);
+    }
+
     private void OnPlaybackFinished(object? sender, EventArgs e)
     {
         State = PlaybackState.Stopped;
+        StopPositionTimer();
         PlaybackEnded?.Invoke(this, EventArgs.Empty);
     }
 
@@ -214,6 +314,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     public async ValueTask DisposeAsync()
     {
         await StopAsync();
+        _positionTimer?.Dispose();
         _outputDevice?.Dispose();
     }
 

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using SymphoniaLegato.Core.Models;
 using SymphoniaLegato.Desktop.Services;
 using SymphoniaLegato.Desktop.ViewModels;
 using SymphoniaLegato.ImportExport;
@@ -230,7 +231,44 @@ public sealed partial class MainWindow : Window
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (e.Key == Key.Space && e.KeyModifiers == KeyModifiers.None)
-            e.Handled = true;
+        if (e.Handled) return;
+        // Leave menu accelerators (Ctrl/Alt) and dialogs alone.
+        if ((e.KeyModifiers & (KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Meta)) != 0) return;
+        if (DataContext is not MainWindowViewModel vm || vm.ScoreEditor is null) return;
+        // Don't steal typing from text inputs (e.g. the AI API-key field).
+        if (FocusManager?.GetFocusedElement() is TextBox) return;
+
+        var editor = vm.ScoreEditor;
+        switch (e.Key)
+        {
+            // Letter note entry — chooses the octave nearest the previous note.
+            case Key.A: editor.EnterNoteByName(NoteName.A); break;
+            case Key.B: editor.EnterNoteByName(NoteName.B); break;
+            case Key.C: editor.EnterNoteByName(NoteName.C); break;
+            case Key.D: editor.EnterNoteByName(NoteName.D); break;
+            case Key.E: editor.EnterNoteByName(NoteName.E); break;
+            case Key.F: editor.EnterNoteByName(NoteName.F); break;
+            case Key.G: editor.EnterNoteByName(NoteName.G); break;
+
+            // Duration selection (whole … 32nd).
+            case Key.D1: case Key.NumPad1: editor.SetDurationByIndex(0); break;
+            case Key.D2: case Key.NumPad2: editor.SetDurationByIndex(1); break;
+            case Key.D3: case Key.NumPad3: editor.SetDurationByIndex(2); break;
+            case Key.D4: case Key.NumPad4: editor.SetDurationByIndex(3); break;
+            case Key.D5: case Key.NumPad5: editor.SetDurationByIndex(4); break;
+            case Key.D6: case Key.NumPad6: editor.SetDurationByIndex(5); break;
+
+            case Key.R:         editor.ToggleRestCommand.Execute(null); break;
+            case Key.OemPeriod: editor.ToggleDotCommand.Execute(null); break;
+            case Key.Delete:
+            case Key.Back:      editor.DeleteSelectedNoteCommand.Execute(null); break;
+
+            // Transport.
+            case Key.Space:  vm.PlaybackVm?.PlayPauseCommand.Execute(null); break;
+            case Key.Escape: vm.PlaybackVm?.StopCommand.Execute(null); break;
+
+            default: return; // not ours — leave unhandled
+        }
+        e.Handled = true;
     }
 }

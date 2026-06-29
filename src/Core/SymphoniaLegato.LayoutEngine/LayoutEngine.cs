@@ -288,11 +288,19 @@ public sealed class LayoutEngine : ILayoutEngine
         var dynamics = new List<RenderedDynamic>();
         var tempos   = new List<RenderedTempo>();
 
+        // Note area (where noteheads live, to the right of the clef/key/time header).
+        double noteAreaW = x + w - headerX - 4;
+
         if (measure is not null)
         {
-            // Note positions (proportional within measure)
-            double noteAreaW = x + w - headerX - 4;
-            int totalTicks = measure.TimeSignature.TicksPerMeasure;
+            // Note positions (proportional within measure). Scale by the larger of
+            // the time-signature capacity and the actual content span so an
+            // over-full measure compresses its notes instead of spilling past the
+            // bar line (a safety net — note entry also flows across measures).
+            int capacity = measure.TimeSignature.TicksPerMeasure;
+            int contentSpan = measure.Notes.Count > 0
+                ? measure.Notes.Max(n => n.TickOffset + n.Duration.Ticks) : 0;
+            int totalTicks = Math.Max(capacity, contentSpan);
             double tickWidth = totalTicks > 0 ? noteAreaW / totalTicks : noteAreaW;
 
             // Place notes
@@ -320,6 +328,8 @@ public sealed class LayoutEngine : ILayoutEngine
                     NoteId          = note.Id,
                     X               = nx, Y = ny,
                     StaffPosition   = pos,
+                    TickOffset      = note.TickOffset,
+                    DurationTicks   = note.Duration.Ticks,
                     IsRest          = note.IsRest,
                     NeedsLedgerLines = lc > 0,
                     LedgerLineCount  = lc,
@@ -437,6 +447,8 @@ public sealed class LayoutEngine : ILayoutEngine
         {
             MeasureNumber     = mNum,
             X = x, Width = w,
+            NotesStartX       = headerX,
+            NotesEndX         = headerX + noteAreaW,
             StartBarline      = measure?.StartBarline ?? BarlineType.Single,
             EndBarline        = measure?.EndBarline   ?? BarlineType.Single,
             ShowClef          = isFirst,

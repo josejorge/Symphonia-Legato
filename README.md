@@ -11,10 +11,16 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 ## Features
 
 - **Grand Staff piano editor** — Treble + Bass clef linked as one unit
+- **White-paper engraving** — black notation on a white page (dark app chrome)
 - **Full notation support** — Notes, chords, rests, ties, slurs, tuplets, dynamics, lyrics, tempo markings
+- **Automatic note flow** — notes flow across bar lines onto new measures and new lines; no overlap
 - **All standard clefs** — Treble, Bass, Alto, Tenor
 - **All key & time signatures** — C major through all sharps/flats, custom
 - **MIDI playback** — Play, pause, stop, loop, 25–400% tempo
+- **Live playback cursor** — a moving indicator shows the current beat, measure, and sounding notes
+- **Play from any note** — click a note to start playback there
+- **Metronome & count-in** — audible click during playback and an optional one-bar count-in
+- **Audible note entry** — hear each note as you place it
 - **Virtual piano keyboard** — Mouse and touch input
 - **Mixer** — Per-staff volume, pan, mute, solo
 - **Metronome** — Configurable BPM, subdivision, tap tempo
@@ -159,6 +165,7 @@ my-piece.enscore
 | 3 — Professional | ✅ | PDF/PNG/SVG, score properties, plugins, git history, high contrast |
 | 4 — Android | ✅ | Metronome, cloud sync, annotations, Android companion app |
 | 5 — AI | ✅ | Chord detection, fingering (offline) + harmonisation, analysis, practice plan (Claude API) |
+| Polish — Editing & playback | ✅ | White-paper canvas, working MIDI sound, live playback cursor + auto-scroll, note flow across lines, play-from-note, count-in & metronome, audible note entry, demo score (see `docs/BUGFIXES.md`) |
 
 ---
 

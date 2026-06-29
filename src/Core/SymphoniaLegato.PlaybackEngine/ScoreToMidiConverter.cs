@@ -17,7 +17,7 @@ public sealed class ScoreToMidiConverter
 
     public ScoreToMidiConverter(ILogger<ScoreToMidiConverter> logger) => _logger = logger;
 
-    public MidiFile Convert(Score score)
+    public MidiFile Convert(Score score, bool includeMetronome = false)
     {
         var file = new MidiFile { TimeDivision = new TicksPerQuarterNoteTimeDivision(MidiPPQ) };
 
@@ -36,8 +36,48 @@ public sealed class ScoreToMidiConverter
             channelIndex++;
         }
 
+        // A sample-accurate metronome track beats alongside the music (channel 10,
+        // GM percussion). Baked into the file so timing is exact — far tighter than
+        // firing clicks from a UI timer.
+        if (includeMetronome)
+            file.Chunks.Add(BuildMetronomeTrack(score));
+
         _logger.LogDebug("Converted score '{Title}' to MIDI ({Tracks} tracks)", score.Title, file.Chunks.Count);
         return file;
+    }
+
+    /// <summary>Builds a percussion click track: one wood-block hit per beat (accented on beat 1).</summary>
+    private static TrackChunk BuildMetronomeTrack(Score score)
+    {
+        var events = new List<MidiEvent>();
+        var staff = score.Parts.SelectMany(p => p.Staves).FirstOrDefault();
+        if (staff is null) return new TrackChunk(events);
+
+        long absMidi = 0;        // measure start, in MIDI ticks
+        long lastEventTick = 0;
+        foreach (var measure in staff.Measures.OrderBy(m => m.Number))
+        {
+            var ts = measure.TimeSignature;
+            int beats = Math.Max(1, ts.Numerator);
+            int beatDomain = DomainPPQ * 4 / Math.Max(1, ts.Denominator); // domain ticks per beat
+            for (int b = 0; b < beats; b++)
+            {
+                long onMidi  = absMidi + DomainToMidi(b * beatDomain);
+                long offMidi = onMidi + DomainToMidi(beatDomain / 4);
+                bool accent  = b == 0;
+                var note = (SevenBitNumber)(byte)(accent ? 76 : 77); // hi/lo wood block
+                var vel  = (SevenBitNumber)(byte)(accent ? 115 : 80);
+
+                events.Add(new NoteOnEvent(note, vel)
+                    { Channel = (FourBitNumber)9, DeltaTime = onMidi - lastEventTick });
+                lastEventTick = onMidi;
+                events.Add(new NoteOffEvent(note, (SevenBitNumber)0)
+                    { Channel = (FourBitNumber)9, DeltaTime = offMidi - lastEventTick });
+                lastEventTick = offMidi;
+            }
+            absMidi += DomainToMidi(ts.TicksPerMeasure);
+        }
+        return new TrackChunk(events);
     }
 
     private TrackChunk BuildTrack(Staff staff, int channel, int bpm, bool includeTempo)

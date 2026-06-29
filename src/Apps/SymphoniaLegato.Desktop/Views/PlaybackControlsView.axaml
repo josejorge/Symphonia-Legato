@@ -41,5 +41,17 @@
     <!-- Loop toggle -->
     <ToggleButton IsChecked="{Binding IsLooping}"
                   ToolTip.Tip="Loop" Classes="toolbar-btn" Content="&#x1F501;"/>
+
+    <!-- Metronome during playback -->
+    <ToggleButton IsChecked="{Binding MetronomeEnabled}"
+                  ToolTip.Tip="Metronome click on every beat during playback"
+                  Classes="toolbar-btn" Content="&#x1F941;"
+                  AutomationProperties.Name="Metronome during playback"/>
+
+    <!-- Count-in -->
+    <ToggleButton IsChecked="{Binding CountInEnabled}"
+                  ToolTip.Tip="Play one bar of clicks before playback starts"
+                  Classes="toolbar-btn" Content="&#x23F1;"
+                  AutomationProperties.Name="Count-in before playback"/>
   </StackPanel>
 </UserControl>

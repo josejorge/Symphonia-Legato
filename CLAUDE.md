@@ -250,6 +250,41 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
     `ScoreEditor.ZoomInCommand/…` and mirror the value back for the percentage label — don't set only
     the window's local `Zoom`.
 
+25. **Note entry flows across measures.** `ScoreEditorViewModel.ResolveTargetMeasure` advances past full
+    measures and appends new ones (on every staff) so notes never overfill a single measure. `Measure.AddNote`
+    sets `TickOffset = UsedTicks`, so adding past capacity used to overlap past the bar line. The layout also
+    defensively scales by `max(capacity, contentSpan)`. Don't reintroduce single-measure overfill.
+
+26. **Playback cursor uses absolute domain ticks.** `ScoreCanvas.PlaybackTick` is the absolute tick
+    (1 quarter = 1024); the canvas walks measures advancing by each measure's `TicksPerMeasure` capacity —
+    this must match how `ScoreToMidiConverter` advances time. `MainWindowViewModel` computes ticks from the
+    engine `Position` and the score's `InitialTempo`, and resets `PlaybackTick = -1` when playback stops.
+    `RenderedMeasure.NotesStartX/NotesEndX` and `RenderedNoteElement.TickOffset/DurationTicks` exist for this.
+
+27. **The engine reports position on a 50 ms `System.Timers.Timer`** (background thread). Any ViewModel
+    handling `PositionChanged` must marshal with `Dispatcher.UIThread.Post` before touching observable
+    properties (same rule as the metronome, pitfall #14).
+
+28. **Play-from-here uses a pending seek.** `MidiPlaybackEngine.SeekAsync` stores the position in
+    `_pendingSeek` and applies it via `Playback.MoveToTime` when `PlayAsync` (re)builds the `Playback`
+    (the object doesn't exist until then). `PlaybackViewModel.StartTick` (set when a note is clicked)
+    is converted to a time and seeked before play; `Stop`/`Rewind` reset it to 0.
+
+29. **Audible metronome = GM percussion clicks** (channel 9 / MIDI ch 10), not the `MetronomeEngine`
+    (which is silent / events only). The per-beat click is **baked into the MIDI** by
+    `ScoreToMidiConverter.BuildMetronomeTrack` when `Convert(score, includeMetronome: true)` — so it is
+    sample-accurate. Count-in is a short pre-roll using `MidiPlaybackEngine.SendClick`. The converter
+    deliberately skips channel 9 for instruments so it stays free for clicks.
+
+30. **`StaffPositionCalculator.FromStaffPosition` MUST stay the exact inverse of `Calculate`.** A
+    round-trip test enforces it. The old version was off by a diatonic step + an octave, so
+    click-entered notes sounded wrong (they drew correctly). Keyboard entry (`EnterNoteByName`) and
+    click entry both depend on this round-trip.
+
+31. **Keyboard note entry lives in `MainWindow.OnKeyDown`** → `ScoreEditorViewModel.EnterNoteByName`.
+    It only fires with no Ctrl/Alt modifier and when focus isn't a `TextBox`. Octave is picked nearest
+    the previous note on the staff (`NearestPitch`), or a clef default for the first note.
+
 ---
 
 ## Phase status
@@ -263,6 +298,9 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | 5 — AI | ✅ Done | `SymphoniaLegato.AIEngine`: chord detection + fingering (offline), harmonisation + score analysis + practice plan (Claude API), Desktop AI Assistant panel, 104 tests |
 | Bugfix | ✅ Done | Score editing: correct clef/key on click, chord note positions, canvas scroll; toolbar: accidentals, slur, tie, mode toggle |
 | Bugfix 2 | ✅ Done | Rendering & playback pass (2026-06-28): white-paper/black-ink canvas (was invisible dark-on-dark), Play now loads the live score (sound), piano-preview device, mixer populated, zoom actually zooms, canvas re-measures on zoom, MIDI tempo honoured. See `docs/BUGFIXES.md`. |
+| Bugfix 3 | ✅ Done | Note flow & playback cursor (2026-06-29): notes flow across measures/lines instead of overlapping; moving playback indicator (cursor line + active-measure band + sounding-note highlight) with auto-scroll; live transport timer; audible note preview on entry; File ▸ Load Demo Score. See `docs/BUGFIXES.md`. |
+| Features | ✅ Done | Play-from-here (click a note → playback starts there), audible per-beat metronome during playback, one-bar count-in. Transport toggles in `PlaybackControlsView`. |
+| Features 2 | ✅ Done | Keyboard note entry (A–G + duration/rest/dot/transport keys), metronome baked into MIDI (sample-accurate), fixed `FromStaffPosition` pitch bug. `docs/TODO.md` backlog added. 111 tests. |
 
 ---
 

@@ -9,10 +9,14 @@ namespace SymphoniaLegato.Desktop.ViewModels;
 public sealed partial class ScoreEditorViewModel : ViewModelBase
 {
     private readonly ILayoutEngine _layout;
+    private readonly IPlaybackEngine _playback;
 
     [ObservableProperty] private ScoreEditor? _editor;
     [ObservableProperty] private LayoutResult? _layoutResult;
     [ObservableProperty] private double _zoom = 1.0;
+
+    /// <summary>Absolute domain tick of the playback cursor; &lt; 0 = hidden.</summary>
+    [ObservableProperty] private double _playbackTick = -1.0;
 
     // Input state
     [ObservableProperty] private Duration _selectedDuration = Duration.Quarter;
@@ -45,7 +49,48 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
         _ => Hand.Unassigned
     };
 
-    public ScoreEditorViewModel(ILayoutEngine layout) => _layout = layout;
+    /// <summary>Raised when a note is selected, carrying its absolute tick so playback can start there.</summary>
+    public event EventHandler<double>? PlaybackStartTickChanged;
+
+    public ScoreEditorViewModel(ILayoutEngine layout, IPlaybackEngine playback)
+    {
+        _layout = layout;
+        _playback = playback;
+    }
+
+    /// <summary>
+    /// Selects a note and arms "play from here": shows the cursor at the note and
+    /// reports its absolute tick so playback starts from that point.
+    /// </summary>
+    public void SelectNote(Guid staffId, int measureNumber, Guid noteId)
+    {
+        SelectedNoteId  = noteId;
+        SelectedMeasure = measureNumber;
+        SelectedStaffId = staffId;
+
+        double tick = AbsoluteTickOf(staffId, measureNumber, noteId);
+        if (tick < 0) return;
+        PlaybackTick = tick;                              // stationary cursor at the note
+        PlaybackStartTickChanged?.Invoke(this, tick);     // arm play-from-here
+    }
+
+    private double AbsoluteTickOf(Guid staffId, int measureNumber, Guid noteId)
+    {
+        var staff = Editor?.Score.Parts.SelectMany(p => p.Staves)
+            .FirstOrDefault(s => s.Id == staffId);
+        if (staff is null) return -1;
+        double acc = 0;
+        foreach (var m in staff.Measures.OrderBy(m => m.Number))
+        {
+            if (m.Number == measureNumber)
+            {
+                var note = m.Notes.FirstOrDefault(n => n.Id == noteId);
+                return note is null ? acc : acc + note.TickOffset;
+            }
+            acc += m.TimeSignature.TicksPerMeasure;
+        }
+        return -1;
+    }
 
     public void Initialize(ScoreEditor editor)
     {
@@ -123,10 +168,138 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
             note.Pitch = pitch;
         }
 
-        Editor.AddNote(staffId, measureNumber, note);
+        // Flow across measures: if the clicked measure can't fit this note,
+        // advance to the next measure that has room (creating measures at the end
+        // as needed). This is what stops notes from piling up and overlapping
+        // past the bar line.
+        int targetMeasure = ResolveTargetMeasure(staffId, measureNumber, note.Duration.Ticks);
+
+        Editor.AddNote(staffId, targetMeasure, note);
         SelectedNoteId  = note.Id;
-        SelectedMeasure = measureNumber;
+        SelectedMeasure = targetMeasure;
         SelectedStaffId = staffId;
+
+        // Audible feedback when entering a pitched note.
+        if (note.Pitch is { } enteredPitch)
+            _ = _playback.PreviewNoteAsync(enteredPitch);
+    }
+
+    /// <summary>
+    /// Returns the measure number that should receive a note of <paramref name="neededTicks"/>,
+    /// starting from <paramref name="startMeasure"/>. Skips full measures and appends new
+    /// measures (to every staff) when the music runs off the end.
+    /// </summary>
+    private int ResolveTargetMeasure(Guid staffId, int startMeasure, int neededTicks)
+    {
+        if (Editor is null) return startMeasure;
+        var staff = Editor.Score.Parts.SelectMany(p => p.Staves)
+            .FirstOrDefault(s => s.Id == staffId);
+        if (staff is null) return startMeasure;
+
+        int target = startMeasure;
+        // Skip partially-filled measures that cannot hold the note, but stop at an
+        // empty measure so an oversized note never loops forever.
+        while (staff.GetMeasure(target) is { } m && m.UsedTicks > 0 && m.RemainingTicks < neededTicks)
+            target++;
+
+        if (staff.GetMeasure(target) is null)
+        {
+            int last = staff.Measures.Count == 0 ? 0 : staff.Measures.Max(m => m.Number);
+            Editor.AddMeasures(last, Math.Max(1, target - last));
+        }
+        return target;
+    }
+
+    /// <summary>
+    /// Keyboard note entry: enter a note by letter name. Chooses the octave
+    /// nearest the previous note on the target staff, honours the key signature,
+    /// and flows across measures exactly like click entry.
+    /// </summary>
+    public void EnterNoteByName(NoteName name)
+    {
+        if (Editor is null || !InputMode) return;
+
+        var staff = (SelectedStaffId != Guid.Empty
+            ? Editor.Score.Parts.SelectMany(p => p.Staves).FirstOrDefault(s => s.Id == SelectedStaffId)
+            : null) ?? Editor.Score.Parts.SelectMany(p => p.Staves).FirstOrDefault();
+        if (staff is null) return;
+
+        int startMeasure = SelectedMeasure > 0 ? SelectedMeasure : 1;
+        var measure = staff.GetMeasure(startMeasure);
+        var clef = measure?.ClefChange ?? staff.DefaultClef;
+        var key  = measure?.KeySignatureChange ?? Editor.Score.InitialKeySignature;
+
+        // Octave: nearest to the last pitched note on this staff, else a clef default.
+        var lastPitch = staff.Measures.OrderByDescending(m => m.Number)
+            .SelectMany(m => m.Notes.OrderByDescending(n => n.TickOffset))
+            .FirstOrDefault(n => n.Pitch is not null)?.Pitch;
+        var natural = lastPitch is { } prev
+            ? NearestPitch(name, prev)
+            : new Pitch(name, Accidental.Natural, DefaultOctave(clef));
+
+        int staffPos = StaffPositionCalculator.Calculate(natural, clef);
+
+        var note = new Note
+        {
+            Duration      = SelectedDuration,
+            StaffPosition = staffPos,
+            Hand          = SelectedHand
+        };
+        if (!InputRest)
+        {
+            var pitch = StaffPositionCalculator.FromStaffPosition(staffPos, clef, key);
+            if (AccidentalOverride.HasValue)
+            {
+                pitch = new Pitch(pitch.Name, AccidentalOverride.Value, pitch.Octave);
+                AccidentalOverride = null;
+            }
+            note.Pitch = pitch;
+        }
+
+        int target = ResolveTargetMeasure(staff.Id, startMeasure, note.Duration.Ticks);
+        Editor.AddNote(staff.Id, target, note);
+        SelectedNoteId  = note.Id;
+        SelectedMeasure = target;
+        SelectedStaffId = staff.Id;
+
+        if (note.Pitch is { } entered)
+            _ = _playback.PreviewNoteAsync(entered);
+    }
+
+    /// <summary>Selects a duration by toolbar index (0 = whole … 5 = 32nd). Used by number-key shortcuts.</summary>
+    public void SetDurationByIndex(int index)
+    {
+        var value = index switch
+        {
+            0 => NoteValue.Whole,
+            1 => NoteValue.Half,
+            2 => NoteValue.Quarter,
+            3 => NoteValue.Eighth,
+            4 => NoteValue.Sixteenth,
+            5 => NoteValue.ThirtySecond,
+            _ => NoteValue.Quarter
+        };
+        SelectedDuration = new Duration(value, Dotted ? 1 : 0);
+    }
+
+    private static int DefaultOctave(Clef clef) => clef.Type switch
+    {
+        ClefType.Bass  => 3,
+        ClefType.Tenor => 3,
+        _              => 4
+    };
+
+    private static Pitch NearestPitch(NoteName name, Pitch reference)
+    {
+        Pitch best = new(name, Accidental.Natural, reference.Octave);
+        int bestDist = Math.Abs(best.MidiNumber - reference.MidiNumber);
+        foreach (int oct in new[] { reference.Octave - 1, reference.Octave + 1 })
+        {
+            var cand = new Pitch(name, Accidental.Natural, oct);
+            int d = Math.Abs(cand.MidiNumber - reference.MidiNumber);
+            if (d < bestDist) { best = cand; bestDist = d; }
+        }
+        return best;
     }
 
     [RelayCommand]

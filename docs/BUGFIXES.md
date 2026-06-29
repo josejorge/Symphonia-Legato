@@ -143,6 +143,93 @@ code; the generated keyboard is unchanged.
 
 ---
 
+---
+
+# Note flow & playback cursor pass (2026-06-29)
+
+## 9. Notes overflowed / overlapped past the bar line
+
+**Symptom (user-reported):** "when the amount of notes overlaps the size of the
+line, it doesn't create a new line — it overlaps the notes in one line."
+
+**Root cause:** `Measure.AddNote` always appends at `TickOffset = UsedTicks`, and
+note entry put every click into the *clicked* measure with no capacity check. Once
+a measure was full, extra notes kept piling in with tick offsets beyond the
+measure's capacity; the layout placed them at `headerX + tickOffset * tickWidth`,
+i.e. past the closing bar line, overlapping the next measure. (System/line
+wrapping itself already worked — the measures just never filled correctly.)
+
+**Fix (two layers):**
+1. **Auto-flow on entry** — `ScoreEditorViewModel.ResolveTargetMeasure` advances
+   from the clicked measure to the first measure with room for the note, and
+   appends new measures (on every staff) when the music runs off the end. Notes
+   now fill bar 1, then bar 2, …, and the existing width-based system breaking
+   wraps full bars onto new lines.
+2. **Defensive layout** — `LayoutEngine` scales note positions by
+   `max(timeSignatureCapacity, actualContentSpan)`, so even a hand-crafted
+   over-full measure compresses to fit instead of spilling past the bar line.
+
+**Verified (headless):** clicking one measure 60×  → notes flow into 15 measures
+(exactly 4 quarters each, none over-full), every notehead stays within its
+measure's note area, and the layout wraps to 3 systems/lines. The demo score
+(32 notes) wraps to 2 lines.
+
+**Files:** `ScoreEditorViewModel.cs`, `LayoutEngine.cs`, `ILayoutEngine.cs`.
+
+## Features added alongside
+
+- **Playback indicator** (`ScoreCanvas.PlaybackTick` + `MidiPlaybackEngine`
+  position timer + `MainWindowViewModel` wiring): a vertical cursor at the current
+  beat, a translucent band over the active measure, and a blue highlight on the
+  note(s) currently sounding. `ScoreEditorView` auto-scrolls to follow it.
+- **Live transport** — the engine reports `PositionChanged` on a 50 ms timer, so
+  the time and measure/beat displays update during playback.
+- **Audible note preview** — entering a pitched note plays it via
+  `PreviewNoteAsync`.
+- **File ▸ Load Demo Score** — loads "Ode to Joy" across 8 bars (wraps to 2
+  lines) to exercise playback, the cursor, and wrapping at a glance.
+- **Play from a note** — clicking a note arms `PlaybackViewModel.StartTick`; Play
+  seeks there first (`SeekAsync` stores a pending seek applied when the `Playback`
+  is built). `Stop`/`Rewind` reset to the top.
+- **Audible metronome + count-in** — `MidiPlaybackEngine.SendClick` plays GM
+  wood-block notes on the percussion channel (10). A per-beat click fires from the
+  position timer when the metronome is on; a one-bar count-in plays before
+  playback when count-in is on. Toggles live in the transport toolbar.
+
+---
+
+# Pitch round-trip & keyboard entry (2026-06-29)
+
+## 10. Click-entered notes were stored/played at the wrong pitch
+
+**Root cause:** `StaffPositionCalculator.FromStaffPosition` was **not** the inverse
+of `Calculate`. It computed `targetDiatonic = refDiatonic + staffPosition` (missing
+the `-1` that `Calculate` adds) and `octave = targetDiatonic / 7` (missing the
+diatonic-group → real-octave shift). Result: a note clicked on the treble bottom
+line (E4) was stored as **F5** — a step and an octave too high. Notes *drew* at the
+clicked position (that uses the staff position directly) but *played* the wrong
+pitch. There was no test on `FromStaffPosition`, so it went unnoticed.
+
+**Fix:** Made it the exact inverse of `Calculate`
+(`targetDiatonic = refDiatonic + staffPosition - 1`, `octave = (targetDiatonic - step)/7 - 1`),
+and added a `Calculate`↔`FromStaffPosition` round-trip test.
+
+**Files:** `StaffPositionCalculator.cs`, `tests/.../StaffPositionTests.cs`.
+
+This was surfaced while building **keyboard note entry**, which round-trips through
+the same method.
+
+## Features added alongside (this pass)
+
+- **Keyboard note entry** — type `A`–`G` to place a note (octave chosen nearest the
+  previous note, honouring the key signature, flowing across bars), `1`–`6` for
+  duration, `R` rest, `.` dot, `Delete` to remove, `Space`/`Esc` transport.
+  (`ScoreEditorViewModel.EnterNoteByName`, `MainWindow.OnKeyDown`.)
+- **Sample-accurate metronome** — the per-beat click is now **baked into the MIDI**
+  (`ScoreToMidiConverter` adds a percussion click track when enabled) instead of
+  being fired from the UI position timer, so it no longer jitters. Count-in remains
+  a short pre-roll click loop.
+
 ## Notes / non-bugs
 
 - `run_err.txt` in the repo root is a **stale** crash log (the old `InputGesture="Plus"`

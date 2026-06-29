@@ -7,7 +7,8 @@
              Background="{DynamicResource EditorBackground}">
 
   <Grid RowDefinitions="*">
-    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+    <ScrollViewer x:Name="Scroller"
+                  HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto"
                   Background="{DynamicResource EditorBackground}">
 
@@ -16,8 +17,10 @@
                             Zoom="{Binding Zoom}"
                             SelectedNoteId="{Binding SelectedNoteId}"
                             ShowHandColoring="{Binding ShowHandColoring}"
+                            PlaybackTick="{Binding PlaybackTick}"
                             NoteClicked="OnNoteClicked"
-                            StaffPositionClicked="OnStaffPositionClicked"/>
+                            StaffPositionClicked="OnStaffPositionClicked"
+                            PlaybackCursorMoved="OnPlaybackCursorMoved"/>
     </ScrollViewer>
   </Grid>
 </UserControl>

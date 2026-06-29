@@ -22,6 +22,7 @@
     <Menu DockPanel.Dock="Top" Background="{DynamicResource MenuBackground}">
       <MenuItem Header="_File">
         <MenuItem Header="_New Score"    Command="{Binding NewScoreCommand}"   InputGesture="Ctrl+N"/>
+        <MenuItem Header="Load _Demo Score" Command="{Binding LoadDemoScoreCommand}"/>
         <MenuItem Header="_Open..."      Command="{Binding OpenCommand}"       InputGesture="Ctrl+O"/>
         <Separator/>
         <MenuItem Header="_Save"         Command="{Binding SaveCommand}"       InputGesture="Ctrl+S"/>

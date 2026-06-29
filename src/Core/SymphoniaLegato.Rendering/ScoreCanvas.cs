@@ -44,16 +44,22 @@ public sealed class ScoreCanvas : Control
         AvaloniaProperty.Register<ScoreCanvas, Guid?>(nameof(SelectedNoteId));
     public static readonly StyledProperty<bool> ShowHandColoringProperty =
         AvaloniaProperty.Register<ScoreCanvas, bool>(nameof(ShowHandColoring));
+    public static readonly StyledProperty<double> PlaybackTickProperty =
+        AvaloniaProperty.Register<ScoreCanvas, double>(nameof(PlaybackTick), -1.0);
 
     public LayoutResult? LayoutResult { get => GetValue(LayoutResultProperty); set => SetValue(LayoutResultProperty, value); }
     public double Zoom { get => GetValue(ZoomProperty); set => SetValue(ZoomProperty, value); }
     public Guid? SelectedNoteId { get => GetValue(SelectedNoteIdProperty); set => SetValue(SelectedNoteIdProperty, value); }
     public bool ShowHandColoring { get => GetValue(ShowHandColoringProperty); set => SetValue(ShowHandColoringProperty, value); }
+    /// <summary>Absolute domain tick of the playback cursor; &lt; 0 hides it.</summary>
+    public double PlaybackTick { get => GetValue(PlaybackTickProperty); set => SetValue(PlaybackTickProperty, value); }
 
     // ── Events ────────────────────────────────────────────────────────
 
     public event EventHandler<NoteClickedEventArgs>? NoteClicked;
     public event EventHandler<StaffPositionClickedEventArgs>? StaffPositionClicked;
+    /// <summary>Raised as the playback cursor moves; payload is its vertical centre (canvas Y) for auto-scroll.</summary>
+    public event EventHandler<double>? PlaybackCursorMoved;
 
     // ── Brushes & pens ────────────────────────────────────────────────
 
@@ -87,6 +93,11 @@ public sealed class ScoreCanvas : Control
     private static readonly Pen RepeatBarPen  = new(new SolidColorBrush(Color.FromRgb(30, 30, 30)), 3.0);
     private static readonly Pen PageBorderPen = new(new SolidColorBrush(Color.FromRgb(205, 205, 205)), 1.0);
 
+    // Playback cursor (accent blue, matches the app's #007ACC accent).
+    private static readonly Pen    CursorPen        = new(new SolidColorBrush(Color.FromArgb(225, 0, 122, 204)), 2.0);
+    private static readonly IBrush CursorBandBrush  = new SolidColorBrush(Color.FromArgb(36, 0, 122, 204));
+    private static readonly IBrush PlayingNoteBrush = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+
     private static readonly Typeface MusicTypeface  = new(FontFamily.Default, FontStyle.Normal, FontWeight.Normal);
     private static readonly Typeface BoldTypeface   = new(FontFamily.Default, FontStyle.Normal, FontWeight.Bold);
     private static readonly Typeface ItalicTypeface = new(FontFamily.Default, FontStyle.Italic, FontWeight.Normal);
@@ -103,6 +114,7 @@ public sealed class ScoreCanvas : Control
         ZoomProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => { s.InvalidateMeasure(); s.InvalidateVisual(); });
         SelectedNoteIdProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
         ShowHandColoringProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
+        PlaybackTickProperty.Changed.AddClassHandler<ScoreCanvas>((s, _) => s.InvalidateVisual());
         this.AddHandler(PointerPressedEvent, OnPointerPressed);
     }
 
@@ -125,6 +137,69 @@ public sealed class ScoreCanvas : Control
         if (layout is null) return;
         foreach (var page in layout.Pages)
             DrawPage(ctx, page);
+
+        DrawPlaybackCursor(ctx, layout);
+    }
+
+    // ── Playback cursor ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Draws the moving playback indicator: a translucent band over the active
+    /// measure, a vertical cursor line at the current time, and a highlight on
+    /// the note(s) currently sounding. Position is derived from <see cref="PlaybackTick"/>
+    /// (absolute domain ticks) walked measure-by-measure using each measure's
+    /// time-signature capacity — matching how the MIDI converter advances time.
+    /// </summary>
+    private void DrawPlaybackCursor(DrawingContext ctx, LayoutResult layout)
+    {
+        if (PlaybackTick < 0) return;
+
+        double absTick = 0;
+        foreach (var page in layout.Pages)
+        foreach (var system in page.Systems)
+        {
+            if (system.Staves.Count == 0) continue;
+            var refStaff = system.Staves[0];
+            double sp = refStaff.Height / 4.0;
+            double topY = system.Staves[0].Y - sp * 1.5;
+            double botY = system.Staves[^1].Y + system.Staves[^1].Height + sp * 1.5;
+
+            for (int i = 0; i < refStaff.Measures.Count; i++)
+            {
+                var m = refStaff.Measures[i];
+                int cap = Math.Max(1, m.TimeSignature.TicksPerMeasure);
+                if (PlaybackTick >= absTick && PlaybackTick < absTick + cap)
+                {
+                    double frac = (PlaybackTick - absTick) / cap;
+                    double cx = m.NotesStartX + frac * (m.NotesEndX - m.NotesStartX);
+
+                    ctx.FillRectangle(CursorBandBrush, new Rect(m.X, topY, m.Width, botY - topY));
+                    ctx.DrawLine(CursorPen, new Point(cx, topY), new Point(cx, botY));
+
+                    // Highlight the note(s) sounding right now, across all staves.
+                    int tickInMeasure = (int)(PlaybackTick - absTick);
+                    foreach (var st in system.Staves)
+                    {
+                        if (i >= st.Measures.Count) continue;
+                        double ssp = st.Height / 4.0;
+                        foreach (var el in st.Measures[i].Elements)
+                        {
+                            if (el.IsRest) continue;
+                            if (tickInMeasure >= el.TickOffset &&
+                                tickInMeasure <  el.TickOffset + el.DurationTicks)
+                            {
+                                ctx.DrawEllipse(PlayingNoteBrush, null,
+                                    new Point(el.X, el.Y), ssp * 0.58, ssp * 0.42);
+                            }
+                        }
+                    }
+
+                    PlaybackCursorMoved?.Invoke(this, (topY + botY) / 2);
+                    return;
+                }
+                absTick += cap;
+            }
+        }
     }
 
     private void DrawPage(DrawingContext ctx, RenderedPage page)

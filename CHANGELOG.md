@@ -8,6 +8,38 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (2026-06-29 — playback cursor, note flow & extras)
+- **Playback indicator** — a moving cursor sweeps the sheet during playback: a
+  vertical line at the current beat, a translucent band over the active measure,
+  and a highlight on the note(s) currently sounding. The view auto-scrolls to
+  follow it.
+- **Live transport** — the engine now reports position on a timer, so the time
+  display and measure/beat counters update during playback.
+- **Audible note preview** — entering a note (clicking the staff) now plays it.
+- **Load Demo Score** (File menu) — loads "Ode to Joy" across 8 bars so you can
+  immediately hear playback, see the cursor, and see multi-line wrapping.
+- **Play from a note** — click any note to start playback from that point.
+- **Audible metronome** — a per-beat click during playback (🥁 toggle) plus an
+  optional **one-bar count-in** (⏱ toggle) before playback starts. The per-beat
+  click is **baked into the MIDI** (sample-accurate, no timer jitter).
+- **Keyboard note entry** — type `A`–`G` to place notes (octave nearest the
+  previous note, key-signature aware, flowing across bars); `1`–`6` durations,
+  `R` rest, `.` dot, `Delete` remove, `Space` play/pause, `Esc` stop.
+- Added a forward-looking backlog at **`docs/TODO.md`**.
+
+### Fixed (2026-06-29 — pitch round-trip)
+- **Click-entered notes played the wrong pitch.** `StaffPositionCalculator.FromStaffPosition`
+  was not the inverse of `Calculate` (off by a diatonic step and an octave), so a note
+  clicked on the treble bottom line stored as F5 instead of E4. Fixed and covered by a
+  round-trip test. (Notes drew correctly but sounded wrong.)
+
+### Fixed (2026-06-29 — note flow)
+- **Notes no longer overflow/overlap past the bar line.** Note entry now flows
+  across measures: when a measure is full the note goes to the next one, creating
+  new measures (and therefore new systems/lines) as needed. The layout also
+  defensively compresses any over-full measure so notes can never spill past the
+  closing bar line.
+
 ### Fixed (2026-06-28 — rendering & playback pass; see `docs/BUGFIXES.md`)
 - **Score canvas was invisible** — the page rendered dark-grey on a dark editor
   background. The sheet is now white paper with black ink (Encore-style), with a

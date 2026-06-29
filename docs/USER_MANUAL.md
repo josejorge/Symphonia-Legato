@@ -7,27 +7,44 @@
 
 When you launch Symphonia Legato, a new empty piano score (Grand Staff, 4/4, C major) is created automatically.
 
+To see the app in action immediately, choose **File → Load Demo Score** — it loads
+"Ode to Joy" across several bars. Press **Play ▶** to hear it and watch the
+playback cursor sweep the sheet.
+
 ---
 
 ## Note Entry
 
 1. Select a **duration** from the toolbar at the bottom: whole, half, quarter, eighth, 16th, 32nd.
 2. Optionally enable the **dot** button (·) for dotted notes.
-3. Click on a **staff position** to enter the note at that pitch.
+3. Click on a **staff position** to enter the note at that pitch — you'll **hear the
+   note** as you enter it.
 4. To enter a **rest**, click the rest toggle (𝄽) first, then click the staff.
+
+Notes **flow automatically across bar lines**: when a measure fills up, the next
+note moves to the following measure, and new measures (and new lines/systems) are
+created as needed. Notes never pile up or overlap inside one bar.
+
+### Keyboard note entry
+
+Type a **letter A–G** to place a note of that pitch. The octave is chosen to be
+closest to the previous note (so stepwise melodies stay on the staff), the note
+honours the current key signature, and notes flow across bar lines automatically.
+Pick a duration first with the number keys.
 
 ### Keyboard Shortcuts
 
 | Key | Action |
 |---|---|
-| `1`–`7` | Select whole–64th duration |
+| `A`–`G` | Enter a note of that pitch |
+| `1`–`6` | Select duration: whole, half, quarter, eighth, 16th, 32nd |
 | `.` | Toggle dot |
 | `R` | Toggle rest mode |
-| `Delete` | Delete selected note |
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` | Redo |
+| `Delete` / `Backspace` | Delete selected note |
 | `Space` | Play / Pause |
 | `Escape` | Stop |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Y` | Redo |
 | `Ctrl+S` | Save |
 | `Ctrl+N` | New score |
 | `Ctrl+O` | Open |
@@ -41,9 +58,26 @@ When you launch Symphonia Legato, a new empty piano score (Grand Staff, 4/4, C m
 
 Use the **playback toolbar** (or Space/Escape) to control playback.
 
+- **Play / Pause / Stop / Rewind**: standard transport controls.
 - **Tempo multiplier**: drag the slider to speed up or slow down (25%–400%).
-- **Loop**: click ↻ to enable looping between the set loop points.
-- **Metronome**: toggle the metronome click from the Playback menu.
+- **Loop** (↻): enable looping.
+- **Metronome** (🥁): when on, an audible click sounds on every beat during playback.
+- **Count-in** (⏱): when on, one bar of clicks plays before playback starts.
+
+### Playback indicator
+
+While playing, the sheet shows where you are:
+- a **vertical cursor line** at the current beat,
+- a **shaded band** over the measure being played, and
+- the note(s) **currently sounding highlighted in blue**.
+
+The view **scrolls automatically** to keep the cursor in view.
+
+### Play from a specific note
+
+**Click any note** to place the cursor there and arm playback — pressing **Play**
+then starts from that note instead of the beginning. **Stop** or **Rewind**
+returns to the top.
 
 ---
 

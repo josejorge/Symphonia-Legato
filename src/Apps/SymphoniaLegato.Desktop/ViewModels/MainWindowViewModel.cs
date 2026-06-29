@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -79,6 +81,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // Playback always rebuilds from the live score when Play is pressed.
         PlaybackVm.ScoreProvider = () => ScoreEditor?.Editor?.Score;
+
+        // Drive the on-sheet playback cursor from engine position updates, and
+        // hide it whenever playback returns to the Stopped state.
+        _playback.PositionChanged += OnPlaybackPositionChanged;
+        PlaybackVm.PropertyChanged += OnPlaybackVmPropertyChanged;
+
+        // Clicking a note arms "play from here".
+        ScoreEditor.PlaybackStartTickChanged += (_, tick) => PlaybackVm.StartTick = tick;
 
         NewScore();
     }
@@ -289,4 +299,74 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public Score? CurrentScore => ScoreEditor?.Editor?.Score;
+
+    // ── Playback cursor wiring ────────────────────────────────────────
+
+    private void OnPlaybackPositionChanged(object? sender, PlaybackPositionChangedEventArgs e)
+    {
+        var score = ScoreEditor?.Editor?.Score;
+        if (score is null) return;
+        double bpm = Math.Max(1, score.InitialTempo);
+        double ticks = e.Position.TotalSeconds * bpm / 60.0 * 1024.0;
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (ScoreEditor is not null) ScoreEditor.PlaybackTick = ticks;
+        });
+    }
+
+    private void OnPlaybackVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PlaybackViewModel.State) &&
+            PlaybackVm?.State == PlaybackState.Stopped)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (ScoreEditor is not null) ScoreEditor.PlaybackTick = -1;
+            });
+        }
+    }
+
+    // ── Demo score ────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private void LoadDemoScore()
+    {
+        var score = Score.CreatePianoScore("Demo — Ode to Joy");
+        LoadScore(score);
+        var editor = ScoreEditor?.Editor;
+        if (editor is null) return;
+
+        editor.AddMeasures(0, 8);
+        var treble = score.Parts[0].Staves[0];
+        var bass   = score.Parts[0].Staves[1];
+
+        // Beethoven's "Ode to Joy" theme (quarter notes), flowing 4 per 4/4 bar.
+        int[] melody =
+        {
+            64, 64, 65, 67,  67, 65, 64, 62,  60, 60, 62, 64,  64, 62, 62, 62,
+            64, 64, 65, 67,  67, 65, 64, 62,  60, 60, 62, 64,  62, 60, 60, 60
+        };
+        for (int i = 0; i < melody.Length; i++)
+            AppendDemoNote(editor, treble, Clef.Treble, melody[i], 1 + i / 4);
+
+        // Simple bass: one root whole note per bar (C, G alternating).
+        int[] bassRoots = { 48, 43, 48, 43, 48, 43, 48, 43 };
+        for (int bar = 0; bar < bassRoots.Length; bar++)
+            AppendDemoNote(editor, bass, Clef.Bass, bassRoots[bar], bar + 1, whole: true);
+
+        StatusMessage = "Demo score loaded — press Play ▶ to hear it and watch the cursor.";
+    }
+
+    private static void AppendDemoNote(ScoreEditor editor, Staff staff, Clef clef,
+        int midi, int measureNumber, bool whole = false)
+    {
+        var pitch = Pitch.FromMidi(midi);
+        var note = new Note
+        {
+            Pitch         = pitch,
+            Duration      = whole ? Duration.Whole : Duration.Quarter,
+            StaffPosition = StaffPositionCalculator.Calculate(pitch, clef)
+        };
+        editor.AddNote(staff.Id, measureNumber, note);
+    }
 }

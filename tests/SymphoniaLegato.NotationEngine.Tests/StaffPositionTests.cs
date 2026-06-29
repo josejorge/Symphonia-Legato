@@ -30,4 +30,25 @@ public sealed class StaffPositionTests
         count.Should().BeGreaterThan(0);
         above.Should().BeFalse();
     }
+
+    [Theory]
+    [InlineData(NoteName.E, 4, ClefType.Treble)]  // bottom line treble
+    [InlineData(NoteName.G, 4, ClefType.Treble)]
+    [InlineData(NoteName.B, 4, ClefType.Treble)]
+    [InlineData(NoteName.C, 4, ClefType.Treble)]  // middle C, below the staff
+    [InlineData(NoteName.A, 5, ClefType.Treble)]  // above the staff
+    [InlineData(NoteName.G, 2, ClefType.Bass)]    // bottom line bass
+    [InlineData(NoteName.D, 3, ClefType.Bass)]    // middle line bass
+    public void FromStaffPosition_IsInverseOfCalculate(NoteName name, int octave, ClefType clefType)
+    {
+        var clef     = clefType == ClefType.Treble ? Clef.Treble : Clef.Bass;
+        var original = new Pitch(name, Accidental.Natural, octave);
+
+        int pos          = StaffPositionCalculator.Calculate(original, clef);
+        var reconstructed = StaffPositionCalculator.FromStaffPosition(pos, clef, KeySignature.CMajor);
+
+        reconstructed.Name.Should().Be(name);
+        reconstructed.Octave.Should().Be(octave);
+        reconstructed.MidiNumber.Should().Be(original.MidiNumber);
+    }
 }

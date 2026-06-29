@@ -15,6 +15,11 @@ public interface IPlaybackEngine : IAsyncDisposable
     TimeSpan LoopStart { get; set; }
     TimeSpan LoopEnd { get; set; }
 
+    /// <summary>When true, an audible click sounds on every beat during playback.</summary>
+    bool MetronomeEnabled { get; set; }
+    /// <summary>When true, one bar of clicks plays before playback starts.</summary>
+    bool CountInEnabled { get; set; }
+
     event EventHandler<PlaybackPositionChangedEventArgs>? PositionChanged;
     event EventHandler<NotePlayedEventArgs>? NotePlayed;
     event EventHandler? PlaybackEnded;

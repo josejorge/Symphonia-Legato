@@ -46,13 +46,15 @@ public static class StaffPositionCalculator
     {
         int refMidi = clef.BottomLineMidi;
         int refDiatonic = DiatonicStep[refMidi % 12] + (refMidi / 12) * 7;
-        int targetDiatonic = refDiatonic + staffPosition;
 
-        int octave = targetDiatonic / 7;
-        int step = targetDiatonic % 7;
-        if (step < 0) { step += 7; octave--; }
+        // Exact inverse of Calculate: pos = diatonicNote - diatonicRef + 1, and a
+        // diatonic value D decomposes as D = (int)name + (octave + 1) * 7.
+        // (The previous version dropped the -1 and the octave shift, so it returned
+        // a pitch a step and an octave too high — click-entered notes played wrong.)
+        int targetDiatonic = refDiatonic + staffPosition - 1;
+        int step   = ((targetDiatonic % 7) + 7) % 7;   // 0 = C … 6 = B
+        int octave = (targetDiatonic - step) / 7 - 1;   // diatonic group → real octave
 
-        // Map diatonic step back to note name
         NoteName name = (NoteName)step;
 
         // Apply key signature accidentals
