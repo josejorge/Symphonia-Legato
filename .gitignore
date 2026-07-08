@@ -55,3 +55,11 @@ secrets.json
 ## SoundFont large files (store reference, not binary)
 assets/soundfonts/*.sf2
 assets/soundfonts/*.sf3
+
+# --- added by security audit patch (2026-07-08) ---
+node_modules/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+.wrangler/
