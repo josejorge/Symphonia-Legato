@@ -8,6 +8,20 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security (2026-09-16 — private data purged from public history)
+- **`claude_memory/` leaked private cross-project data**, already committed
+  and pushed to the public GitHub remote — see `docs/BUGS.md` for the
+  full root cause. Purged from every commit via `git-filter-repo`, force-
+  pushed, and added `claude_memory/` to `.gitignore` so it can't be
+  re-tracked by accident. Documented the standing deviation from the
+  user's global CLAUDE.md memory-mirror rule in this project's own
+  `CLAUDE.md`.
+- **5 files still had `Company: Parlee Conseiller, Inc.`** in their branding
+  headers instead of this project's agreed `N/A (personal open-source
+  project, MIT licensed)` — missed during Tier 3 work. Fixed:
+  `App.axaml.cs`, `Converters/EnumEqualsConverter.cs`, `MainWindow.axaml.cs`,
+  `ScoreToMidiConverterTests.cs`, `technical_memory/technical_memory.ipynb`.
+
 ### Fixed (2026-09-15 — documentation audit after Tier 3)
 - **Project-wide version was stuck at 3.0.0** despite Tier 0 through Tier 3
   all adding new files (no new folders) — per the versioning policy each of

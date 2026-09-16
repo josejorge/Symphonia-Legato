@@ -77,3 +77,11 @@ node_modules/
 .dev.vars
 .dev.vars.*
 .wrangler/
+
+## Claude memory mirror — deliberately NOT tracked in this repo.
+## The mirror is cross-project (spans every project under this machine's
+## H:\DEV grouping, not just Symphonia Legato), so committing it here leaked
+## private client/business data into a public MIT repo (found + purged from
+## history 2026-09-16 via git-filter-repo — see CHANGELOG.md). Keep the local
+## folder for this machine's own use, but never re-track it.
+claude_memory/

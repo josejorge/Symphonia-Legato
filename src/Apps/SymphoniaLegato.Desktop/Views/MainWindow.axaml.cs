@@ -2,10 +2,10 @@
 // Description: Main window code-behind — wires ViewModel events (open/save/export requests) to
 //   Avalonia file pickers and dialogs, and drives the per-format export pipeline.
 // Author: Jose-Jorge HERNANDEZ
-// Company: Parlee Conseiller, Inc.
+// Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-09-15
-// Last edit date: 2026-09-15
-// Version: 1.4.0
+// Last edit date: 2026-09-16
+// Version: 1.4.1
 
 using Avalonia.Controls;
 using Avalonia.Input;

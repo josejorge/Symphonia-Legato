@@ -2,10 +2,10 @@
 // Description: Value converter that compares a bound value to ConverterParameter for equality,
 //   used to drive RadioButton.IsChecked from a single VM property instead of one bool per option.
 // Author: Jose-Jorge HERNANDEZ
-// Company: Parlee Conseiller, Inc.
+// Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-09-15
-// Last edit date: 2026-09-15
-// Version: 1.0.0
+// Last edit date: 2026-09-16
+// Version: 1.0.1
 
 using System.Globalization;
 using Avalonia.Data.Converters;

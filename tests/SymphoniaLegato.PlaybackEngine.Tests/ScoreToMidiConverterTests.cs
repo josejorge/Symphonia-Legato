@@ -2,10 +2,10 @@
 // Description: Unit tests for ScoreToMidiConverter — tick conversion, tempo, GM percussion
 //   channel reservation, chord simultaneity, and metronome track generation.
 // Author: Jose-Jorge HERNANDEZ
-// Company: Parlee Conseiller, Inc.
+// Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-09-15
-// Last edit date: 2026-09-15
-// Version: 1.2.0
+// Last edit date: 2026-09-16
+// Version: 1.2.1
 
 using FluentAssertions;
 using Melanchall.DryWetMidi.Common;
