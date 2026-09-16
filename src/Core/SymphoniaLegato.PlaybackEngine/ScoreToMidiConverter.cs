@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using Melanchall.DryWetMidi.Common;
 using Melanchall.DryWetMidi.Core;
@@ -25,7 +25,7 @@ public sealed class ScoreToMidiConverter
 
     public ScoreToMidiConverter(ILogger<ScoreToMidiConverter> logger) => _logger = logger;
 
-    public MidiFile Convert(Score score, bool includeMetronome = false)
+    public MidiFile Convert(Score score, bool includeMetronome = false, bool includeCountIn = false)
     {
         var file = new MidiFile { TimeDivision = new TicksPerQuarterNoteTimeDivision(MidiPPQ) };
 
@@ -56,8 +56,71 @@ public sealed class ScoreToMidiConverter
         if (includeMetronome)
             file.Chunks.Add(BuildMetronomeTrack(score));
 
+        // Count-in: rather than firing clicks from a Task.Delay loop before playback
+        // starts (subject to OS timer jitter — see docs/BUGS.md/TODO.md), shift every
+        // existing track later by one bar and prepend a click track for that bar. The
+        // whole count-in then plays through DryWetMidi's own precise internal clock,
+        // same as the rest of the piece.
+        if (includeCountIn)
+        {
+            var firstTs = score.Parts.SelectMany(p => p.Staves)
+                .SelectMany(s => s.Measures).OrderBy(m => m.Number)
+                .FirstOrDefault()?.TimeSignature ?? score.InitialTimeSignature;
+            long countInMidiTicks = DomainToMidi(firstTs.TicksPerMeasure);
+
+            foreach (var chunk in file.Chunks.OfType<TrackChunk>())
+            {
+                var first = chunk.Events.FirstOrDefault();
+                if (first is not null) first.DeltaTime += countInMidiTicks;
+            }
+
+            file.Chunks.Add(BuildCountInTrack(firstTs));
+        }
+
         _logger.LogDebug("Converted score '{Title}' to MIDI ({Tracks} tracks)", score.Title, file.Chunks.Count);
         return file;
+    }
+
+    /// <summary>Real-time length of the count-in <see cref="Convert"/> would prepend for this
+    /// score — the caller (playback engine) needs this to shift a "play from here" seek target
+    /// by the same amount, since the whole file gets pushed later by one bar.</summary>
+    public static TimeSpan ComputeCountInDuration(Score score)
+    {
+        var firstTs = score.Parts.SelectMany(p => p.Staves)
+            .SelectMany(s => s.Measures).OrderBy(m => m.Number)
+            .FirstOrDefault()?.TimeSignature ?? score.InitialTimeSignature;
+        double bpm = Math.Max(1, score.InitialTempo);
+        int beats = Math.Max(1, firstTs.Numerator);
+        double beatSeconds = 60.0 / bpm * (4.0 / Math.Max(1, firstTs.Denominator));
+        return TimeSpan.FromSeconds(beats * beatSeconds);
+    }
+
+    /// <summary>Builds one bar's worth of percussion clicks at tick 0 (accented on beat 1) —
+    /// the pre-roll before the rest of the file, which <see cref="Convert"/> has already
+    /// shifted later by exactly this bar's length.</summary>
+    private static TrackChunk BuildCountInTrack(SymphoniaLegato.Core.Models.TimeSignature ts)
+    {
+        var events = new List<MidiEvent>();
+        int beats = Math.Max(1, ts.Numerator);
+        int beatDomain = DomainPPQ * 4 / Math.Max(1, ts.Denominator);
+        long lastEventTick = 0;
+
+        for (int b = 0; b < beats; b++)
+        {
+            long onMidi  = DomainToMidi(b * beatDomain);
+            long offMidi = onMidi + DomainToMidi(beatDomain / 4);
+            bool accent  = b == 0;
+            var note = (SevenBitNumber)(byte)(accent ? 76 : 77);
+            var vel  = (SevenBitNumber)(byte)(accent ? 115 : 85);
+
+            events.Add(new NoteOnEvent(note, vel)
+                { Channel = (FourBitNumber)9, DeltaTime = onMidi - lastEventTick });
+            lastEventTick = onMidi;
+            events.Add(new NoteOffEvent(note, (SevenBitNumber)0)
+                { Channel = (FourBitNumber)9, DeltaTime = offMidi - lastEventTick });
+            lastEventTick = offMidi;
+        }
+        return new TrackChunk(events);
     }
 
     /// <summary>Builds a percussion click track: one wood-block hit per beat (accented on beat 1).</summary>

@@ -5,7 +5,7 @@
 // Company: Parlee Conseiller, Inc.
 // Date: 2026-09-15
 // Last edit date: 2026-09-15
-// Version: 1.2.0
+// Version: 1.4.0
 
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -52,6 +52,7 @@ public sealed partial class MainWindow : Window
 
         vm.ExitRequested            += (_, _)         => Close();
         vm.AboutRequested           += (_, aboutVm)  => new AboutWindow(aboutVm).ShowDialog(this);
+        vm.ShortcutsRequested       += (_, shortcutsVm) => new ShortcutsWindow(shortcutsVm).ShowDialog(this);
         vm.ScorePropertiesRequested += (_, propsVm)  => new ScorePropertiesWindow(propsVm).ShowDialog(this);
         vm.PluginManagerRequested   += (_, pluginVm) => new PluginManagerWindow(pluginVm).ShowDialog(this);
         vm.MidiSettingsRequested    += (_, midiVm)   => new MidiSettingsWindow(midiVm).ShowDialog(this);
@@ -62,9 +63,9 @@ public sealed partial class MainWindow : Window
         vm.ThemeChangeRequested     += OnThemeChange;
 
         // Apply the theme MainWindowViewModel already restored from settings into
-        // IsHighContrast — it couldn't raise ThemeChangeRequested for this before now,
+        // CurrentTheme — it couldn't raise ThemeChangeRequested for this before now,
         // since nothing was subscribed yet during its own construction.
-        if (vm.IsHighContrast) OnThemeChange(vm, true);
+        OnThemeChange(vm, vm.CurrentTheme);
     }
 
     private async Task OnOpenFileAsync(MainWindowViewModel vm)
@@ -264,10 +265,10 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void OnThemeChange(object? sender, bool isHighContrast)
+    private void OnThemeChange(object? sender, AppTheme theme)
     {
         if (Avalonia.Application.Current is App app)
-            app.SetHighContrast(isHighContrast);
+            app.SetTheme(theme);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
@@ -317,6 +318,7 @@ public sealed partial class MainWindow : Window
             // Transport.
             case Key.Space:  vm.PlaybackVm?.PlayPauseCommand.Execute(null); break;
             case Key.Escape: vm.PlaybackVm?.StopCommand.Execute(null); break;
+            case Key.L:      vm.PlaybackVm?.ToggleLoopCommand.Execute(null); break;
 
             default: return; // not ours — leave unhandled
         }

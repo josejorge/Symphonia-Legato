@@ -10,7 +10,7 @@ at `%AppData%\SymphoniaLegato\settings.json` (added 2026-09-15 — see
 | MIDI output device | MIDI/Audio Settings dialog | Yes. Selecting a device and clicking Apply also makes it take effect immediately — it didn't before 2026-09-15 (see `docs/BUGS.md`). |
 | SoundFont path | MIDI/Audio Settings dialog | **No — deliberately.** Not wired to an actual synth yet (`docs/TODO.md`), so persisting it would imply a working feature that doesn't exist. |
 | Cloud sync folder | Sync Settings dialog | Yes. |
-| Theme (Dark / High Contrast) | View menu | Yes. |
+| Theme (Dark / Light / High Contrast) | View menu | Yes. |
 | Recent files (last 10) | File ▸ Recent Files | Yes. Stale (deleted/moved) entries are pruned on load. |
 
 ## Build-time configuration

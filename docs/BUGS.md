@@ -149,6 +149,66 @@ measure, not just the first one's. File:
 `tests/SymphoniaLegato.Integration.Tests/LayoutEngineTests.cs` (verified to
 fail against the pre-fix code before confirming the fix).
 
+[Internal] **MusicXML import silently dropped dotted-note dots** — Symptom:
+exporting a dotted note to MusicXML and reading it back lost the dot — a
+dotted eighth came back as a plain note. Root cause:
+`MusicXmlExporter.BuildNoteElement` correctly writes `<dot/>` elements, but
+`MusicXmlImporter` never read them (or the `<type>` element) — it
+reverse-engineered `NoteValue` purely by finding the closest plain duration
+to the raw `<duration>` tick count, a lossy guess that has no concept of
+dots at all. Found and proven by a new round-trip test
+(`RoundTrip_PreservesNotePitchDurationAndDots`) before being fixed. Fix
+(2026-09-15): read `<type>` and count `<dot>` elements directly instead of
+guessing from ticks. File:
+`src/Core/SymphoniaLegato.ImportExport/MusicXmlImporter.cs`.
+
+[Internal] **MusicXML export silently drops every staff but the first** —
+Symptom: exporting a piano (grand staff) score to MusicXML keeps only the
+treble clef — the entire bass clef / left hand vanishes with no warning.
+Root cause: `MusicXmlExporter.BuildDocument` reads
+`part.Staves.FirstOrDefault()` — the importer has the same shape (`part.
+Staves.Add(staff)`, always exactly one). MusicXML represents multiple staves
+per part via `<staff>` markers inside each `<note>`, which neither side
+reads or writes. Not fixed (2026-09-15) — this is real feature work (proper
+multi-staff MusicXML support), scoped out of a "write round-trip tests"
+pass; documented here plus a permanent characterization test
+(`KnownGap_ExportingAGrandStaff_SilentlyDropsTheSecondStaff` in
+`tests/SymphoniaLegato.Integration.Tests/MusicXmlRoundTripTests.cs`) so it
+doesn't get rediscovered from scratch, and so the test itself starts failing
+(on purpose) the moment someone fixes it — a signal to replace it with real
+multi-staff coverage. This is a data-loss bug, not a stylistic gap — treat
+as higher priority than the missing-markup items below. File:
+`src/Core/SymphoniaLegato.ImportExport/MusicXmlExporter.cs`,
+`src/Core/SymphoniaLegato.ImportExport/MusicXmlImporter.cs`.
+
+[Internal] **MusicXML export writes no notation markup at all** — Symptom:
+slurs, hairpins, dynamics, lyrics, articulations, and ties all silently
+disappear on export — `MusicXmlExporter` only ever writes pitch/rest,
+duration, dots, and chord notes. Not fixed (2026-09-15) — real feature work,
+scoped out of a "write round-trip tests" pass; documented with a permanent
+characterization test
+(`KnownGap_SlursHairpinsDynamicsLyricsAndTies_AreNotExported`) so it's an
+explicit, tracked gap rather than a silent one. Lower priority than the
+missing-second-staff bug above (this is "notation looks plainer than
+intended," not "half the music vanishes"). File:
+`src/Core/SymphoniaLegato.ImportExport/MusicXmlExporter.cs`.
+
+[Internal] **The "Loop" menu item showed `Ctrl+L` but nothing was bound to
+it at all** — Symptom: pressing Ctrl+L did nothing; the menu item had no
+`Command`, and `MainWindow.OnKeyDown` doesn't handle Ctrl-modified keys in
+the first place (it returns early whenever Control/Alt/Meta is held, so a
+`Ctrl+L` case couldn't have worked there either). Looping itself worked fine
+via the toolbar's Loop toggle button (`PlaybackViewModel.IsLooping`) — only
+the menu item and its advertised shortcut were dead. Found while building
+the shortcut cheat-sheet (2026-09-15) and cross-checking every advertised
+`InputGesture` against actual command bindings. Fix: added
+`PlaybackViewModel.ToggleLoopCommand`, bound it to the menu item, and changed
+the shortcut to bare `L` (consistent with Space/Escape, which are also
+unmodified transport keys handled directly in `OnKeyDown` — `Ctrl+L` was
+never reachable there to begin with). File:
+`src/Apps/SymphoniaLegato.Desktop/ViewModels/PlaybackViewModel.cs`,
+`src/Apps/SymphoniaLegato.Desktop/Views/MainWindow.axaml(.cs)`.
+
 [Internal] **MIDI output device selection never actually took effect** — Symptom:
 choosing a different device in MIDI/Audio Settings and clicking Apply did
 nothing audible — playback always used the first device. Root cause:

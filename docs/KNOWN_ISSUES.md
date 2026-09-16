@@ -11,7 +11,8 @@ that misbehaves), not missing features.
 - Chord entry only works from the keyboard (Shift+A–G stacks a pitch onto the
   selected note) — there's no click-based way to add a chord pitch yet.
 - No drag-to-edit (dragging a note to change pitch or move it in time).
-- No cut/copy/paste or multi-note selection.
+- No cut/copy/paste or multi-note selection — as a result, Transpose
+  (Score ▸ Transpose) only works on the *whole* score, not a selected range.
 - No tuplet entry, and ties are only partially supported (model supports
   them; entry UI and MIDI playback handling are incomplete).
 
@@ -26,8 +27,6 @@ that misbehaves), not missing features.
 - No SoundFont (.sf2) playback yet — the settings dialog has a picker, but it
   isn't wired to an actual synth; playback uses the system's default GM
   device (e.g. Microsoft GS Wavetable Synth on Windows).
-- Count-in is a `Task.Delay` click loop, not sample-locked like the per-beat
-  metronome click.
 
 ## Notation rendering
 
@@ -39,13 +38,16 @@ that misbehaves), not missing features.
 ## Import/export
 
 - No MXL (compressed MusicXML) import — only plain `.xml`/`.musicxml`.
-- MusicXML round-trip fidelity (slurs, dynamics, lyrics, tuplets) isn't
-  covered by automated tests yet.
+- **Exporting a piano (grand staff) score to MusicXML only keeps the first
+  staff — the entire bass clef silently disappears.** This is data loss, not
+  a stylistic gap; see `docs/BUGS.md`.
+- MusicXML export doesn't write slurs, hairpins, dynamics, lyrics,
+  articulations, or ties — only pitch/rest, duration, dots, and chord notes
+  survive a round trip today.
 
 ## App / UX
 
 - No autosave or crash recovery.
-- Only Dark and High Contrast themes — no Light theme.
 - Android app is viewer-focused, not a full editor.
 
 For the developer-facing version of this list (with file pointers and

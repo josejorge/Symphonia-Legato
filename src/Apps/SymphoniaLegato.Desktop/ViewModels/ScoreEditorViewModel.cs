@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -343,6 +343,19 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
         if (Editor is null || SelectedNoteId is null) return;
         Editor.DeleteNote(SelectedStaffId, SelectedMeasure, SelectedNoteId.Value);
         SelectedNoteId = null;
+    }
+
+    // ── Transpose ────────────────────────────────────────────────────
+
+    /// <summary>Transposes the whole score by a number of semitones (chromatic). Takes a
+    /// string, not an int — Avalonia's plain XAML attribute CommandParameter values (e.g.
+    /// <c>CommandParameter="12"</c>) come through as strings, and a RelayCommand&lt;int&gt;
+    /// would throw trying to unbox one as a boxed int.</summary>
+    [RelayCommand]
+    private void Transpose(string semitonesText)
+    {
+        if (Editor is not null && int.TryParse(semitonesText, out int semitones))
+            Editor.Transpose(semitones);
     }
 
     // ── Articulation ─────────────────────────────────────────────────

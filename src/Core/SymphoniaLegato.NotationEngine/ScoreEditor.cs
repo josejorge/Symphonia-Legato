@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.2.0
+// Version: 1.3.0
 
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Models;
@@ -128,6 +128,12 @@ public sealed class ScoreEditor
 
     public void DeleteMeasure(int measureNumber) =>
         Execute(new DeleteMeasureCommand(measureNumber));
+
+    /// <summary>Transposes every note in the score by <paramref name="semitones"/> (chromatic).
+    /// Whole-score only — there's no multi-note selection to transpose a range yet
+    /// (see docs/TODO.md).</summary>
+    public void Transpose(int semitones) =>
+        Execute(new TransposeScoreCommand(semitones));
 
     // ── Notation helpers ──────────────────────────────────────────────
 

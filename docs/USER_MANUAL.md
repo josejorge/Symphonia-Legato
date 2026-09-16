@@ -34,23 +34,15 @@ Pick a duration first with the number keys.
 
 ### Keyboard Shortcuts
 
-| Key | Action |
-|---|---|
-| `A`–`G` | Enter a note of that pitch |
-| `1`–`6` | Select duration: whole, half, quarter, eighth, 16th, 32nd |
-| `.` | Toggle dot |
-| `R` | Toggle rest mode |
-| `Delete` / `Backspace` | Delete selected note |
-| `Space` | Play / Pause |
-| `Escape` | Stop |
-| `Ctrl+Z` | Undo |
-| `Ctrl+Y` | Redo |
-| `Ctrl+S` | Save |
-| `Ctrl+N` | New score |
-| `Ctrl+O` | Open |
-| `Ctrl++` | Zoom in |
-| `Ctrl+-` | Zoom out |
-| `Ctrl+0` | Zoom reset |
+The full, current list lives in the app itself — **Help ▸ Keyboard Shortcuts**
+(added 2026-09-15) — rather than being duplicated here where it can drift out
+of sync. Every entry there is cross-checked against the actual code, not just
+copied from menu labels; see `docs/BUGS.md` for a case where a menu label
+(`Ctrl+L` for Loop) had turned out to be decorative with nothing behind it.
+
+A few of the most-used ones: `A`–`G` enters a note, Shift+`A`–`G` adds a pitch
+to the selected note (chord entry), `1`–`6` picks a duration, `Space` plays,
+`Escape` stops.
 
 ---
 
@@ -131,6 +123,16 @@ The default piano score shows a **treble + bass clef** grand staff. Notes entere
 
 ---
 
+## Transpose
+
+`Score → Transpose` shifts every note in the score up or down a semitone or
+an octave (chromatic transposition — added 2026-09-15). It applies to the
+**whole score** — there's no way to select just a range of notes yet, so
+transposing a single passage isn't possible today (see `docs/KNOWN_ISSUES.md`).
+Undo restores the exact original spelling of every note, including flats.
+
+---
+
 ## Version Control
 
 If your score is inside a git repository, Symphonia Legato tracks changes automatically. Go to **Score → Git History** to browse previous versions and restore any saved state.
@@ -143,8 +145,8 @@ There is no single unified Preferences dialog yet — settings are split across
 a few menus, each of which now **persists across restarts** (as of
 2026-09-15; previously everything reset every launch):
 
-- **Theme**: `View → High Contrast Theme` toggles Dark / High Contrast.
-  (A Light theme doesn't exist yet — see `docs/KNOWN_ISSUES.md`.)
+- **Theme**: `View → Theme` picks Dark / Light / High Contrast (all three are
+  real as of 2026-09-15). The toolbar's theme button cycles through them.
 - **MIDI Output**: `Playback → MIDI / Audio Settings...` — pick your device,
   click Apply. The selection now actually takes effect (previously the app
   always used the first device no matter what was selected).

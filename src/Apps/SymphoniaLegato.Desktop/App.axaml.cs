@@ -1,11 +1,11 @@
 // File: App.axaml.cs
 // Description: Application entry — receives the DI ServiceProvider, constructs MainWindow with
-//   its resolved dependencies, and toggles the high-contrast style include.
+//   its resolved dependencies, and switches between Dark/Light/HighContrast style includes.
 // Author: Jose-Jorge HERNANDEZ
 // Company: Parlee Conseiller, Inc.
 // Date: 2026-09-15
 // Last edit date: 2026-09-15
-// Version: 1.0.1
+// Version: 1.2.0
 
 using Avalonia;
 using Avalonia.Controls;
@@ -27,6 +27,7 @@ public sealed class App : Application
 {
     private readonly IServiceProvider _services;
     private StyleInclude? _highContrastStyle;
+    private StyleInclude? _lightStyle;
 
     public App(IServiceProvider services) => _services = services;
 
@@ -50,23 +51,29 @@ public sealed class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    public void SetHighContrast(bool on)
+    /// <summary>Switches the active theme. Dark is the base layer (SymphoniaTheme.axaml,
+    /// always loaded from App.axaml) — Light and HighContrast are alternate overlays that
+    /// replace every one of its DynamicResource keys, so only one overlay (or none, for
+    /// Dark) is ever active at a time.</summary>
+    public void SetTheme(AppTheme theme)
     {
-        if (on)
-        {
-            _highContrastStyle ??= new StyleInclude(
-                new Uri("avares://SymphoniaLegato.Desktop/"))
-            {
-                Source = new Uri("avares://SymphoniaLegato.Desktop/Themes/HighContrastTheme.axaml")
-            };
+        _highContrastStyle ??= MakeStyleInclude("Themes/HighContrastTheme.axaml");
+        _lightStyle        ??= MakeStyleInclude("Themes/LightTheme.axaml");
 
-            if (!Styles.Contains(_highContrastStyle))
-                Styles.Add(_highContrastStyle);
-        }
-        else
+        SetOverlay(_highContrastStyle, active: theme == AppTheme.HighContrast);
+        SetOverlay(_lightStyle,        active: theme == AppTheme.Light);
+    }
+
+    private static StyleInclude MakeStyleInclude(string relativePath) =>
+        new(new Uri("avares://SymphoniaLegato.Desktop/"))
         {
-            if (_highContrastStyle is not null && Styles.Contains(_highContrastStyle))
-                Styles.Remove(_highContrastStyle);
-        }
+            Source = new Uri($"avares://SymphoniaLegato.Desktop/{relativePath}")
+        };
+
+    private void SetOverlay(StyleInclude overlay, bool active)
+    {
+        bool present = Styles.Contains(overlay);
+        if (active && !present) Styles.Add(overlay);
+        else if (!active && present) Styles.Remove(overlay);
     }
 }

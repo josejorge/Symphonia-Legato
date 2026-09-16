@@ -8,6 +8,78 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed (2026-09-15 — documentation audit after Tier 3)
+- **Project-wide version was stuck at 3.0.0** despite Tier 0 through Tier 3
+  all adding new files (no new folders) — per the versioning policy each of
+  those should have bumped it. Caught up in one bump: every `.csproj` and
+  `README.md` now read **3.1.0**; `CLAUDE.md`'s own "Project version" line
+  was separately stale at 2.0.0 (predating even the 3.0.0 bump) — fixed too.
+- **Stale test counts** in `README.md` (still said "104 tests", the
+  pre-session count) and `docs/operations_guide.html` (said "117") — both
+  now say 139. Also fixed `docs/operations_guide.html`'s and the Desktop
+  module's "Theme (Dark / High Contrast)" configuration rows to include
+  Light, and `Themes/SymphoniaTheme.axaml` / `HighContrastTheme.axaml`
+  references in `src/Apps/SymphoniaLegato.Desktop/module.md` and
+  `src/Core/SymphoniaLegato.PlaybackEngine/module.md` /
+  `docs/operations_guide.html` to mention `LightTheme.axaml` and the new
+  count-in behaviour respectively.
+- **README's feature list overclaimed tuplets/ties as fully supported** —
+  corrected to match `docs/KNOWN_ISSUES.md` (ties are modelled but
+  entry/playback support is partial; tuplets aren't wired up at all).
+- **`docs/CONFIGURATION.md`'s Theme row** still said "Dark / High Contrast",
+  missed by the earlier pass above — now says "Dark / Light / High Contrast".
+- **`docs/API_REFERENCE.md` was missing two Tier 3 API additions**:
+  `ScoreEditor.Transpose(int semitones)` and `ScoreToMidiConverter`'s
+  `includeCountIn` parameter / `ComputeCountInDuration(Score)` — both added.
+
+### Added (2026-09-15 — TODO.md Tier 3: theme, shortcuts, transpose, count-in, MusicXML tests)
+- **Light theme** — `Themes/LightTheme.axaml`, plus a proper `AppTheme` enum
+  (Dark/Light/HighContrast) replacing the old boolean high-contrast toggle.
+  `View ▸ Theme` submenu for direct selection; the toolbar button now cycles
+  through all three. Persists via `AppSettingsService`.
+- **Keyboard Shortcuts dialog** (`Help ▸ Keyboard Shortcuts`) — every entry
+  cross-checked against actual `Command` bindings and `MainWindow.OnKeyDown`
+  rather than copied from `InputGesture` labels, which caught a real bug (see
+  Fixed, below). `docs/USER_MANUAL.md`'s hand-maintained shortcut table was
+  replaced with a pointer to this dialog so the two can't drift apart.
+- **Transpose** (`Score ▸ Transpose`) — shifts the whole score up/down a
+  semitone or an octave (chromatic). Undo restores each note's exact original
+  spelling from a snapshot, not by re-deriving it from the MIDI number (which
+  would have silently turned flats into sharps).
+- **Sample-accurate count-in** — `ScoreToMidiConverter.Convert(includeCountIn:
+  true)` now bakes a one-bar click prefix directly into the MIDI file (every
+  other track shifted later by exactly one bar) instead of firing clicks from
+  a `Task.Delay` loop subject to OS timer jitter. `MidiPlaybackEngine`
+  compensates a "play from here" seek target by the same amount so it still
+  lands on the right note.
+- **MusicXML round-trip fidelity tests** — 9 new tests
+  (`tests/SymphoniaLegato.Integration.Tests/MusicXmlRoundTripTests.cs`)
+  covering what survives a round trip today (title/composer, time/key
+  signature, pitch/duration/dots/rests/chords) plus two permanent
+  characterization tests documenting real gaps found while writing them (see
+  Fixed and Known limitations, below).
+
+### Fixed (2026-09-15 — found while building Tier 3)
+- **MusicXML import silently dropped dotted-note dots.** The exporter wrote
+  `<dot/>` correctly; the importer never read it (or `<type>`), reconstructing
+  duration purely by guessing the closest plain value from the raw tick
+  count. Now reads `<type>`/`<dot>` directly instead of guessing.
+- **The "Loop" menu item showed `Ctrl+L` with nothing bound to it at all** —
+  not even reachable from `MainWindow.OnKeyDown`, which returns early on any
+  Ctrl-modified key. Looping itself worked fine via the toolbar's Loop
+  toggle. Added `PlaybackViewModel.ToggleLoopCommand`, changed the shortcut
+  to bare `L` (consistent with Space/Escape, the other unmodified transport
+  keys).
+
+### Known limitations found this pass (real feature work, not fixed here)
+- **MusicXML export drops every staff but the first** — exporting a piano
+  score keeps only the treble clef; the entire bass clef vanishes with no
+  warning. Data loss, not a stylistic gap — see `docs/BUGS.md` and
+  `docs/TODO.md` for why this was scoped out of a "write tests" pass.
+- **MusicXML export writes no notation markup** — slurs, hairpins, dynamics,
+  lyrics, articulations, and ties are silently dropped. Lower priority than
+  the missing-staff bug above.
+
 ### Fixed (2026-09-15 — grand-staff measure width bug, user-reported with screenshot)
 - **A measure's width was computed from only the treble staff**, ignoring
   every other staff. On a grand staff, a measure where the bass clef had

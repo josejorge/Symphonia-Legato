@@ -47,15 +47,23 @@ and move notable completions into `CHANGELOG.md`.
 - [ ] Selection of multiple notes (marquee / shift-click) + bulk operations.
 - [ ] Tie / slur entry by keyboard; tuplet entry (3, 5, …).
 - [ ] Insert vs. overwrite entry modes; caret-based step entry indicator.
-- [ ] Transpose selection / whole score by interval or diatonic step.
+- [x] Transpose whole score by semitones — fixed 2026-09-15: Score ▸ Transpose
+      submenu (up/down a semitone or an octave), `TransposeScoreCommand`.
+      Chromatic (via `Pitch.FromMidi`), not diatonic. **Selection-range
+      transpose is still open** — there's no multi-note selection to
+      transpose a range yet (see "Selection of multiple notes" above).
 
 ## Playback & audio
 - [ ] **SoundFont (.sf2) playback** — the MIDI/Audio Settings dialog has a picker;
       wire an actual SF2 synth (e.g. via a soft-synth) instead of the GS Wavetable.
 - [ ] Per-staff instrument change reflected live in playback.
 - [ ] Loop region UI (set loop start/end on the sheet; engine already supports it).
-- [ ] Count-in: make it sample-accurate by baking a pre-roll into the MIDI (today
-      it's a `Task.Delay` click loop — fine, but not sample-locked).
+- [x] Count-in is now sample-accurate — fixed 2026-09-15:
+      `ScoreToMidiConverter.Convert(includeCountIn: true)` bakes a one-bar
+      click prefix into the MIDI itself (shifting every other track later by
+      exactly one bar) instead of firing clicks from a `Task.Delay` loop.
+      `MidiPlaybackEngine` compensates any "play from here" seek target by
+      the same amount. Removed the now-dead `PlayCountInAsync`/`SendClick`.
 - [x] Solo/mute honoured in the rebuilt MIDI — fixed 2026-09-15 alongside the
       mixer→playback wiring (see "Known limitations / tech debt" above).
 - [ ] Click-to-scrub the timeline; a visible transport/progress bar.
@@ -68,7 +76,19 @@ and move notable completions into `CHANGELOG.md`.
 - [ ] Rehearsal marks, repeat endings (voltas render but aren't fully wired).
 
 ## Import / export
-- [ ] MusicXML round-trip fidelity tests (slurs, dynamics, lyrics, tuplets).
+- [x] MusicXML round-trip fidelity tests — added 2026-09-15
+      (`tests/SymphoniaLegato.Integration.Tests/MusicXmlRoundTripTests.cs`).
+      Found and fixed one real bug along the way (dotted-note dots were
+      silently dropped on import — see `docs/BUGS.md`). Also **found two
+      bigger gaps than "add tests" implied**, scoped out of this pass as real
+      feature work and documented with permanent characterization tests:
+  - [ ] **Data loss, higher priority**: exporting a grand staff (piano) only
+        keeps the first staff — the whole bass clef vanishes. Neither
+        exporter nor importer read/write MusicXML's per-note `<staff>`
+        marker. See `docs/BUGS.md`.
+  - [ ] **Missing markup, lower priority**: slurs, hairpins, dynamics,
+        lyrics, articulations, and ties aren't exported at all — only
+        pitch/rest, duration, dots, and chord notes are. See `docs/BUGS.md`.
 - [x] MIDI export menu item is stubbed (`MainWindow.OnExportAsync` "midi" case) —
       wired 2026-09-15 to write a `.mid` via `ScoreToMidiConverter`.
 - [ ] MXL (compressed MusicXML) import.
@@ -89,8 +109,16 @@ and move notable completions into `CHANGELOG.md`.
 - [x] Recent files menu — fixed 2026-09-15: `File → Recent Files` submenu,
       capped at 10, persisted, stale (deleted/moved) entries pruned on load.
 - [ ] Autosave + crash recovery.
-- [ ] On-screen keyboard shortcut cheat-sheet (Help menu).
-- [ ] Light theme (only Dark + High Contrast today).
+- [x] On-screen keyboard shortcut cheat-sheet — fixed 2026-09-15: Help ▸
+      Keyboard Shortcuts, `ShortcutsViewModel`/`ShortcutsWindow`. Every entry
+      was cross-checked against actual `Command` bindings and
+      `MainWindow.OnKeyDown`, not just copied from `InputGesture` labels —
+      one of which (`Ctrl+L` for Loop) turned out to be pure decoration with
+      nothing behind it at all (see `docs/BUGS.md`); fixed alongside this.
+- [x] Light theme — fixed 2026-09-15: `Themes/LightTheme.axaml` (mirrors
+      `HighContrastTheme.axaml`'s structure), `AppTheme` enum
+      (Dark/Light/HighContrast) replacing the old `IsHighContrast` bool,
+      View ▸ Theme submenu + a toolbar cycle button.
 
 ## Long-term
 - [ ] Real-time MIDI keyboard input (record from a connected MIDI device).

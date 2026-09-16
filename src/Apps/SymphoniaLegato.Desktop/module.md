@@ -26,7 +26,9 @@ Nothing — this is a leaf application.
 | `Program.cs` | DI registration & app entry point |
 | `Views/MainWindow.axaml(.cs)` | Main window layout + export/open/save wiring |
 | `ViewModels/MainWindowViewModel.cs` | Top-level VM: menus, export requests, theme |
-| `Themes/SymphoniaTheme.axaml` / `HighContrastTheme.axaml` | Dark + high-contrast theme tokens |
+| `Themes/SymphoniaTheme.axaml` / `LightTheme.axaml` / `HighContrastTheme.axaml` | Dark/Light/High-Contrast theme tokens — `AppTheme` enum picks between them |
+| `Services/AppSettingsService.cs` | Persisted preferences (theme, MIDI device, sync folder, recent files) — `%AppData%\SymphoniaLegato\settings.json` |
+| `Views/ShortcutsWindow.axaml(.cs)` | Help ▸ Keyboard Shortcuts dialog — kept as the single source of truth for shortcuts (not duplicated in `docs/USER_MANUAL.md`) |
 
 ## Docs
 `docs/operations_guide.html`, `docs/executive_overview.html` (this module —

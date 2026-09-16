@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using SymphoniaLegato.Core.Models;
 
@@ -93,6 +93,45 @@ internal sealed class AddChordPitchCommand(Guid staffId, int measureNumber, Guid
              .FirstOrDefault(s => s.Id == staffId)
              ?.GetMeasure(measureNumber)
              ?.Notes.FirstOrDefault(n => n.Id == noteId);
+}
+
+/// <summary>Transposes every note (and chord note) across the whole score by a fixed number
+/// of semitones. Chromatic, not diatonic — <see cref="Pitch.FromMidi"/> always spells a black
+/// key with a sharp, so a flat-spelled note transposed and then transposed back will come back
+/// with its original spelling restored from a snapshot, not by re-deriving it from the MIDI
+/// number (which would silently turn flats into sharps — see <see cref="Undo"/>).</summary>
+internal sealed class TransposeScoreCommand(int semitones) : IScoreCommand
+{
+    private readonly Dictionary<Guid, (Pitch? Pitch, List<Pitch> ChordNotes)> _original = new();
+
+    public string Description => $"Transpose score by {semitones:+0;-0;0} semitone(s)";
+
+    public void Execute(Score score)
+    {
+        _original.Clear();
+        foreach (var note in AllNotes(score))
+        {
+            _original[note.Id] = (note.Pitch, [.. note.ChordNotes]);
+            if (note.Pitch is { } pitch)
+                note.Pitch = Pitch.FromMidi(pitch.MidiNumber + semitones);
+            for (int i = 0; i < note.ChordNotes.Count; i++)
+                note.ChordNotes[i] = Pitch.FromMidi(note.ChordNotes[i].MidiNumber + semitones);
+        }
+    }
+
+    public void Undo(Score score)
+    {
+        foreach (var note in AllNotes(score))
+        {
+            if (!_original.TryGetValue(note.Id, out var orig)) continue;
+            note.Pitch = orig.Pitch;
+            note.ChordNotes.Clear();
+            note.ChordNotes.AddRange(orig.ChordNotes);
+        }
+    }
+
+    private static IEnumerable<Note> AllNotes(Score score) =>
+        score.Parts.SelectMany(p => p.Staves).SelectMany(s => s.Measures).SelectMany(m => m.Notes);
 }
 
 internal sealed class ChangeTimeSignatureCommand(int measureNumber, TimeSignature newTimeSig) : IScoreCommand

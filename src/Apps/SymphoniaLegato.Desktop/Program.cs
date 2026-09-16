@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +75,7 @@ static IServiceProvider BuildServices()
 
     // ── ViewModels ────────────────────────────────────────────────
     sc.AddSingleton<AboutViewModel>();
+    sc.AddSingleton<ShortcutsViewModel>();
     sc.AddSingleton<ScorePropertiesViewModel>();
     sc.AddSingleton<GitHistoryViewModel>();
     sc.AddSingleton<PluginManagerViewModel>();

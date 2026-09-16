@@ -4,9 +4,10 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-09-15
 // Last edit date: 2026-09-15
-// Version: 1.0.0
+// Version: 1.1.0
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace SymphoniaLegato.Desktop.Services;
@@ -24,6 +25,11 @@ public sealed class AppSettingsService
 {
     private readonly string _path;
     private readonly ILogger<AppSettingsService> _logger;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() } // "Dark"/"Light"/"HighContrast", not 0/1/2
+    };
 
     public AppSettings Current { get; }
 
@@ -45,7 +51,7 @@ public sealed class AppSettingsService
             if (File.Exists(_path))
             {
                 var json = File.ReadAllText(_path);
-                var settings = JsonSerializer.Deserialize<AppSettings>(json);
+                var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                 if (settings is not null) return settings;
             }
         }
@@ -60,7 +66,7 @@ public sealed class AppSettingsService
     {
         try
         {
-            var json = JsonSerializer.Serialize(Current, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(Current, JsonOptions);
             File.WriteAllText(_path, json);
         }
         catch (Exception ex)

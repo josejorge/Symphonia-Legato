@@ -6,7 +6,7 @@ Author: Jose-Jorge HERNANDEZ
 Company: N/A (personal open-source project, MIT licensed)
 Date: 2026-09-15
 Last edit date: 2026-09-15
-Version: 1.1.0
+Version: 1.2.0
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -38,9 +38,12 @@ Version: 1.1.0
 <h2>System description</h2>
 <p><code>MidiPlaybackEngine</code> plays a <code>Score</code> through the
 system's MIDI output device via DryWetMidi. <code>ScoreToMidiConverter</code>
-converts domain ticks (1024/quarter) to MIDI ticks (480 PPQ), emits tempo and
-a sample-accurate percussion click track. <code>MetronomeEngine</code> is a
-separate, silent timer used for UI-side beat events.</p>
+converts domain ticks (1024/quarter) to MIDI ticks (480 PPQ), emits tempo, a
+sample-accurate percussion click track, and — since 2026-09-15 — an optional
+sample-accurate one-bar count-in prefix (shifts every other track later by
+exactly one bar rather than firing clicks from a <code>Task.Delay</code>
+loop). <code>MetronomeEngine</code> is a separate, silent timer used for
+UI-side beat events.</p>
 
 <h2>Prerequisites</h2>
 <p>.NET 9 SDK. NuGet: <code>Melanchall.DryWetMidi</code> 8.0.0. A reachable
@@ -48,7 +51,7 @@ MIDI output device at runtime (see root operations guide).</p>
 
 <h2>Build &amp; verify in isolation</h2>
 <pre><code>dotnet build src\Core\SymphoniaLegato.PlaybackEngine\SymphoniaLegato.PlaybackEngine.csproj
-dotnet test tests\SymphoniaLegato.PlaybackEngine.Tests --no-build   # 6 tests (ScoreToMidiConverter)</code></pre>
+dotnet test tests\SymphoniaLegato.PlaybackEngine.Tests --no-build   # 11 tests (ScoreToMidiConverter)</code></pre>
 <p><code>MidiPlaybackEngine</code> itself has no automated tests — it opens a
 real OS MIDI device, so it needs a fake/abstraction over the device before
 it's unit-testable (tracked in <code>docs/TODO.md</code>).</p>
@@ -73,6 +76,7 @@ this library yet.</p>
 <tr><th>Symptom</th><th>Cause / fix</th></tr>
 <tr><td>A selected MIDI device doesn't produce sound</td><td>Confirm <code>SetOutputDevice</code> was actually called with that device's name (the Desktop Settings dialog's Apply button does this) — if the name doesn't match any device from <code>OutputDevice.GetAll()</code>, <code>EnsureOutputDevice()</code> falls back to the system default and logs a warning.</td></tr>
 <tr><td>Play does nothing</td><td>The engine's MIDI snapshot is only rebuilt at the start of playback from the live <code>Score</code> — a caller must not assume the engine already has current data (pitfall #21).</td></tr>
+<tr><td>"Play from here" lands on the wrong note when count-in is on</td><td>The whole file is shifted later by one bar when a count-in is baked in — <code>MidiPlaybackEngine.PlayAsync</code> must add <code>ScoreToMidiConverter.ComputeCountInDuration(score)</code> to the seek target, not just <code>_pendingSeek</code> alone.</td></tr>
 <tr><td>Piano-key preview is silent before the first Play</td><td>The output device opens lazily via <code>EnsureOutputDevice()</code>, shared by both playback and preview — make sure both call sites use it, not just <code>PlayAsync</code> (pitfall #22).</td></tr>
 <tr><td>Metronome click doesn't line up / jitters</td><td>The audible click comes from a percussion track baked into the MIDI by <code>ScoreToMidiConverter</code> (sample-accurate), not from a UI timer — <code>MetronomeEngine</code>'s own <code>Beat</code> event is for UI display only (pitfall #29).</td></tr>
 </table>

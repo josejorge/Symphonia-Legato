@@ -6,7 +6,7 @@ Author: Jose-Jorge HERNANDEZ
 Company: N/A (personal open-source project, MIT licensed)
 Date: 2026-09-15
 Last edit date: 2026-09-15
-Version: 1.1.0
+Version: 1.2.0
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -64,7 +64,7 @@ dotnet build SymphoniaLegato.sln -c Debug
 # Run the desktop app
 dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build
 
-# Run all tests (117 passing as of 2026-09-15)
+# Run all tests (139 passing as of 2026-09-15)
 dotnet test SymphoniaLegato.sln --no-build
 
 # Publish a self-contained Windows EXE
@@ -96,7 +96,7 @@ a debugger attached, that's an open gap — see <code>docs/TODO.md</code>.</div>
 <tr><td>MIDI output device</td><td>MIDI/Audio Settings dialog</td><td>Yes — and selecting one now actually changes what plays (fixed 2026-09-15; previously always used the first device regardless of selection, see docs/BUGS.md)</td></tr>
 <tr><td>SoundFont path</td><td>MIDI/Audio Settings dialog</td><td>No — deliberately; not wired to an actual synth yet, so persisting it would be misleading</td></tr>
 <tr><td>Cloud sync folder</td><td>Sync Settings dialog (any locally-synced folder, e.g. OneDrive/Dropbox)</td><td>Yes</td></tr>
-<tr><td>Theme (Dark / High Contrast)</td><td>View menu</td><td>Yes</td></tr>
+<tr><td>Theme (Dark / Light / High Contrast)</td><td>View menu</td><td>Yes</td></tr>
 <tr><td>Recent files (last 10)</td><td>File ▸ Recent Files</td><td>Yes — stale (deleted/moved) entries are pruned on load</td></tr>
 </table>
 

@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
@@ -58,16 +58,17 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     {
         await StopAsync();
         _score = score;
-        // Bake the metronome track into the MIDI when enabled, so beat clicks are
-        // sample-accurate rather than fired from the (jittery) UI position timer.
-        _midiFile = _converter.Convert(score, MetronomeEnabled);
+        // Bake the metronome track — and, when enabled, a one-bar count-in prefix —
+        // into the MIDI itself, so both are sample-accurate rather than fired from a
+        // (jittery) UI timer / Task.Delay loop. See docs/BUGS.md.
+        _midiFile = _converter.Convert(score, MetronomeEnabled, CountInEnabled);
         Duration = _midiFile.GetDuration<MetricTimeSpan>();
         _logger.LogInformation("Score loaded for playback. Duration: {Duration}", Duration);
     }
 
-    public async Task PlayAsync(CancellationToken ct = default)
+    public Task PlayAsync(CancellationToken ct = default)
     {
-        if (_midiFile is null) return;
+        if (_midiFile is null) return Task.CompletedTask;
 
         EnsureOutputDevice();
 
@@ -76,7 +77,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
             _playback.Start();
             State = PlaybackState.Playing;
             StartPositionTimer();
-            return;
+            return Task.CompletedTask;
         }
 
         DisposePlayback();
@@ -89,7 +90,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         {
             // Null playback for headless/testing
             State = PlaybackState.Playing;
-            return;
+            return Task.CompletedTask;
         }
 
         _playback.Speed = TempoMultiplier;
@@ -97,16 +98,21 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         _playback.Finished += OnPlaybackFinished;
         _playback.EventPlayed += OnEventPlayed;
 
-        if (_pendingSeek > TimeSpan.Zero)
-            _playback.MoveToTime((MetricTimeSpan)_pendingSeek);
+        // The whole file was shifted later by one bar when the count-in was baked in
+        // (see ScoreToMidiConverter.Convert) — a "play from here" seek target needs the
+        // same offset, or it would land one bar early.
+        var seekTarget = _pendingSeek;
+        if (CountInEnabled && _score is not null)
+            seekTarget += ScoreToMidiConverter.ComputeCountInDuration(_score);
 
-        if (CountInEnabled)
-            await PlayCountInAsync();
+        if (seekTarget > TimeSpan.Zero)
+            _playback.MoveToTime((MetricTimeSpan)seekTarget);
 
         _playback.Start();
         State = PlaybackState.Playing;
         StartPositionTimer();
         _logger.LogInformation("Playback started");
+        return Task.CompletedTask;
     }
 
     public Task PauseAsync()
@@ -230,43 +236,9 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
         if (State != PlaybackState.Playing) return;
         var pos = Position;
         var (measure, beat) = ComputeMeasureBeat(pos);
-        // (The per-beat metronome click is baked into the MIDI in LoadScoreAsync —
-        //  no timer-driven click here. The count-in still uses SendClick below.)
+        // (Both the per-beat metronome click and the count-in are baked into the MIDI
+        //  in LoadScoreAsync — no timer- or Task.Delay-driven clicks here at all.)
         PositionChanged?.Invoke(this, new PlaybackPositionChangedEventArgs(pos, measure, beat));
-    }
-
-    /// <summary>Plays one bar of metronome clicks before playback begins.</summary>
-    private async Task PlayCountInAsync()
-    {
-        var ts = _score?.Parts.SelectMany(p => p.Staves).FirstOrDefault()?.Measures.FirstOrDefault()?.TimeSignature
-                 ?? _score?.InitialTimeSignature ?? SymphoniaLegato.Core.Models.TimeSignature.Common;
-        double bpm = Math.Max(1, _score?.InitialTempo ?? 120);
-        int beats = Math.Max(1, ts.Numerator);
-        int beatMs = (int)(60_000.0 / bpm * (4.0 / ts.Denominator));
-        for (int b = 0; b < beats; b++)
-        {
-            SendClick(accent: b == 0);
-            await Task.Delay(beatMs);
-        }
-    }
-
-    /// <summary>Sends a single metronome click on the GM percussion channel (10).</summary>
-    private void SendClick(bool accent)
-    {
-        if (_outputDevice is null) return;
-        try
-        {
-            var note = (Melanchall.DryWetMidi.Common.SevenBitNumber)(byte)(accent ? 76 : 77); // hi/lo wood block
-            var vel  = (Melanchall.DryWetMidi.Common.SevenBitNumber)(byte)(accent ? 115 : 85);
-            _outputDevice.SendEvent(new NoteOnEvent(note, vel)
-            {
-                Channel = (Melanchall.DryWetMidi.Common.FourBitNumber)9
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Metronome click failed");
-        }
     }
 
     /// <summary>Maps an elapsed playback time to (measure number, beat) using the score's tempo.</summary>

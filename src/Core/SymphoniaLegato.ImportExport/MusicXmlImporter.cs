@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.0.0
+// Version: 1.1.0
 
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -138,7 +138,7 @@ public sealed class MusicXmlImporter : IScoreImporter
 
                     var note = new Note
                     {
-                        Duration = TicksToDuration(durationTicks),
+                        Duration = ParseDuration(noteEl, durationTicks),
                         Pitch = isRest ? null : ParsePitch(noteEl)
                     };
 
@@ -185,9 +185,36 @@ public sealed class MusicXmlImporter : IScoreImporter
     private static int DurationToTicks(int midiDur, int divisions) =>
         (int)((long)midiDur * Duration.Quarter.Ticks / divisions);
 
+    /// <summary>Prefers the explicit &lt;type&gt;/&lt;dot&gt; elements MusicXmlExporter
+    /// writes (exact) over reverse-engineering the note value from &lt;duration&gt; alone
+    /// (lossy — dots inflate the tick count, so nearest-tick matching silently drops them;
+    /// this was a real round-trip bug caught by MusicXmlRoundTripTests, see docs/BUGS.md).
+    /// Falls back to tick-matching for files with no &lt;type&gt; element.</summary>
+    private static Duration ParseDuration(XElement noteEl, int ticks)
+    {
+        string? type = noteEl.Element("type")?.Value;
+        int dots = noteEl.Elements("dot").Count();
+        return type is not null
+            ? new Duration(TypeToNoteValue(type), dots)
+            : TicksToDuration(ticks);
+    }
+
+    private static NoteValue TypeToNoteValue(string type) => type switch
+    {
+        "whole"    => NoteValue.Whole,
+        "half"     => NoteValue.Half,
+        "quarter"  => NoteValue.Quarter,
+        "eighth"   => NoteValue.Eighth,
+        "16th"     => NoteValue.Sixteenth,
+        "32nd"     => NoteValue.ThirtySecond,
+        "64th"     => NoteValue.SixtyFourth,
+        "breve"    => NoteValue.Breve,
+        _          => NoteValue.Quarter
+    };
+
     private static Duration TicksToDuration(int ticks)
     {
-        // Find closest standard duration
+        // Find closest standard duration — fallback only, see ParseDuration.
         var candidates = Enum.GetValues<NoteValue>()
             .Select(v => new Duration(v))
             .OrderBy(d => Math.Abs(d.Ticks - ticks));

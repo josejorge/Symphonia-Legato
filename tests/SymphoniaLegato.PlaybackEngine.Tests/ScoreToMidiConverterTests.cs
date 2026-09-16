@@ -5,7 +5,7 @@
 // Company: Parlee Conseiller, Inc.
 // Date: 2026-09-15
 // Last edit date: 2026-09-15
-// Version: 1.1.0
+// Version: 1.2.0
 
 using FluentAssertions;
 using Melanchall.DryWetMidi.Common;
@@ -136,6 +136,50 @@ public sealed class ScoreToMidiConverterTests
         noteOns.Should().HaveCount(2);
         noteOns[0].Velocity.Should().NotBe((SevenBitNumber)0, "the soloed staff should still sound");
         noteOns[1].Velocity.Should().Be((SevenBitNumber)0, "every non-soloed staff is muted once any staff is soloed");
+    }
+
+    [Fact]
+    public void Convert_WithCountIn_ShiftsMusicByOneBarAndPrependsFourClicks()
+    {
+        // Common time at 120 BPM: one bar = 4 quarters = 480 MIDI ticks/quarter * 4 = 1920.
+        var score = SingleNoteScore();
+
+        var midiFile = CreateConverter().Convert(score, includeMetronome: false, includeCountIn: true);
+
+        var noteOn = midiFile.GetTrackChunks()
+            .SelectMany(t => t.GetTimedEvents())
+            .Single(e => e.Event is NoteOnEvent on && on.Channel != (FourBitNumber)9);
+        noteOn.Time.Should().Be(1920, "the whole piece must be pushed later by exactly one bar");
+
+        var countInClicks = midiFile.GetTrackChunks()
+            .SelectMany(t => t.Events)
+            .OfType<NoteOnEvent>()
+            .Where(e => e.Channel == (FourBitNumber)9)
+            .ToList();
+        countInClicks.Should().HaveCount(4, "one click per beat in a 4/4 count-in bar");
+        countInClicks.Count(e => e.NoteNumber == (SevenBitNumber)76).Should().Be(1, "beat 1 is accented");
+    }
+
+    [Fact]
+    public void Convert_WithoutCountIn_MusicStartsAtTickZero()
+    {
+        var score = SingleNoteScore();
+
+        var midiFile = CreateConverter().Convert(score, includeMetronome: false, includeCountIn: false);
+
+        var noteOn = midiFile.GetTrackChunks().Single().GetTimedEvents()
+            .Single(e => e.Event is NoteOnEvent);
+        noteOn.Time.Should().Be(0, "no count-in requested — nothing should shift the music");
+    }
+
+    [Fact]
+    public void ComputeCountInDuration_CommonTimeAt120Bpm_IsTwoSeconds()
+    {
+        var score = SingleNoteScore(); // 4/4 at 120 BPM
+
+        var duration = ScoreToMidiConverter.ComputeCountInDuration(score);
+
+        duration.Should().Be(TimeSpan.FromSeconds(2.0), "4 beats at 120 BPM = 4 * 0.5s");
     }
 
     [Fact]

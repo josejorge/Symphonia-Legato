@@ -4,7 +4,7 @@
 
 Created by **Jose Jorge Hernandez**
 
-**Version:** 3.0.0
+**Version:** 3.1.0
 
 Symphonia Legato is a cross-platform, piano-first music notation editor inspired by the classic Encore application. Built with C# (.NET 9), Avalonia UI, and a clean MVVM architecture — lightweight, fast, and fully git-friendly.
 
@@ -14,7 +14,7 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 
 - **Grand Staff piano editor** — Treble + Bass clef linked as one unit
 - **White-paper engraving** — black notation on a white page (dark app chrome)
-- **Full notation support** — Notes, chords, rests, ties, slurs, tuplets, dynamics, lyrics, tempo markings
+- **Full notation support** — Notes, chords, rests, slurs, dynamics, lyrics, tempo markings (ties are modelled but entry/playback support is still partial; tuplets aren't wired up yet — see `docs/KNOWN_ISSUES.md`)
 - **Automatic note flow** — notes flow across bar lines onto new measures and new lines; no overlap
 - **All standard clefs** — Treble, Bass, Alto, Tenor
 - **All key & time signatures** — C major through all sharps/flats, custom
@@ -36,7 +36,7 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 - **Plugin system** — Extensible instruments and exporters
 - **Git history panel** — Version control built in, commit/restore score versions
 - **Cloud sync** — Push/pull .enscore files via any cloud-synced local folder
-- **Dark and High Contrast themes** — WCAG 2.1 AA+ high contrast
+- **Dark, Light, and High Contrast themes** — WCAG 2.1 AA+ high contrast
 - **Accessibility** — AutomationProperties on all interactive controls
 - **Android companion app** — Score viewer, playback, metronome, annotations
 - **AI Assistant** — Chord detection, fingering suggestions (offline); harmonisation, score analysis, practice recommendations (Claude API, API key required)
@@ -56,7 +56,7 @@ Symphonia Legato is a cross-platform, piano-first music notation editor inspired
 | PDF | QuestPDF 2024 |
 | Format | MusicXML 4.0 |
 | Version Control | LibGit2Sharp |
-| Testing | xUnit + FluentAssertions (104 tests) |
+| Testing | xUnit + FluentAssertions (139 tests) |
 
 ---
 
@@ -139,7 +139,7 @@ See [docs/ANDROID.md](docs/ANDROID.md) for full Android setup and deployment gui
 ### Run Tests
 
 ```powershell
-dotnet test SymphoniaLegato.sln   # 104 tests, all passing
+dotnet test SymphoniaLegato.sln   # 139 tests, all passing
 ```
 
 ---

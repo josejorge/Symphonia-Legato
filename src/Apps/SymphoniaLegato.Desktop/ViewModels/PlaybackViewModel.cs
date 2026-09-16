@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.0.0
+// Version: 1.1.0
 
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -105,6 +105,12 @@ public sealed partial class PlaybackViewModel : ViewModelBase
 
     partial void OnIsLoopingChanged(bool value) =>
         _engine.IsLooping = value;
+
+    /// <summary>Toggles looping — lets the "L" keyboard shortcut and the Playback menu
+    /// drive the same <see cref="IsLooping"/> the toolbar's Loop button already does.
+    /// Previously the menu showed "Ctrl+L" with nothing behind it at all (see docs/BUGS.md).</summary>
+    [RelayCommand]
+    private void ToggleLoop() => IsLooping = !IsLooping;
 
     partial void OnMetronomeEnabledChanged(bool value) =>
         _engine.MetronomeEnabled = value;

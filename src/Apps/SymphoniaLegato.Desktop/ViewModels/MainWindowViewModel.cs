@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.2.0
+// Version: 1.4.0
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -26,6 +26,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IPlaybackEngine _playback;
     private readonly ILogger<MainWindowViewModel> _logger;
     private readonly AboutViewModel _aboutVm;
+    private readonly ShortcutsViewModel _shortcutsVm;
     private readonly ScorePropertiesViewModel _scorePropertiesVm;
     private readonly GitHistoryViewModel _gitHistoryVm;
     private readonly PluginManagerViewModel _pluginManagerVm;
@@ -47,7 +48,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _showGitHistory;
     [ObservableProperty] private bool _showMetronome;
     [ObservableProperty] private bool _showAIAssistant;
-    [ObservableProperty] private bool _isHighContrast;
+    [ObservableProperty] private AppTheme _currentTheme = AppTheme.Dark;
     [ObservableProperty] private double _zoom = 1.0;
     [ObservableProperty] private string _statusMessage = "Ready";
 
@@ -64,6 +65,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         MixerViewModel mixerVm,
         PianoKeyboardViewModel pianoKeyboard,
         AboutViewModel aboutVm,
+        ShortcutsViewModel shortcutsVm,
         ScorePropertiesViewModel scorePropertiesVm,
         GitHistoryViewModel gitHistoryVm,
         PluginManagerViewModel pluginManagerVm,
@@ -78,6 +80,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _playback = playback;
         _logger = logger;
         _aboutVm = aboutVm;
+        _shortcutsVm = shortcutsVm;
         _scorePropertiesVm = scorePropertiesVm;
         _gitHistoryVm = gitHistoryVm;
         _pluginManagerVm = pluginManagerVm;
@@ -111,11 +114,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // Restore persisted preferences (recent files here; MIDI device and sync
         // folder restore themselves — see MidiSettingsViewModel/SyncSettingsViewModel).
-        // Theme is restored into the IsHighContrast property only — nothing is
+        // Theme is restored into the CurrentTheme property only — nothing is
         // subscribed to ThemeChangeRequested yet this early in construction (MainWindow
         // wires it up once DataContext is set), so MainWindow applies the initial
         // value itself right after subscribing. See OnDataContextChanged.
-        IsHighContrast = _settings.Current.IsHighContrast;
+        CurrentTheme = _settings.Current.Theme;
         foreach (var path in _settings.Current.RecentFiles.Where(File.Exists))
             RecentFiles.Add(path);
 
@@ -265,18 +268,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void ToggleMetronome()     => ShowMetronome     = !ShowMetronome;
     [RelayCommand]
     private void ToggleAIAssistant()   => ShowAIAssistant   = !ShowAIAssistant;
+    /// <summary>Selects the app theme (Dark/Light/HighContrast) and persists it — bound
+    /// to the three View ▸ Theme submenu items.</summary>
     [RelayCommand]
-    private void ToggleHighContrast() => SetHighContrast(!IsHighContrast);
-
-    /// <summary>Applies the theme and persists it. Shared by the toggle command and by
-    /// startup restoration of the last session's theme.</summary>
-    private void SetHighContrast(bool highContrast)
+    private void SetTheme(AppTheme theme)
     {
-        IsHighContrast = highContrast;
-        ThemeChangeRequested?.Invoke(this, IsHighContrast);
-        _settings.Current.IsHighContrast = IsHighContrast;
+        CurrentTheme = theme;
+        ThemeChangeRequested?.Invoke(this, CurrentTheme);
+        _settings.Current.Theme = CurrentTheme;
         _settings.Save();
     }
+
+    /// <summary>Advances Dark → Light → HighContrast → Dark. The toolbar's one-button
+    /// quick-access equivalent of the View ▸ Theme submenu (which offers direct selection).</summary>
+    [RelayCommand]
+    private void CycleTheme() => SetTheme(CurrentTheme switch
+    {
+        AppTheme.Dark  => AppTheme.Light,
+        AppTheme.Light => AppTheme.HighContrast,
+        _              => AppTheme.Dark
+    });
 
     // ── Score Properties ──────────────────────────────────────────────
 
@@ -314,6 +325,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void ShowAbout() => AboutRequested?.Invoke(this, _aboutVm);
 
     [RelayCommand]
+    private void ShowShortcuts() => ShortcutsRequested?.Invoke(this, _shortcutsVm);
+
+    [RelayCommand]
     private void ShowPluginManager() => PluginManagerRequested?.Invoke(this, _pluginManagerVm);
 
     [RelayCommand]
@@ -326,6 +340,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public event EventHandler? ExitRequested;
     public event EventHandler<AboutViewModel>? AboutRequested;
+    public event EventHandler<ShortcutsViewModel>? ShortcutsRequested;
     public event EventHandler<ScorePropertiesViewModel>? ScorePropertiesRequested;
     public event EventHandler<PluginManagerViewModel>? PluginManagerRequested;
     public event EventHandler<MidiSettingsViewModel>? MidiSettingsRequested;
@@ -333,7 +348,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public event EventHandler<string>? ExportRequested;   // payload: "pdf", "png", "svg", "musicxml", "midi"
     public event EventHandler? OpenFileRequested;
     public event EventHandler? SaveAsRequested;
-    public event EventHandler<bool>? ThemeChangeRequested; // payload: isHighContrast
+    public event EventHandler<AppTheme>? ThemeChangeRequested;
 
     // ── Helpers ───────────────────────────────────────────────────────
 

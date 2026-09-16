@@ -64,6 +64,11 @@ ScoreEditor(Score score, ILogger<ScoreEditor> logger)
   undo entry (added 2026-09-15). For continuous session/mixing controls (mixer
   volume/pan/mute/solo) that shouldn't flood the undo stack — the same treatment
   `Zoom` already gets by never going through `Execute` at all.
+- `Transpose(int semitones)` — shifts every note (and chord pitch) in the score by
+  the given number of semitones, positive or negative (added 2026-09-15). Respells
+  each new pitch via `Pitch.FromMidi` (always sharps for black keys); `Undo`
+  restores the exact original `Pitch` values from a snapshot rather than
+  transposing back, so original flat/sharp spelling is preserved exactly.
 
 ### `StaffPositionCalculator`
 - `Calculate(Pitch pitch, Clef clef) → int` — returns staff position (1 = bottom line).
@@ -83,6 +88,16 @@ ScoreEditor(Score score, ILogger<ScoreEditor> logger)
   future playback/preview (added 2026-09-15); pass `null` for the system default. Fixes a
   bug where device selection was previously ignored entirely (see `docs/BUGS.md`).
 - `PreviewNoteAsync(Pitch pitch, int velocity, int durationMs)`.
+
+### `ScoreToMidiConverter`
+- `Convert(Score score, bool includeMetronome = false, bool includeCountIn = false) → MidiFile` —
+  `includeCountIn` (added 2026-09-15) shifts every track's music forward by one bar
+  and prepends four metronome-click count-in beats sized to the score's initial
+  time signature and tempo.
+- `ComputeCountInDuration(Score score) → TimeSpan` (static, added 2026-09-15) — the
+  wall-clock length of that one-bar count-in, used by `MidiPlaybackEngine` to offset
+  seek targets so `SeekAsync` lands on the intended musical position rather than
+  inside the count-in.
 
 ---
 

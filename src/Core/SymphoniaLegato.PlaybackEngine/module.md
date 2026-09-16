@@ -6,9 +6,11 @@
 ## Purpose
 Audible playback: `MidiPlaybackEngine` (DryWetMidi-based, implements
 `IPlaybackEngine`), `ScoreToMidiConverter` (domain `Score` → `MidiFile`, ticks,
-tempo, GM percussion click track), and `MetronomeEngine` (cross-platform
-timer-based metronome events, distinct from the audible per-beat click baked
-into the MIDI — see `CLAUDE.md` pitfall #29).
+tempo, GM percussion click track, and — since 2026-09-15 — an optional
+one-bar count-in prefix baked into the file itself rather than fired from a
+`Task.Delay` loop), and `MetronomeEngine` (cross-platform timer-based
+metronome events, distinct from the audible per-beat click baked into the
+MIDI — see `CLAUDE.md` pitfall #29).
 
 ## Depends on
 `SymphoniaLegato.Core`.

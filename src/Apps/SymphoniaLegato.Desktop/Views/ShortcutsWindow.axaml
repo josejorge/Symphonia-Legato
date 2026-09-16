@@ -1,0 +1,74 @@
+<!--
+File: ShortcutsWindow.axaml
+Description: XAML layout for the Keyboard Shortcuts dialog — a scrollable, grouped list of every shortcut actually wired in the app.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
+        x:Class="SymphoniaLegato.Desktop.Views.ShortcutsWindow"
+        x:DataType="vm:ShortcutsViewModel"
+        Title="Keyboard Shortcuts"
+        Width="460" Height="560"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SurfaceBackground}"
+        ShowInTaskbar="False">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="24">
+
+    <TextBlock Grid.Row="0" Text="Keyboard Shortcuts"
+               FontSize="18" FontWeight="Bold"
+               Foreground="{DynamicResource ForegroundColor}"
+               Margin="0,0,0,12"/>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Groups}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ShortcutGroup">
+            <StackPanel Margin="0,0,0,16">
+              <TextBlock Text="{Binding Title}"
+                         FontSize="12" FontWeight="SemiBold"
+                         Foreground="{DynamicResource AccentColor}"
+                         Margin="0,0,0,6"/>
+              <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ShortcutEntry">
+                    <Grid ColumnDefinitions="140,*" Margin="0,2">
+                      <Border Grid.Column="0"
+                              Background="{DynamicResource CardBackground}"
+                              CornerRadius="3" Padding="6,2"
+                              HorizontalAlignment="Left">
+                        <TextBlock Text="{Binding Keys}" FontSize="11"
+                                   FontFamily="Consolas,monospace"
+                                   Foreground="{DynamicResource ForegroundColor}"/>
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding Description}"
+                                 FontSize="11" VerticalAlignment="Center"
+                                 TextWrapping="Wrap"
+                                 Foreground="{DynamicResource ForegroundDimColor}"
+                                 Margin="8,0,0,0"/>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <Button Grid.Row="2"
+            Content="Close"
+            Command="{Binding CloseCommand}"
+            HorizontalAlignment="Center"
+            Width="100"
+            Margin="0,16,0,0"
+            Background="{DynamicResource AccentColor}"
+            Foreground="White"
+            CornerRadius="4"/>
+  </Grid>
+</Window>
