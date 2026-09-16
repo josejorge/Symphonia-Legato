@@ -1,0 +1,115 @@
+<!--
+File: operations_guide.html
+Description: Root-level operations & maintenance guide — system description, prerequisites,
+  start/stop/verify, logs, configuration parameters, and troubleshooting. Suitable for PDF/Word export.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.1.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symphonia Legato — Operations &amp; Maintenance Guide</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--bg:#fff;--panel:#f6f5fb;--border:#ddd;--warn:#8a5300;--warnbg:#fff6e5;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:920px;margin:0 auto;padding:2.5rem 2rem 4rem;line-height:1.6}
+  h1{font-size:1.9rem;border-bottom:3px solid var(--accent);padding-bottom:.5rem;margin-bottom:.15rem}
+  .subtitle{color:var(--sub);margin-top:0;font-size:1.05rem}
+  h2{font-size:1.3rem;margin-top:2.4rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.6rem}
+  h3{font-size:1.05rem;margin-top:1.4rem}
+  table{border-collapse:collapse;width:100%;margin:1rem 0}
+  th,td{border:1px solid var(--border);padding:.55rem .75rem;text-align:left;font-size:.92rem;vertical-align:top}
+  th{background:var(--panel)}
+  code{background:var(--panel);border-radius:4px;padding:.1rem .35rem;font-size:.9em;font-family:Consolas,'Courier New',monospace}
+  pre{background:var(--panel);border-radius:6px;padding:.9rem 1.1rem;overflow-x:auto;font-size:.88rem}
+  pre code{background:none;padding:0}
+  .box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;margin:1rem 0}
+  .warn{background:var(--warnbg);border:1px solid #f0c674;border-radius:8px;padding:.9rem 1.1rem;margin:1rem 0;color:var(--warn)}
+  .warn strong{color:var(--warn)}
+  footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.85rem}
+  @media print{ body{max-width:100%} a{color:inherit;text-decoration:none} }
+</style>
+</head>
+<body>
+
+<h1>Symphonia Legato — Operations &amp; Maintenance Guide</h1>
+<p class="subtitle">Cross-platform music notation editor · C# / .NET 9 / Avalonia 11</p>
+
+<h2>System description</h2>
+<p>Symphonia Legato is a desktop music notation editor (Windows/Linux/macOS, Avalonia UI)
+with a companion Android viewer app. It edits, plays back (MIDI), and exports
+scores (PDF, PNG, SVG, MusicXML, MIDI, and its own <code>.enscore</code> ZIP
+format). There is no server component — it is a self-contained desktop
+application; "operations" here means build, run, and diagnose on a developer
+or end-user machine, not a hosted service.</p>
+
+<h2>Prerequisites</h2>
+<table>
+<tr><th>Requirement</th><th>Notes</th></tr>
+<tr><td>.NET SDK</td><td><code>global.json</code> pins <code>9.0.0</code> with <code>rollForward: latestMajor</code> — any installed 9.x or newer SDK works (verified against .NET 10.0.303).</td></tr>
+<tr><td>OS</td><td>Windows, Linux, or macOS for the Desktop app. Android build/deploy needs a machine with the Android SDK reachable by the workload below.</td></tr>
+<tr><td>Android workload (optional)</td><td><code>dotnet workload install android</code> — a ~1&nbsp;GB one-time install, required only to build <code>SymphoniaLegato.Android.sln</code>. The main <code>SymphoniaLegato.sln</code> excludes the Android project so Desktop always builds without it.</td></tr>
+<tr><td>MIDI output device</td><td>For audible playback. Windows ships the "Microsoft GS Wavetable Synth" by default; Linux/macOS need a software synth reachable via the OS's MIDI subsystem.</td></tr>
+</table>
+
+<h2>How to build, run, and verify status</h2>
+<pre><code># Restore + build Desktop + all tests (0 warnings, 0 errors expected)
+dotnet build SymphoniaLegato.sln -c Debug
+
+# Run the desktop app
+dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build
+
+# Run all tests (117 passing as of 2026-09-15)
+dotnet test SymphoniaLegato.sln --no-build
+
+# Publish a self-contained Windows EXE
+dotnet publish src\Apps\SymphoniaLegato.Desktop -c Release -r win-x64 `
+  --self-contained -p:PublishSingleFile=true -o publish\windows
+
+# Android (requires the workload above)
+dotnet build SymphoniaLegato.Android.sln -c Debug</code></pre>
+<p><strong>Verifying it started correctly:</strong> the app has no health-check
+endpoint (it's a GUI app) — a successful start shows a window titled
+<code>Untitled • — Symphonia Legato</code>. If the process exits immediately
+with no window, see Troubleshooting below.</p>
+
+<h2>Log files and how to monitor them</h2>
+<div class="warn"><strong>There is currently no persistent log file.</strong>
+<code>Program.cs</code> configures logging with
+<code>AddLogging(b =&gt; b.AddDebug().SetMinimumLevel(LogLevel.Debug))</code> —
+output only reaches an attached debugger's Output/Debug window (e.g. Visual
+Studio's Output pane, or <code>dotnet run</code> under a debugger). Nothing is
+written to disk. If you need to capture logs from an end-user machine without
+a debugger attached, that's an open gap — see <code>docs/TODO.md</code>.</div>
+
+<h2>Configuration parameters</h2>
+<p>Most settings persist via <code>AppSettingsService</code>
+(<code>%AppData%\SymphoniaLegato\settings.json</code>, added 2026-09-15).</p>
+<table>
+<tr><th>Parameter</th><th>Where it's set</th><th>Persisted?</th></tr>
+<tr><td>Claude API key (for AI harmonisation/analysis)</td><td>AI Assistant panel, typed directly into the sidebar</td><td>No — deliberately session-only; see docs/AUTHENTICATION.md</td></tr>
+<tr><td>MIDI output device</td><td>MIDI/Audio Settings dialog</td><td>Yes — and selecting one now actually changes what plays (fixed 2026-09-15; previously always used the first device regardless of selection, see docs/BUGS.md)</td></tr>
+<tr><td>SoundFont path</td><td>MIDI/Audio Settings dialog</td><td>No — deliberately; not wired to an actual synth yet, so persisting it would be misleading</td></tr>
+<tr><td>Cloud sync folder</td><td>Sync Settings dialog (any locally-synced folder, e.g. OneDrive/Dropbox)</td><td>Yes</td></tr>
+<tr><td>Theme (Dark / High Contrast)</td><td>View menu</td><td>Yes</td></tr>
+<tr><td>Recent files (last 10)</td><td>File ▸ Recent Files</td><td>Yes — stale (deleted/moved) entries are pruned on load</td></tr>
+</table>
+
+<h2>Common troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Likely cause / fix</th></tr>
+<tr><td>Android build fails with a workload error</td><td>Run <code>dotnet workload install android</code>, then build <code>SymphoniaLegato.Android.sln</code> specifically (not the main solution).</td></tr>
+<tr><td>No sound on Play</td><td>Open MIDI/Audio Settings, pick a device, and click Apply — the selection now persists and actually takes effect (see Configuration above). If the device list is empty, no MIDI output is available on this machine.</td></tr>
+<tr><td>AI Assistant panel errors on harmonisation/analysis</td><td>The Claude API key wasn't entered (or is invalid) this session. Offline features — chord detection and fingering suggestions — still work with no key.</td></tr>
+<tr><td>App crashes immediately at launch with no window</td><td>Historically caused by an invalid Avalonia <code>InputGesture</code> string (fixed in commit <code>3d64da4</code> — see <code>docs/BUGS.md</code>). If it recurs, run under a debugger and check the Debug output for an <code>ArgumentException</code> from XAML population.</td></tr>
+<tr><td>Build succeeds but Android project is skipped</td><td>Expected — build <code>SymphoniaLegato.sln</code> for Desktop-only work; use <code>SymphoniaLegato.Android.sln</code> for Android.</td></tr>
+</table>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

@@ -1,3 +1,11 @@
+// File: Score.cs
+// Description: The root domain object — Score and Part; CreatePianoScore() scaffolds a default grand-staff score.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>Page size presets for printing/export.</summary>

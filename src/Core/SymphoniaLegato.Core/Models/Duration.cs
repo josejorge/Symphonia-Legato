@@ -1,3 +1,11 @@
+// File: Duration.cs
+// Description: Note duration (value + dot count) with tick-length computation; 1 quarter note = 1024 ticks.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>Standard note value types.</summary>

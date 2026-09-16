@@ -1,3 +1,11 @@
+// File: ScoreVersionControl.cs
+// Description: LibGit2Sharp wrapper giving each score its own commit/restore version history, independent of the project's own repo history.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 

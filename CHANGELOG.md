@@ -8,6 +8,112 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added (2026-09-15 — TODO.md Tier 2: mixer, settings persistence, chord entry)
+- **Mixer → playback actually connected.** Volume/Pan/Mute/Solo changes in the
+  mixer panel now write straight back into the `Staff` (so the next Play
+  reflects them, even if the change was made while stopped) via a new
+  `ScoreEditor.MarkDirty()` — deliberately outside the undo/redo command
+  system, the same treatment `Zoom` already gets, since these are continuous
+  mixing controls rather than discrete notation edits. `ScoreToMidiConverter`
+  now also honours `IsSolo` (previously never read at all): soloing any staff
+  mutes every other staff for that playback.
+- **Settings actually persist** — new `AppSettingsService`
+  (`%AppData%\SymphoniaLegato\settings.json`): theme, MIDI output device,
+  cloud sync folder, and the last 10 recent files all survive a restart now.
+  Deliberately excludes the Claude API key (stays session-only — see
+  `docs/AUTHENTICATION.md`) and the SoundFont path (not wired to a real synth
+  yet, so persisting it would imply a working feature that doesn't exist).
+- **`File ▸ Recent Files` menu** — capped at 10, newest first, stale
+  (deleted/moved) entries pruned automatically.
+- **Chord entry** — Shift+A…G stacks a pitch onto the currently selected note
+  instead of creating a new one (`AddChordPitchCommand`), with undo/redo
+  support. Octave chosen nearest the note's own root pitch. No-op on a rest
+  or an exact-duplicate pitch.
+
+### Fixed (2026-09-15 — found while wiring settings persistence)
+- **MIDI output device selection never actually worked.** Choosing a
+  different device in MIDI/Audio Settings and clicking Apply did nothing —
+  playback was hardcoded to the first device on the system
+  (`OutputDevice.GetByIndex(0)`). Added `IPlaybackEngine.SetOutputDevice
+  (string?)`; the Settings dialog now actually changes what plays, and the
+  choice persists.
+
+### Added (2026-09-15 — full standards compliance: headers, scaffold, docs)
+- **Branding headers on all 140 pre-existing source files** (116 `.cs` + 24
+  `.axaml`) — File/Description/Author/Company/Date/Last edit date/Version,
+  with `Date` pulled from each file's actual first-commit date via
+  `git log --follow`, and `Description` drawn from each type's existing XML
+  doc summary where one existed.
+- **Baseline folder scaffold** — `.github/`, `.vscode/`, `.devcontainer/`,
+  `scripts/`, `tools/`, `config/`, `database/`, `infrastructure/`,
+  `integrations/`, `assets/`, `public/`, `artifacts/`, `templates/`,
+  `samples/`, `localization/`, `security/`, `licenses/`, `tmp/` — each with a
+  `.gitkeep` placeholder.
+- **Project version bumped to 3.0.0** (README.md + every `.csproj`) — new
+  folders added again this pass. Also found `SymphoniaLegato.AIEngine.csproj`
+  had no `<Version>` element at all (every sibling project has one) — added it.
+- **19 previously-missing standard docs**: `API.md`, `WEBHOOKS.md`,
+  `INTEGRATIONS.md`, `AUTHENTICATION.md`, `DEBUGGING.md`,
+  `TROUBLESHOOTING.md`, `OPERATIONS.md`, `RUNBOOK.md`, `DEPENDENCIES.md`,
+  `PERFORMANCE.md`, `DATABASE.md`, `DATA_MODEL.md`, `KNOWN_ISSUES.md`,
+  `FAQ.md`, `CREDITS.md`, `AUTHORS.md`, `STYLE_GUIDE.md`,
+  `CONFIGURATION.md`, `DEVELOPMENT.md`. `docs/` now has all 27 standard
+  files plus the project's own extras (`ANDROID.md`, `API_REFERENCE.md`,
+  `PLUGIN_SDK.md`, `UI_GUIDELINES.md`, `USER_MANUAL.md`, `BUGFIXES.md`).
+
+### Fixed (2026-09-15 — repo hygiene found while adding the scaffold)
+- **`.gitignore`'s `.vscode/` exceptions were silently non-functional** — the
+  blanket pattern used a trailing slash (directory-level exclude), which
+  prevents git from ever re-including files below it, so the existing
+  `!.vscode/settings.json`-style lines never worked. Changed to `.vscode/*`.
+- **`artifacts/` was blanket-gitignored** as generic "build output" boilerplate,
+  which would have silently swallowed the tracked Jupyter-notebook artifacts
+  directory required by `CLAUDE.md`. Removed that line (real build output
+  already goes to `bin/`/`obj/`, which stay ignored).
+- **Dead dependency found**: `Microsoft.Data.Sqlite` is referenced in
+  `SymphoniaLegato.Desktop.csproj` but never used anywhere in the codebase —
+  flagged in `docs/DEPENDENCIES.md` and `docs/BUGS.md`, not removed (a code
+  change, out of scope for a docs pass).
+
+### Added (2026-09-15 — repo-standards compliance pass)
+- **`docs/BUGS.md`** — the authoritative `[Internal]/[External]`-tagged bug log;
+  `docs/BUGFIXES.md` stays as the fuller narrative write-ups.
+- **`.assetignore`** at the repo root, alongside `.gitignore`.
+- **`module.md`** in all 12 module directories (`src/Core/*`, `src/Apps/*`),
+  each documenting purpose, dependency position, and key files.
+- **`docs/operations_guide.html` + `docs/executive_overview.html`** — at the
+  project root and inside every one of the 12 modules (26 HTML files total),
+  offline-friendly, print/PDF/Word-exportable, no external dependencies.
+- **Project version bumped to 2.0.0** (README.md + every `.csproj`) — new
+  folders were added across the repo this pass (12 module `docs/` folders,
+  `technical_memory/`, `claude_memory/`), which is a major bump per the
+  project's versioning policy.
+
+### Added (2026-09-15 — TODO.md Tier 0/1 triage)
+- **MIDI export actually writes a `.mid` file.** `File ▸ Export ▸ MIDI...` was
+  wired to a "use playback controls" status-message stub with nothing behind it;
+  it now converts the current score via `ScoreToMidiConverter` and writes it
+  through the save-file picker, same pattern as PNG/PDF/SVG/MusicXML export.
+- **Real tests for `SymphoniaLegato.PlaybackEngine.Tests`.** The project was wired
+  into the solution but contained zero test files — it silently contributed 0 of
+  the "111 tests" milestone claimed in `CLAUDE.md`. Added 6 tests covering
+  `ScoreToMidiConverter`: tick conversion, tempo, GM percussion channel
+  reservation, chord-note simultaneity, and metronome click generation.
+
+### Fixed (2026-09-15)
+- **Duration toolbar radio buttons didn't reflect keyboard duration changes.**
+  Pressing `1`–`6` updated `SelectedDuration` but the toolbar's radio-button
+  highlight never moved because `IsChecked` wasn't bound to it. Added
+  `EnumEqualsConverter` and bound each duration `RadioButton.IsChecked` to
+  `SelectedDuration.Value` so the toolbar now tracks both mouse and keyboard entry.
+
+### Repo hygiene (2026-09-15)
+- Removed `msbuild.binlog` and the stale `run_err*.txt` / `run_out*.txt` debug
+  artifacts from git (untracked + deleted); added `*.binlog`, `run_out*.txt`,
+  `run_err*.txt` to `.gitignore`. `run_err.txt` was a startup-crash log from
+  before commit `3d64da4` (invalid `InputGesture="Plus"`) that `docs/BUGFIXES.md`
+  already flagged as stale — the app builds, tests, and launches cleanly today.
+
 ### Added (2026-06-29 — playback cursor, note flow & extras)
 - **Playback indicator** — a moving cursor sweeps the sheet during playback: a
   vertical line at the current beat, a translucent band over the active measure,

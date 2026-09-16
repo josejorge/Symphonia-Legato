@@ -1,3 +1,11 @@
+// File: SyncSettingsWindow.axaml.cs
+// Description: Code-behind for the Cloud Sync Settings dialog.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using SymphoniaLegato.Desktop.ViewModels;

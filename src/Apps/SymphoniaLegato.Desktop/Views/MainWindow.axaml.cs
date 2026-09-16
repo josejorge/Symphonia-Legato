@@ -1,3 +1,12 @@
+// File: MainWindow.axaml.cs
+// Description: Main window code-behind — wires ViewModel events (open/save/export requests) to
+//   Avalonia file pickers and dialogs, and drives the per-format export pipeline.
+// Author: Jose-Jorge HERNANDEZ
+// Company: Parlee Conseiller, Inc.
+// Date: 2026-09-15
+// Last edit date: 2026-09-15
+// Version: 1.2.0
+
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -7,6 +16,7 @@ using SymphoniaLegato.Desktop.Services;
 using SymphoniaLegato.Desktop.ViewModels;
 using SymphoniaLegato.ImportExport;
 using SymphoniaLegato.PdfEngine;
+using SymphoniaLegato.PlaybackEngine;
 
 namespace SymphoniaLegato.Desktop.Views;
 
@@ -16,6 +26,7 @@ public sealed partial class MainWindow : Window
     private readonly ScorePdfExporter? _pdfExporter;
     private readonly ScoreSvgExporter? _svgExporter;
     private readonly SymphoniaLegato.ImportExport.MusicXmlExporter? _xmlExporter;
+    private readonly ScoreToMidiConverter? _midiConverter;
 
     public MainWindow() => InitializeComponent();
 
@@ -23,12 +34,14 @@ public sealed partial class MainWindow : Window
         ScorePngExporter pngExporter,
         ScorePdfExporter pdfExporter,
         ScoreSvgExporter svgExporter,
-        MusicXmlExporter xmlExporter) : this()
+        MusicXmlExporter xmlExporter,
+        ScoreToMidiConverter midiConverter) : this()
     {
         _pngExporter = pngExporter;
         _pdfExporter = pdfExporter;
         _svgExporter = svgExporter;
         _xmlExporter = xmlExporter;
+        _midiConverter = midiConverter;
 
         DataContextChanged += OnDataContextChanged;
     }
@@ -47,6 +60,11 @@ public sealed partial class MainWindow : Window
         vm.SaveAsRequested          += async (_, __) => await OnSaveAsAsync(vm);
         vm.ExportRequested          += async (_, fmt) => await OnExportAsync(vm, fmt);
         vm.ThemeChangeRequested     += OnThemeChange;
+
+        // Apply the theme MainWindowViewModel already restored from settings into
+        // IsHighContrast — it couldn't raise ThemeChangeRequested for this before now,
+        // since nothing was subscribed yet during its own construction.
+        if (vm.IsHighContrast) OnThemeChange(vm, true);
     }
 
     private async Task OnOpenFileAsync(MainWindowViewModel vm)
@@ -107,7 +125,7 @@ public sealed partial class MainWindow : Window
                 break;
 
             case "midi":
-                vm.StatusMessage = "MIDI export: use File > Export > MIDI from playback controls.";
+                await ExportMidiAsync(score, vm);
                 break;
         }
     }
@@ -222,6 +240,30 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async Task ExportMidiAsync(SymphoniaLegato.Core.Models.Score score, MainWindowViewModel vm)
+    {
+        if (_midiConverter is null) return;
+
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export MIDI",
+            DefaultExtension = ".mid",
+            FileTypeChoices = [new FilePickerFileType("MIDI File") { Patterns = ["*.mid", "*.midi"] }]
+        });
+        if (file is null) return;
+
+        try
+        {
+            var midiFile = _midiConverter.Convert(score, includeMetronome: false);
+            midiFile.Write(file.Path.LocalPath, overwriteFile: true);
+            vm.StatusMessage = "MIDI exported";
+        }
+        catch (Exception ex)
+        {
+            vm.StatusMessage = $"MIDI export failed: {ex.Message}";
+        }
+    }
+
     private void OnThemeChange(object? sender, bool isHighContrast)
     {
         if (Avalonia.Application.Current is App app)
@@ -239,16 +281,25 @@ public sealed partial class MainWindow : Window
         if (FocusManager?.GetFocusedElement() is TextBox) return;
 
         var editor = vm.ScoreEditor;
+        bool chordEntry = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        void NoteKey(NoteName name)
+        {
+            if (chordEntry) editor.AddPitchToSelectedNote(name);
+            else editor.EnterNoteByName(name);
+        }
+
+        // Letter note entry — chooses the octave nearest the previous note. Holding
+        // Shift stacks the pitch onto the currently selected note (chord entry)
+        // instead of creating a new note.
         switch (e.Key)
         {
-            // Letter note entry — chooses the octave nearest the previous note.
-            case Key.A: editor.EnterNoteByName(NoteName.A); break;
-            case Key.B: editor.EnterNoteByName(NoteName.B); break;
-            case Key.C: editor.EnterNoteByName(NoteName.C); break;
-            case Key.D: editor.EnterNoteByName(NoteName.D); break;
-            case Key.E: editor.EnterNoteByName(NoteName.E); break;
-            case Key.F: editor.EnterNoteByName(NoteName.F); break;
-            case Key.G: editor.EnterNoteByName(NoteName.G); break;
+            case Key.A: NoteKey(NoteName.A); break;
+            case Key.B: NoteKey(NoteName.B); break;
+            case Key.C: NoteKey(NoteName.C); break;
+            case Key.D: NoteKey(NoteName.D); break;
+            case Key.E: NoteKey(NoteName.E); break;
+            case Key.F: NoteKey(NoteName.F); break;
+            case Key.G: NoteKey(NoteName.G); break;
 
             // Duration selection (whole … 32nd).
             case Key.D1: case Key.NumPad1: editor.SetDurationByIndex(0); break;

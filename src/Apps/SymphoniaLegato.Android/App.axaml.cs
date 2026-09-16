@@ -1,3 +1,11 @@
+// File: App.axaml.cs
+// Description: Android app entry — DI wiring and Avalonia application bootstrap (explicitly qualified as Avalonia.Application to avoid ambiguity with Android.App.Application).
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;

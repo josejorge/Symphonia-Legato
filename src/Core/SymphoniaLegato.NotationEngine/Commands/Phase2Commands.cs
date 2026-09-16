@@ -1,3 +1,11 @@
+// File: Phase2Commands.cs
+// Description: IScoreCommand implementations for dynamics, hairpins, slurs, ties, and articulations added in Phase 2.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.NotationEngine;

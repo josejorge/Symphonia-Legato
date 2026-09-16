@@ -1,3 +1,11 @@
+// File: ScoreEditorViewModel.cs
+// Description: View model driving note entry and editing on the score canvas — duration/accidental/articulation state, target-measure resolution, and playback-cursor arming.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SymphoniaLegato.Core.Interfaces;
@@ -264,6 +272,33 @@ public sealed partial class ScoreEditorViewModel : ViewModelBase
 
         if (note.Pitch is { } entered)
             _ = _playback.PreviewNoteAsync(entered);
+    }
+
+    /// <summary>
+    /// Chord entry: stacks a pitch onto the currently selected note (Shift+letter in
+    /// MainWindow.OnKeyDown) instead of creating a new note. Octave is chosen nearest the
+    /// selected note's own pitch — a chord tone should land close to its root, not
+    /// wherever the last note on the staff happened to be. No-op with no note selected,
+    /// or if the selected note is a rest (a rest has nothing to stack a pitch onto).
+    /// </summary>
+    public void AddPitchToSelectedNote(NoteName name)
+    {
+        if (Editor is null || !InputMode || SelectedNoteId is not { } noteId) return;
+
+        var staff = Editor.Score.Parts.SelectMany(p => p.Staves)
+            .FirstOrDefault(s => s.Id == SelectedStaffId);
+        var note = staff?.GetMeasure(SelectedMeasure)?.Notes.FirstOrDefault(n => n.Id == noteId);
+        if (note?.Pitch is not { } root) return; // no selection, or selection is a rest
+
+        var pitch = NearestPitch(name, root);
+        if (AccidentalOverride.HasValue)
+        {
+            pitch = new Pitch(pitch.Name, AccidentalOverride.Value, pitch.Octave);
+            AccidentalOverride = null;
+        }
+
+        Editor.AddChordPitch(staff!.Id, SelectedMeasure, noteId, pitch);
+        _ = _playback.PreviewNoteAsync(pitch);
     }
 
     /// <summary>Selects a duration by toolbar index (0 = whole … 5 = 32nd). Used by number-key shortcuts.</summary>

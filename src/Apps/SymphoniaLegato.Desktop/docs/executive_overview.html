@@ -1,0 +1,60 @@
+<!--
+File: executive_overview.html
+Description: Module-level executive overview for SymphoniaLegato.Desktop — plain-language
+  summary aimed at non-technical stakeholders.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.Desktop — Executive Overview</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--accent-light:#ede9fe;--bg:#fff;--panel:#f6f5fb;--border:#ddd;--good:#0a7a3d;--goodbg:#e9f9ef;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:900px;margin:0 auto;padding:2.3rem 2rem 3.8rem;line-height:1.6}
+  h1{font-size:1.85rem;border-bottom:3px solid var(--accent);padding-bottom:.45rem;margin-bottom:.15rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.2rem;margin-top:2.2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.6rem}
+  .flow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;justify-content:center;margin:1.5rem 0}
+  .step{background:var(--accent-light);border:2px solid var(--accent);border-radius:12px;padding:.9rem 1rem;min-width:120px;text-align:center;font-size:.9rem}
+  .step.self{background:var(--accent);color:#fff;font-weight:700}
+  .arrow{font-size:1.5rem;color:var(--accent);font-weight:700}
+  .benefits{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1rem;margin:1rem 0}
+  .benefit{background:var(--goodbg);border:1px solid #b7e3c8;border-radius:10px;padding:.9rem 1.1rem}
+  .benefit .title{color:var(--good);font-weight:700;margin-bottom:.25rem}
+  footer{margin-top:2.8rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.83rem}
+  @media (max-width:600px){ .flow{flex-direction:column} .arrow{transform:rotate(90deg)} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.Desktop</h1>
+<p class="subtitle">Executive Overview — where all the pieces come together</p>
+
+<h2>What it does, in plain terms</h2>
+<p>This is the actual application a musician opens: the window, the menus,
+the toolbar, the score on screen. Every other module in this project is a
+building block; this is the finished house built from them.</p>
+
+<h2>Where it sits</h2>
+<div class="flow">
+  <div class="step">all 10 Core libraries</div>
+  <div class="arrow">→</div>
+  <div class="step self">Desktop</div>
+</div>
+
+<h2>Key benefits</h2>
+<div class="benefits">
+  <div class="benefit"><div class="title">One app, everything included</div>Editing, playback, export, AI help, version history — no separate installs or subscriptions.</div>
+  <div class="benefit"><div class="title">Runs everywhere</div>Windows, Linux, and macOS from the same codebase.</div>
+  <div class="benefit"><div class="title">Accessible</div>A dedicated high-contrast theme and screen-reader labels throughout.</div>
+</div>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

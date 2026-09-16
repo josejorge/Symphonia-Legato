@@ -1,3 +1,11 @@
+// File: ScorePngExporter.cs
+// Description: Renders score pages to PNG bytes via Avalonia off-screen rendering; source images for the PDF exporter.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Avalonia;
 using Avalonia.Media.Imaging;
 using SymphoniaLegato.Core.Interfaces;

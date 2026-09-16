@@ -1,3 +1,11 @@
+// File: BoolToStartStopConverter.cs
+// Description: Converts a bool to a Start/Stop label (also hosts BoolToColorConverter for beat-accent highlighting).
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Avalonia.Data.Converters;
 using System.Globalization;
 

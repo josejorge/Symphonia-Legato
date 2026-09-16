@@ -1,3 +1,11 @@
+// File: ScoreEditorTests.cs
+// Description: Unit tests for ScoreEditor command execution and undo/redo.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using SymphoniaLegato.Core.Models;
@@ -91,5 +99,61 @@ public sealed class ScoreEditorTests
 
         staff.Measures.Should().HaveCount(4);
         staff.Measures.Select(m => m.Number).Should().BeEquivalentTo([1, 2, 3, 4]);
+    }
+
+    // ── Chord entry (AddChordPitchCommand) ──────────────────────────────
+
+    [Fact]
+    public void AddChordPitch_StacksPitchOntoExistingNote()
+    {
+        var editor = CreateEditor();
+        var staff = editor.Score.Parts[0].Staves[0];
+        var note = new Note { Duration = Duration.Quarter, Pitch = Pitch.MiddleC };
+        editor.AddNote(staff.Id, 1, note);
+
+        var third = new Pitch(NoteName.E, Accidental.Natural, 4);
+        editor.AddChordPitch(staff.Id, 1, note.Id, third);
+
+        note.ChordNotes.Should().ContainSingle().Which.Should().Be(third);
+    }
+
+    [Fact]
+    public void AddChordPitch_Undo_RemovesOnlyThePitchItAdded()
+    {
+        var editor = CreateEditor();
+        var staff = editor.Score.Parts[0].Staves[0];
+        var note = new Note { Duration = Duration.Quarter, Pitch = Pitch.MiddleC };
+        editor.AddNote(staff.Id, 1, note);
+        editor.AddChordPitch(staff.Id, 1, note.Id, new Pitch(NoteName.E, Accidental.Natural, 4));
+
+        editor.Undo();
+
+        note.ChordNotes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddChordPitch_OnRest_DoesNotAddAPitch()
+    {
+        var editor = CreateEditor();
+        var staff = editor.Score.Parts[0].Staves[0];
+        var rest = new Note { Duration = Duration.Quarter }; // Pitch left null = rest
+        editor.AddNote(staff.Id, 1, rest);
+
+        editor.AddChordPitch(staff.Id, 1, rest.Id, Pitch.MiddleC);
+
+        rest.ChordNotes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddChordPitch_DuplicateOfRootPitch_IsNotAddedTwice()
+    {
+        var editor = CreateEditor();
+        var staff = editor.Score.Parts[0].Staves[0];
+        var note = new Note { Duration = Duration.Quarter, Pitch = Pitch.MiddleC };
+        editor.AddNote(staff.Id, 1, note);
+
+        editor.AddChordPitch(staff.Id, 1, note.Id, Pitch.MiddleC);
+
+        note.ChordNotes.Should().BeEmpty();
     }
 }

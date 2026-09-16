@@ -1,3 +1,11 @@
+// File: Phase4Tests.cs
+// Description: Integration tests for Phase 4 features — MusicXML round-trip, EnScoreRepository, and ScoreSyncService.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using FluentAssertions;
 using Xunit;
 using SymphoniaLegato.Core.Models;

@@ -1,0 +1,17 @@
+# .assetignore — patterns asset-processing tooling should skip.
+# Distinct from .gitignore: this file documents intent for any future asset
+# pipeline (texture/audio optimization, bundling, scanning) even though no
+# such tooling is wired up yet in this project. See docs/BUILD.md.
+
+# Large SoundFont binaries — referenced by path in MIDI settings, never bundled/optimized.
+assets/soundfonts/*.sf2
+assets/soundfonts/*.sf3
+
+# Generated export output — not source assets, shouldn't be scanned/optimized.
+publish/
+/examples/*.musicxml.bak
+
+# Build/debug artifacts — never asset-pipeline input.
+*.binlog
+bin/
+obj/

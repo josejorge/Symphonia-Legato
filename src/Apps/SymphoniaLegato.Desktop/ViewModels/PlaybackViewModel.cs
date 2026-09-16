@@ -1,3 +1,11 @@
+// File: PlaybackViewModel.cs
+// Description: View model for playback transport — play/pause/stop/seek, rebuilding the MIDI from the live score at the start of playback.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

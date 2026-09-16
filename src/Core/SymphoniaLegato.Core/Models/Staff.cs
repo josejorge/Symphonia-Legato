@@ -1,3 +1,11 @@
+// File: Staff.cs
+// Description: A staff (instrument, mixing properties, measures) within a part.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>Instrument family grouping.</summary>

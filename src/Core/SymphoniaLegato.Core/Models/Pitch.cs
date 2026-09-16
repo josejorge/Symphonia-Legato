@@ -1,3 +1,11 @@
+// File: Pitch.cs
+// Description: Note letter, accidental, and octave, with MIDI number conversion.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>Musical note letters A–G.</summary>

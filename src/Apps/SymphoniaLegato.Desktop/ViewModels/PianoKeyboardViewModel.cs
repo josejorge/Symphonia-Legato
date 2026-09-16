@@ -1,3 +1,11 @@
+// File: PianoKeyboardViewModel.cs
+// Description: View model for the on-screen piano keyboard — key layout (PianoKey) and press/preview handling.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

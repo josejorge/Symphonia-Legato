@@ -1,0 +1,75 @@
+<!--
+File: executive_overview.html
+Description: Root-level visual executive summary — what problem the app solves, how it works,
+  and key benefits, aimed at non-technical stakeholders. Suitable for PDF/Word export.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symphonia Legato — Executive Overview</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--accent-light:#ede9fe;--bg:#fff;--panel:#f6f5fb;--border:#ddd;--good:#0a7a3d;--goodbg:#e9f9ef;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:920px;margin:0 auto;padding:2.5rem 2rem 4rem;line-height:1.6}
+  h1{font-size:2rem;border-bottom:3px solid var(--accent);padding-bottom:.5rem;margin-bottom:.15rem}
+  .subtitle{color:var(--sub);margin-top:0;font-size:1.1rem}
+  h2{font-size:1.3rem;margin-top:2.6rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.6rem}
+  p{font-size:1.02rem}
+  .flow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;justify-content:center;margin:1.8rem 0}
+  .step{background:var(--accent-light);border:2px solid var(--accent);border-radius:12px;padding:1rem 1.1rem;min-width:130px;max-width:160px;text-align:center;font-size:.92rem}
+  .step .num{display:block;font-size:.72rem;color:var(--accent);font-weight:700;letter-spacing:.05em;margin-bottom:.3rem}
+  .arrow{font-size:1.7rem;color:var(--accent);font-weight:700}
+  .benefits{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.2rem 0}
+  .benefit{background:var(--goodbg);border:1px solid #b7e3c8;border-radius:10px;padding:1rem 1.2rem}
+  .benefit .title{color:var(--good);font-weight:700;margin-bottom:.3rem}
+  .status{display:inline-block;background:var(--goodbg);color:var(--good);border:1px solid #b7e3c8;border-radius:20px;padding:.3rem .9rem;font-size:.85rem;font-weight:600;margin-top:.5rem}
+  footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.85rem}
+  @media print{ body{max-width:100%} .flow{page-break-inside:avoid} }
+  @media (max-width:600px){ .flow{flex-direction:column} .arrow{transform:rotate(90deg)} }
+</style>
+</head>
+<body>
+
+<h1>Symphonia Legato</h1>
+<p class="subtitle">Music notation software, for people who read music but shouldn't need an engineering degree to write it down.</p>
+<span class="status">✓ Builds, tests, and runs today (2026-09-15)</span>
+
+<h2>The problem it solves</h2>
+<p>Writing down music by hand or in generic drawing tools is slow and
+error-prone. Commercial notation software (Encore, Finale, Sibelius) is
+expensive, often subscription-based, and closed-source. Symphonia Legato is a
+free, open-source alternative: click or type to enter notes, hear them played
+back instantly, and export a professional-looking score as sheet music (PDF)
+or an industry-standard file (MusicXML) that other software can open.</p>
+
+<h2>How it works</h2>
+<div class="flow">
+  <div class="step"><span class="num">1</span>Enter notes<br><small>click, type, or import MusicXML/MIDI</small></div>
+  <div class="arrow">→</div>
+  <div class="step"><span class="num">2</span>Auto-layout<br><small>notes flow into measures and lines automatically</small></div>
+  <div class="arrow">→</div>
+  <div class="step"><span class="num">3</span>See &amp; hear it<br><small>engraved sheet music + MIDI playback</small></div>
+  <div class="arrow">→</div>
+  <div class="step"><span class="num">4</span>Export &amp; share<br><small>PDF, PNG, SVG, MusicXML, MIDI</small></div>
+</div>
+
+<h2>Key benefits</h2>
+<div class="benefits">
+  <div class="benefit"><div class="title">Free &amp; open-source</div>MIT licensed — no subscription, no vendor lock-in, source code available to inspect or extend.</div>
+  <div class="benefit"><div class="title">Hear what you write</div>Every note plays back immediately, with a metronome and count-in, so mistakes are caught by ear, not just by eye.</div>
+  <div class="benefit"><div class="title">Works with other software</div>MusicXML and MIDI import/export mean scores aren't trapped in one app.</div>
+  <div class="benefit"><div class="title">Cross-platform</div>Runs on Windows, Linux, and macOS, with a companion Android app for viewing and playing scores on the go.</div>
+  <div class="benefit"><div class="title">Built-in AI assistance</div>Optional chord detection, fingering suggestions, and (with a Claude API key) harmonisation and practice recommendations.</div>
+  <div class="benefit"><div class="title">Accessible by design</div>A dedicated high-contrast theme and screen-reader labels on every interactive control.</div>
+</div>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

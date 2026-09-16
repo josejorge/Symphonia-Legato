@@ -52,11 +52,18 @@ ScoreEditor(Score score, ILogger<ScoreEditor> logger)
 - `Undo()`, `Redo()`.
 - `CanUndo`, `CanRedo`, `IsDirty`.
 - `AddNote(Guid staffId, int measureNumber, Note note)`.
+- `AddChordPitch(Guid staffId, int measureNumber, Guid noteId, Pitch pitch)` — stacks a
+  pitch onto an existing note (chord entry, added 2026-09-15). No-op on a rest or an
+  exact-duplicate pitch.
 - `DeleteNote(Guid staffId, int measureNumber, Guid noteId)`.
 - `ChangeTimeSignature(int measureNumber, TimeSignature ts)`.
 - `ChangeKeySignature(int measureNumber, KeySignature ks)`.
 - `AddMeasures(int afterMeasure, int count)`.
 - `DeleteMeasure(int measureNumber)`.
+- `MarkDirty()` — marks the score dirty and raises `ScoreChanged` without pushing an
+  undo entry (added 2026-09-15). For continuous session/mixing controls (mixer
+  volume/pan/mute/solo) that shouldn't flood the undo stack — the same treatment
+  `Zoom` already gets by never going through `Execute` at all.
 
 ### `StaffPositionCalculator`
 - `Calculate(Pitch pitch, Clef clef) → int` — returns staff position (1 = bottom line).
@@ -72,6 +79,9 @@ ScoreEditor(Score score, ILogger<ScoreEditor> logger)
 - `PlayAsync()`, `PauseAsync()`, `StopAsync()`, `SeekAsync(TimeSpan)`.
 - `State`, `Position`, `Duration`, `TempoMultiplier`, `IsLooping`.
 - `SetStaffVolume/Pan/Muted/Solo(Guid staffId, ...)`.
+- `SetOutputDevice(string? deviceName)` — selects the MIDI output device by name for all
+  future playback/preview (added 2026-09-15); pass `null` for the system default. Fixes a
+  bug where device selection was previously ignored entirely (see `docs/BUGS.md`).
 - `PreviewNoteAsync(Pitch pitch, int velocity, int durationMs)`.
 
 ---

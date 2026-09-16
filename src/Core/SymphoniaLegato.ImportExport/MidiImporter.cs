@@ -1,3 +1,11 @@
+// File: MidiImporter.cs
+// Description: Imports a MIDI file into the domain model, mapping each track to a Part/Staff.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
 using Microsoft.Extensions.Logging;

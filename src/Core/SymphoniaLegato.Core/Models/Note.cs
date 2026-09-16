@@ -1,3 +1,11 @@
+// File: Note.cs
+// Description: A single pitched note (or rest) with articulation, hand assignment, chord notes, and all playback/notation metadata.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>Articulation marking on a note.</summary>

@@ -1,3 +1,11 @@
+// File: MetronomeEngine.cs
+// Description: Cross-platform timer-based metronome — fires Beat events on a background thread; UI callers must marshal to the UI thread.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Timers;
 
 namespace SymphoniaLegato.PlaybackEngine;

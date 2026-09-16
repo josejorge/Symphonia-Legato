@@ -1,3 +1,11 @@
+// File: ILayoutEngine.cs
+// Description: Layout computation contract and the full LayoutResult tree of types that ScoreCanvas renders directly.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.Core.Interfaces;

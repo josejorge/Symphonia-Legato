@@ -1,3 +1,12 @@
+// File: App.axaml.cs
+// Description: Application entry — receives the DI ServiceProvider, constructs MainWindow with
+//   its resolved dependencies, and toggles the high-contrast style include.
+// Author: Jose-Jorge HERNANDEZ
+// Company: Parlee Conseiller, Inc.
+// Date: 2026-09-15
+// Last edit date: 2026-09-15
+// Version: 1.0.1
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -10,6 +19,7 @@ using SymphoniaLegato.Desktop.ViewModels;
 using SymphoniaLegato.Desktop.Views;
 using SymphoniaLegato.ImportExport;
 using SymphoniaLegato.PdfEngine;
+using SymphoniaLegato.PlaybackEngine;
 
 namespace SymphoniaLegato.Desktop;
 
@@ -31,7 +41,8 @@ public sealed class App : Application
                 _services.GetRequiredService<ScorePngExporter>(),
                 _services.GetRequiredService<ScorePdfExporter>(),
                 _services.GetRequiredService<ScoreSvgExporter>(),
-                _services.GetRequiredService<MusicXmlExporter>())
+                _services.GetRequiredService<MusicXmlExporter>(),
+                _services.GetRequiredService<ScoreToMidiConverter>())
             {
                 DataContext = mainVm
             };

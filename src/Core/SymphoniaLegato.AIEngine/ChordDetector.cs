@@ -1,3 +1,11 @@
+// File: ChordDetector.cs
+// Description: Algorithmic chord detection from simultaneous pitches — pure analysis, no network calls.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.AIEngine;

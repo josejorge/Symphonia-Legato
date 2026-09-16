@@ -1,3 +1,11 @@
+// File: NoteCommands.cs
+// Description: IScoreCommand implementations for note entry, deletion, and duration/pitch edits.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.NotationEngine;
@@ -52,6 +60,39 @@ internal sealed class DeleteNoteCommand(Guid staffId, int measureNumber, Guid no
              .SelectMany(p => p.Staves)
              .FirstOrDefault(s => s.Id == staffId)
              ?.GetMeasure(measureNumber);
+}
+
+/// <summary>Stacks an extra pitch onto an existing note, turning it into (or extending) a
+/// chord. No-op if the target note is a rest or already contains that exact pitch —
+/// callers should check <see cref="Note.IsRest"/> themselves for user feedback, but the
+/// command stays defensive since undo/redo can replay against a since-changed score.</summary>
+internal sealed class AddChordPitchCommand(Guid staffId, int measureNumber, Guid noteId, Pitch pitch) : IScoreCommand
+{
+    private bool _added;
+
+    public string Description => $"Add chord pitch {pitch} to note {noteId}";
+
+    public void Execute(Score score)
+    {
+        var note = FindNote(score);
+        if (note is null || note.IsRest) { _added = false; return; }
+        if (note.Pitch == pitch || note.ChordNotes.Contains(pitch)) { _added = false; return; }
+        note.ChordNotes.Add(pitch);
+        _added = true;
+    }
+
+    public void Undo(Score score)
+    {
+        if (!_added) return;
+        var note = FindNote(score);
+        note?.ChordNotes.Remove(pitch);
+    }
+
+    private Note? FindNote(Score score) =>
+        score.Parts.SelectMany(p => p.Staves)
+             .FirstOrDefault(s => s.Id == staffId)
+             ?.GetMeasure(measureNumber)
+             ?.Notes.FirstOrDefault(n => n.Id == noteId);
 }
 
 internal sealed class ChangeTimeSignatureCommand(int measureNumber, TimeSignature newTimeSig) : IScoreCommand

@@ -1,3 +1,11 @@
+// File: AIModels.cs
+// Description: AI result types shared by the algorithmic and Claude-powered engines — chord/fingering/analysis/practice-plan results.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 // ── Chord detection ─────────────────────────────────────────────────────────

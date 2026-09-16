@@ -1,3 +1,11 @@
+// File: StaffPositionTests.cs
+// Description: Unit tests for StaffPositionCalculator, including the Calculate/FromStaffPosition round-trip invariant.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using FluentAssertions;
 using SymphoniaLegato.Core.Models;
 using SymphoniaLegato.NotationEngine;

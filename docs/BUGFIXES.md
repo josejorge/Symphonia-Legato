@@ -237,10 +237,49 @@ the same method.
   already uses `OemPlus`/`OemMinus`/`D0`, so the app starts cleanly. The leftover
   `run_*.txt` files are not used by the app.
 
-## Known limitation (not fixed here)
+## Known limitation (fixed 2026-09-15, see "TODO.md Tier 2" below)
 
-- Mixer volume/pan/mute changes are applied to live MIDI channels but are not
-  written back into the `Score`. Because playback now rebuilds the MIDI from the
-  `Score` on each Play, mixer tweaks made while stopped are reflected only if the
-  corresponding `Staff` properties change. Wiring the mixer to mutate the `Score`
-  (or to send live CC during playback) is a follow-up.
+- Mixer volume/pan/mute changes were applied to live MIDI channels but never
+  written back into the `Score`. Because playback rebuilds the MIDI from the
+  `Score` on each Play, mixer tweaks made while stopped were silently lost —
+  fixed by having `MixerChannelViewModel` write straight into the `Staff`.
+  Live CC during *already-playing* audio still isn't sent (a smaller
+  remaining gap — see `docs/KNOWN_ISSUES.md`).
+
+---
+
+# Repo-status audit + TODO.md Tier 0/1 triage (2026-09-15)
+
+## 11. Duration toolbar radio buttons didn't track keyboard duration entry
+
+**Root cause:** `NoteInputToolbarView.axaml`'s duration `RadioButton`s were
+`Command`-bound (so clicking one worked) but only the Quarter button had a
+hardcoded `IsChecked="True"` — none of them bound `IsChecked` back to
+`ScoreEditorViewModel.SelectedDuration`. Pressing `1`–`6` on the keyboard (which
+sets `SelectedDuration` directly) never moved the toolbar highlight.
+
+**Fix:** Added `Converters/EnumEqualsConverter.cs` (compares a bound value to
+`ConverterParameter`) and bound each button's `IsChecked` to
+`SelectedDuration.Value` with the matching `NoteValue` as the parameter.
+
+**Files:** `Converters/EnumEqualsConverter.cs`, `App.axaml` (resource
+registration), `Views/NoteInputToolbarView.axaml`.
+
+## 12. `File ▸ Export ▸ MIDI...` did nothing but show a status message
+
+**Root cause:** `MainWindow.OnExportAsync`'s `"midi"` case never called
+`ScoreToMidiConverter` — it just set `vm.StatusMessage` to a sentence pointing
+the user at "playback controls," which don't expose an export path either.
+
+**Fix:** Injected `ScoreToMidiConverter` into `MainWindow`, added
+`ExportMidiAsync` following the same save-file-picker pattern as the
+PNG/PDF/SVG/MusicXML exporters, and pointed the `"midi"` case at it.
+
+**Files:** `Views/MainWindow.axaml.cs`, `App.axaml.cs`.
+
+## Notes / non-bugs (confirmed during this audit)
+
+- `run_err.txt` (deleted from the repo this pass) was already documented above
+  as the stale pre-`3d64da4` `InputGesture="Plus"` crash — re-confirmed: the app
+  builds with 0 warnings/0 errors, all tests pass, and the Desktop `.exe`
+  launches to a real, responsive window. The project was not, in fact, broken.

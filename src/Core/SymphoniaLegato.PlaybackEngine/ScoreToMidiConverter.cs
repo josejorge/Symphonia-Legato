@@ -1,3 +1,11 @@
+// File: ScoreToMidiConverter.cs
+// Description: Converts a Score domain object to a MidiFile — tick conversion, tempo, and the sample-accurate percussion click track.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using Melanchall.DryWetMidi.Common;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
@@ -21,6 +29,10 @@ public sealed class ScoreToMidiConverter
     {
         var file = new MidiFile { TimeDivision = new TicksPerQuarterNoteTimeDivision(MidiPPQ) };
 
+        // Solo semantics: if any staff is soloed, every non-soloed staff is treated as
+        // muted for this conversion, on top of its own IsMuted flag.
+        bool anySolo = score.Parts.SelectMany(p => p.Staves).Any(s => s.IsSolo);
+
         int channelIndex = 0;
         foreach (var part in score.Parts)
         foreach (var staff in part.Staves)
@@ -28,9 +40,11 @@ public sealed class ScoreToMidiConverter
             if (channelIndex >= 16) break;
             if (channelIndex == 9) channelIndex++; // skip percussion channel
 
+            bool effectivelyMuted = staff.IsMuted || (anySolo && !staff.IsSolo);
+
             // Emit the tempo on the first track so the score's InitialTempo is
             // honoured (otherwise DryWetMidi defaults every score to 120 BPM).
-            var track = BuildTrack(staff, channelIndex, score.InitialTempo,
+            var track = BuildTrack(staff, channelIndex, score.InitialTempo, effectivelyMuted,
                 includeTempo: file.Chunks.Count == 0);
             file.Chunks.Add(track);
             channelIndex++;
@@ -80,7 +94,7 @@ public sealed class ScoreToMidiConverter
         return new TrackChunk(events);
     }
 
-    private TrackChunk BuildTrack(Staff staff, int channel, int bpm, bool includeTempo)
+    private TrackChunk BuildTrack(Staff staff, int channel, int bpm, bool effectivelyMuted, bool includeTempo)
     {
         var events = new List<MidiEvent>();
 
@@ -114,7 +128,7 @@ public sealed class ScoreToMidiConverter
                 // NoteOn
                 events.Add(new NoteOnEvent(
                     (SevenBitNumber)(note.Pitch?.MidiNumber ?? 60),
-                    (SevenBitNumber)(staff.IsMuted ? 0 : note.Velocity))
+                    (SevenBitNumber)(effectivelyMuted ? 0 : note.Velocity))
                 {
                     Channel = (FourBitNumber)channel,
                     DeltaTime = noteStart - lastEventTick
@@ -126,7 +140,7 @@ public sealed class ScoreToMidiConverter
                 {
                     events.Add(new NoteOnEvent(
                         (SevenBitNumber)chordPitch.MidiNumber,
-                        (SevenBitNumber)(staff.IsMuted ? 0 : note.Velocity))
+                        (SevenBitNumber)(effectivelyMuted ? 0 : note.Velocity))
                     {
                         Channel = (FourBitNumber)channel,
                         DeltaTime = 0

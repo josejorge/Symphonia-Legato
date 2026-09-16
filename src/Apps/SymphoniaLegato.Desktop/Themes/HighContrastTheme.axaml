@@ -1,3 +1,12 @@
+<!--
+File: HighContrastTheme.axaml
+Description: High-contrast theme resource overrides (WCAG 2.1 AA+), appended over the dark theme when enabled.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-06-02
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 

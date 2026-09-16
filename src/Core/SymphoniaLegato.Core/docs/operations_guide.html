@@ -1,0 +1,68 @@
+<!--
+File: operations_guide.html
+Description: Module-level operations guide for SymphoniaLegato.Core — build/test in isolation,
+  configuration surface, and troubleshooting specific to this library.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.Core — Operations Guide</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--bg:#fff;--panel:#f6f5fb;--border:#ddd;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:860px;margin:0 auto;padding:2.2rem 2rem 3.5rem;line-height:1.6}
+  h1{font-size:1.6rem;border-bottom:3px solid var(--accent);padding-bottom:.4rem;margin-bottom:.1rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.15rem;margin-top:2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.55rem}
+  table{border-collapse:collapse;width:100%;margin:.8rem 0}
+  th,td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;font-size:.9rem}
+  th{background:var(--panel)}
+  code{background:var(--panel);border-radius:4px;padding:.1rem .35rem;font-size:.9em;font-family:Consolas,monospace}
+  pre{background:var(--panel);border-radius:6px;padding:.8rem 1rem;overflow-x:auto;font-size:.85rem}
+  pre code{background:none;padding:0}
+  footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.82rem}
+  @media print{ body{max-width:100%} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.Core</h1>
+<p class="subtitle">Operations Guide — domain library</p>
+
+<h2>System description</h2>
+<p>The domain model layer: <code>Score</code>, <code>Part</code>, <code>Staff</code>,
+<code>Measure</code>, <code>Note</code>, <code>Pitch</code>, and every interface
+the engine libraries implement. A pure library with no runtime process of its
+own — it's "operated" by being built and tested as part of the solution.</p>
+
+<h2>Prerequisites</h2>
+<p>.NET 9 SDK only. No third-party package dependencies.</p>
+
+<h2>Build &amp; verify in isolation</h2>
+<pre><code>dotnet build src\Core\SymphoniaLegato.Core\SymphoniaLegato.Core.csproj
+dotnet test tests\SymphoniaLegato.Core.Tests --no-build   # 27 tests</code></pre>
+
+<h2>Log files</h2>
+<p>None — this library has no logging surface of its own; consumers log through
+their own <code>ILogger&lt;T&gt;</code> instances.</p>
+
+<h2>Configuration parameters</h2>
+<p>None. Every consumer constructs domain models directly (or via
+<code>Score.CreatePianoScore()</code>).</p>
+
+<h2>Common troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td>New score renders blank</td><td><code>Score.CreatePianoScore()</code> creates staves with <em>no measures</em> by design — the caller must call <code>editor.AddMeasures(0, 4)</code> afterward (see root <code>CLAUDE.md</code> pitfall #11).</td></tr>
+<tr><td>Chord-note position looks wrong after a layout change</td><td><code>Note.ChordNotes</code> stores <code>Pitch</code>, not <code>Note</code> — it has no <code>StaffPosition</code>; the layout engine computes it via <code>PitchToStaffPosition</code> (pitfall #19).</td></tr>
+</table>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

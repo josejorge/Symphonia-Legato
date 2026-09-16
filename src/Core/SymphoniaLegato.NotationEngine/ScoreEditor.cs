@@ -1,3 +1,11 @@
+// File: ScoreEditor.cs
+// Description: Executes and undoes score-mutating commands, running PostProcess() after each to recompute beams/stems/accidentals.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.2.0
+
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Models;
 
@@ -83,10 +91,28 @@ public sealed class ScoreEditor
 
     public void MarkSaved() => IsDirty = false;
 
+    /// <summary>
+    /// Marks the score dirty and raises <see cref="ScoreChanged"/> without pushing an
+    /// undo entry. For continuous session/mixing controls (mixer volume/pan/mute/solo)
+    /// that mutate persisted <see cref="Staff"/> properties directly but shouldn't flood
+    /// the undo stack the way a discrete notation edit does — the same treatment Zoom
+    /// already gets by never going through <see cref="Execute"/> at all.
+    /// </summary>
+    public void MarkDirty()
+    {
+        IsDirty = true;
+        ScoreChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     // ── Convenience factory methods ────────────────────────────────────
 
     public void AddNote(Guid staffId, int measureNumber, Note note) =>
         Execute(new AddNoteCommand(staffId, measureNumber, note));
+
+    /// <summary>Stacks an extra pitch onto an existing note (chord entry). No-op if the
+    /// note is a rest or already has that pitch — see <see cref="AddChordPitchCommand"/>.</summary>
+    public void AddChordPitch(Guid staffId, int measureNumber, Guid noteId, Pitch pitch) =>
+        Execute(new AddChordPitchCommand(staffId, measureNumber, noteId, pitch));
 
     public void DeleteNote(Guid staffId, int measureNumber, Guid noteId) =>
         Execute(new DeleteNoteCommand(staffId, measureNumber, noteId));

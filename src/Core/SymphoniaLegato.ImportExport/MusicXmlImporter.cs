@@ -1,3 +1,11 @@
+// File: MusicXmlImporter.cs
+// Description: Imports MusicXML 4.0 files into the domain model.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Interfaces;

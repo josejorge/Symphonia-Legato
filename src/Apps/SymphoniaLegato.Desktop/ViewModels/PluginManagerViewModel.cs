@@ -1,3 +1,11 @@
+// File: PluginManagerViewModel.cs
+// Description: View model for the Plugin Manager dialog — lists installed plugins (PluginInfo) and their enabled state.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

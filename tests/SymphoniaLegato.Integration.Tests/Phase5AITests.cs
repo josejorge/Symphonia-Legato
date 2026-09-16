@@ -1,3 +1,11 @@
+// File: Phase5AITests.cs
+// Description: Integration tests for Phase 5 AI features — offline chord/fingering analysis.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using FluentAssertions;
 using SymphoniaLegato.AIEngine;
 using SymphoniaLegato.Core.Models;

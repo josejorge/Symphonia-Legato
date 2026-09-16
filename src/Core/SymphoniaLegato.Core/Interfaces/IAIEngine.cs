@@ -1,3 +1,11 @@
+// File: IAIEngine.cs
+// Description: AI engine contract — offline chord/fingering analysis plus optional Claude-powered harmonisation, score analysis, and practice recommendations.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.Core.Interfaces;

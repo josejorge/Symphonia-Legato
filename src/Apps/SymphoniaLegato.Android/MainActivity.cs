@@ -1,3 +1,11 @@
+// File: MainActivity.cs
+// Description: The Android app's single Activity, hosting the Avalonia UI via AvaloniaMainActivity.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Android.App;
 using Android.Content.PM;
 using Avalonia;

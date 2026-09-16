@@ -1,3 +1,11 @@
+// File: MainWindowViewModel.cs
+// Description: Top-level view model for the main window — menu commands, file open/save/export requests, and theme switching.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.2.0
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Avalonia.Platform.Storage;
@@ -7,6 +15,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.Core.Models;
+using SymphoniaLegato.Desktop.Services;
 using SymphoniaLegato.NotationEngine;
 
 namespace SymphoniaLegato.Desktop.ViewModels;
@@ -23,6 +32,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly MidiSettingsViewModel _midiSettingsVm;
     private readonly SyncSettingsViewModel _syncSettingsVm;
     private readonly AIAssistantViewModel _aiVm;
+    private readonly AppSettingsService _settings;
+    private const int MaxRecentFiles = 10;
 
     [ObservableProperty] private string _title = "Symphonia Legato";
     [ObservableProperty] private bool _isDirty;
@@ -60,6 +71,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SyncSettingsViewModel syncSettingsVm,
         MetronomeViewModel metronomeVm,
         AIAssistantViewModel aiAssistantVm,
+        AppSettingsService settings,
         ILogger<MainWindowViewModel> logger)
     {
         _repository = repository;
@@ -72,6 +84,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _midiSettingsVm = midiSettingsVm;
         _syncSettingsVm = syncSettingsVm;
         _aiVm = aiAssistantVm;
+        _settings = settings;
         Metronome = metronomeVm;
 
         ScoreEditor   = scoreEditor;
@@ -89,6 +102,22 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // Clicking a note arms "play from here".
         ScoreEditor.PlaybackStartTickChanged += (_, tick) => PlaybackVm.StartTick = tick;
+
+        // Mixer tweaks write back into the current score's Staff objects directly
+        // (see MixerViewModel) rather than through the undo/redo command system —
+        // mark the score dirty so Save captures them and the title bar's "•" shows.
+        // Subscribed once here (not per-LoadScore) since MixerVm itself never changes.
+        MixerVm.MixerChanged += (_, _) => ScoreEditor?.Editor?.MarkDirty();
+
+        // Restore persisted preferences (recent files here; MIDI device and sync
+        // folder restore themselves — see MidiSettingsViewModel/SyncSettingsViewModel).
+        // Theme is restored into the IsHighContrast property only — nothing is
+        // subscribed to ThemeChangeRequested yet this early in construction (MainWindow
+        // wires it up once DataContext is set), so MainWindow applies the initial
+        // value itself right after subscribing. See OnDataContextChanged.
+        IsHighContrast = _settings.Current.IsHighContrast;
+        foreach (var path in _settings.Current.RecentFiles.Where(File.Exists))
+            RecentFiles.Add(path);
 
         NewScore();
     }
@@ -146,6 +175,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         CurrentFilePath = path;
         IsDirty = false;
         StatusMessage = $"Saved: {Path.GetFileName(path)}";
+        AddToRecentFiles(path);
     }
 
     public async Task OpenFromPathAsync(string path)
@@ -155,8 +185,36 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         LoadScore(score);
         CurrentFilePath = path;
         StatusMessage = $"Opened: {score.Title}";
+        AddToRecentFiles(path);
+    }
+
+    /// <summary>Moves/inserts a path at the top of the recent-files list (capped, newest
+    /// first) and persists it — recent files survive restarts, unlike every other
+    /// setting before this pass (see docs/TODO.md).</summary>
+    private void AddToRecentFiles(string path)
+    {
         if (RecentFiles.Contains(path)) RecentFiles.Remove(path);
         RecentFiles.Insert(0, path);
+        while (RecentFiles.Count > MaxRecentFiles)
+            RecentFiles.RemoveAt(RecentFiles.Count - 1);
+
+        _settings.Current.RecentFiles = RecentFiles.ToList();
+        _settings.Save();
+    }
+
+    [RelayCommand]
+    private async Task OpenRecentAsync(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        if (!File.Exists(path))
+        {
+            StatusMessage = $"File no longer exists: {Path.GetFileName(path)}";
+            RecentFiles.Remove(path);
+            _settings.Current.RecentFiles = RecentFiles.ToList();
+            _settings.Save();
+            return;
+        }
+        await OpenFromPathAsync(path);
     }
 
     // ── Edit ──────────────────────────────────────────────────────────
@@ -208,10 +266,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleAIAssistant()   => ShowAIAssistant   = !ShowAIAssistant;
     [RelayCommand]
-    private void ToggleHighContrast()
+    private void ToggleHighContrast() => SetHighContrast(!IsHighContrast);
+
+    /// <summary>Applies the theme and persists it. Shared by the toggle command and by
+    /// startup restoration of the last session's theme.</summary>
+    private void SetHighContrast(bool highContrast)
     {
-        IsHighContrast = !IsHighContrast;
+        IsHighContrast = highContrast;
         ThemeChangeRequested?.Invoke(this, IsHighContrast);
+        _settings.Current.IsHighContrast = IsHighContrast;
+        _settings.Save();
     }
 
     // ── Score Properties ──────────────────────────────────────────────

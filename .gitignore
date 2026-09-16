@@ -24,7 +24,9 @@ Thumbs.db
 !packages.lock.json
 
 ## Build artifacts
-artifacts/
+## NOTE: NOT "artifacts/" — that's the tracked Jupyter-notebook artifacts
+## directory (see CLAUDE.md "Artifacts (Jupyter Notebooks)"), not build output.
+## This project's actual build output goes to bin/ and obj/ (ignored above).
 publish/
 dist/
 
@@ -33,11 +35,18 @@ dist/
 *.sln.iml
 
 ## VS Code
-.vscode/
+## NOTE: "/*" not a trailing-slash "/" — a directory-level pattern would block
+## git from ever re-including files below it, silently breaking every "!" line here.
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/.gitkeep
+
+## Scratch space — contents are throwaway, but the folder itself is tracked.
+tmp/*
+!tmp/.gitkeep
 
 ## Android
 *.apk
@@ -55,6 +64,11 @@ secrets.json
 ## SoundFont large files (store reference, not binary)
 assets/soundfonts/*.sf2
 assets/soundfonts/*.sf3
+
+## Local debug/run artifacts (never meant to be committed)
+*.binlog
+run_out*.txt
+run_err*.txt
 
 # --- added by security audit patch (2026-07-08) ---
 node_modules/

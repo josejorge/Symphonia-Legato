@@ -1,3 +1,11 @@
+// File: FileBrowserViewModel.cs
+// Description: View model for browsing and opening score files on Android — ScoreFileInfo entries plus the browsing view model.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

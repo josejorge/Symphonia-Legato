@@ -1,3 +1,11 @@
+// File: ScoreSvgExporter.cs
+// Description: Generates SVG output from a LayoutResult, matching the on-screen rendering pixel-for-pixel at zoom=1.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Globalization;
 using System.Text;
 using SymphoniaLegato.Core.Interfaces;

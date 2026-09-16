@@ -1,3 +1,12 @@
+<!--
+File: MainWindow.axaml
+Description: XAML layout for the main window — menu bar, toolbar, score editor, and docked panels.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-06-01
+Last edit date: 2026-09-15
+Version: 1.1.0
+-->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
@@ -24,6 +33,17 @@
         <MenuItem Header="_New Score"    Command="{Binding NewScoreCommand}"   InputGesture="Ctrl+N"/>
         <MenuItem Header="Load _Demo Score" Command="{Binding LoadDemoScoreCommand}"/>
         <MenuItem Header="_Open..."      Command="{Binding OpenCommand}"       InputGesture="Ctrl+O"/>
+        <MenuItem Header="Recent _Files" ItemsSource="{Binding RecentFiles}"
+                  IsEnabled="{Binding RecentFiles.Count}"
+                  AutomationProperties.Name="Recent files">
+          <MenuItem.Styles>
+            <Style Selector="MenuItem">
+              <Setter Property="Header" Value="{Binding}"/>
+              <Setter Property="Command" Value="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).OpenRecentCommand}"/>
+              <Setter Property="CommandParameter" Value="{Binding}"/>
+            </Style>
+          </MenuItem.Styles>
+        </MenuItem>
         <Separator/>
         <MenuItem Header="_Save"         Command="{Binding SaveCommand}"       InputGesture="Ctrl+S"/>
         <MenuItem Header="Save _As..."   Command="{Binding SaveAsCommand}"     InputGesture="Ctrl+Shift+S"/>

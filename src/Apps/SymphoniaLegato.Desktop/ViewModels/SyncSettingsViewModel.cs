@@ -1,7 +1,16 @@
+// File: SyncSettingsViewModel.cs
+// Description: View model for the Cloud Sync Settings dialog — folder selection and push/pull actions over ScoreSyncService.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using SymphoniaLegato.Desktop.Services;
 using SymphoniaLegato.ImportExport;
 
 namespace SymphoniaLegato.Desktop.ViewModels;
@@ -10,6 +19,8 @@ public sealed partial class SyncSettingsViewModel : ViewModelBase
 {
     private readonly ScoreSyncService _sync;
     private readonly ILogger<SyncSettingsViewModel> _logger;
+    private readonly AppSettingsService _settings;
+    private bool _loading;
 
     [ObservableProperty] private string _syncFolder = string.Empty;
     [ObservableProperty] private string _statusText = "No sync folder configured";
@@ -20,10 +31,26 @@ public sealed partial class SyncSettingsViewModel : ViewModelBase
     public event EventHandler? BrowseSyncFolderRequested;
     public event EventHandler<string>? PullScoreRequested; // payload: remote path
 
-    public SyncSettingsViewModel(ScoreSyncService sync, ILogger<SyncSettingsViewModel> logger)
+    public SyncSettingsViewModel(ScoreSyncService sync, ILogger<SyncSettingsViewModel> logger, AppSettingsService settings)
     {
-        _sync   = sync;
-        _logger = logger;
+        _sync     = sync;
+        _logger   = logger;
+        _settings = settings;
+
+        _loading = true;
+        if (!string.IsNullOrWhiteSpace(_settings.Current.SyncFolder))
+        {
+            SyncFolder = _settings.Current.SyncFolder;
+            StatusText = "Sync folder restored from last session";
+        }
+        _loading = false;
+    }
+
+    partial void OnSyncFolderChanged(string value)
+    {
+        if (_loading) return;
+        _settings.Current.SyncFolder = value;
+        _settings.Save();
     }
 
     [RelayCommand]

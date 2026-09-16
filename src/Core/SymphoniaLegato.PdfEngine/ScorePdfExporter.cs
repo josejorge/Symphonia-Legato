@@ -1,3 +1,11 @@
+// File: ScorePdfExporter.cs
+// Description: Embeds pre-rendered PNG score pages into a print-ready, multi-page PDF via QuestPDF.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;

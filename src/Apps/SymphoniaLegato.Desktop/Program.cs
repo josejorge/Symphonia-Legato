@@ -1,3 +1,11 @@
+// File: Program.cs
+// Description: Composition root — top-level statements registering every service into a ServiceCollection and building the app's ServiceProvider.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,6 +35,9 @@ static IServiceProvider BuildServices()
     var sc = new ServiceCollection();
 
     sc.AddLogging(b => b.AddDebug().SetMinimumLevel(LogLevel.Debug));
+
+    // ── Settings ──────────────────────────────────────────────────
+    sc.AddSingleton<AppSettingsService>();
 
     // ── Playback ──────────────────────────────────────────────────
     sc.AddSingleton<ScoreToMidiConverter>();

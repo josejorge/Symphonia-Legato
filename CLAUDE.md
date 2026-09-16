@@ -11,6 +11,66 @@
 **Author / owner:** Jose Jorge Hernandez (credit in all docs, About dialog, and LICENSE).
 **License:** MIT
 **Stack:** C# (.NET 9) · Avalonia 11 · MVVM · MusicXML 4.0
+**Project version:** 2.0.0 (see README.md and every `.csproj`'s `<Version>`)
+
+---
+
+## Compliance with the user's global CLAUDE.md standards
+
+A 2026-09-15 audit checked this project against the user's global `~/.claude/CLAUDE.md`
+conventions (branding headers, module docs, the standard `/docs` suite, etc.) and
+brought it into compliance. Two deliberate deviations from the global defaults,
+decided with the user that day:
+
+- **No `Company:` value in branding headers** — this is a personal, MIT-licensed
+  open-source project, not company-owned. Headers use
+  `Company: N/A (personal open-source project, MIT licensed)` instead of the
+  global default `Parlee Conseiller, Inc.`.
+- **Author name spelling** — this project's pre-existing docs (README, LICENSE,
+  About dialog) all say "Jose Jorge Hernandez" (no hyphen); new branding headers
+  and the required `operations_guide.html`/`executive_overview.html` footers use
+  the global default "Jose-Jorge HERNANDEZ" instead, per the global rule's exact
+  wording. Don't "fix" this inconsistency without asking — it's a known,
+  deliberate split between old and new docs, not a mistake.
+
+What that audit added, for a fresh session to find:
+- `docs/BUGS.md` — the authoritative `[Internal]/[External]`-tagged bug log (new).
+  `docs/BUGFIXES.md` remains the fuller narrative write-ups; `BUGS.md` links to it.
+- `.assetignore` at the repo root, alongside `.gitignore`.
+- `module.md` in every one of the 12 module directories under `src/Core/*` and
+  `src/Apps/*` (this project *is* modular per the global rule's definition).
+- `docs/operations_guide.html` + `docs/executive_overview.html` at the project
+  root **and** inside every module's own `<module>/docs/` — 26 HTML files total.
+  All share one embedded-CSS look; none have external dependencies.
+- `technical_memory/technical_memory.ipynb` and `claude_memory/` (mirror of
+  Claude's own memory for this project) — both now exist and are kept current
+  automatically by the global hooks.
+
+**Update (2026-09-15, same day, second pass): full compliance completed.**
+The user asked for all three remaining items; all three are now done:
+- **Branding headers** on all 140 pre-existing `.cs`/`.axaml` source files
+  (bulk-inserted via a script, `Date` from each file's real first-commit date
+  via `git log --follow`, `Description` from each type's existing XML doc
+  summary where one existed — not fabricated).
+- **Baseline folder scaffold** — all 18 directories from the global rule now
+  exist with `.gitkeep` placeholders. Fixing this surfaced two real
+  `.gitignore` bugs: `.vscode/`'s negation exceptions were silently
+  non-functional (trailing-slash directory exclude — changed to `.vscode/*`),
+  and `artifacts/` was blanket-ignored as generic build output, which would
+  have swallowed the required Jupyter-notebook artifacts directory.
+- **All 19 missing standard `/docs` files** created with real content (some
+  are honest "not applicable" stubs — `DATABASE.md`, `WEBHOOKS.md` — since
+  this is a local desktop app with no DB/webhook surface; most are
+  substantive). `docs/` now has all 27 standard files.
+
+Also found while writing `DEPENDENCIES.md`: `Microsoft.Data.Sqlite` is
+referenced in `SymphoniaLegato.Desktop.csproj` but used nowhere in the
+codebase (dead dependency — flagged, not removed), and
+`SymphoniaLegato.AIEngine.csproj` had no `<Version>` element at all unlike
+every sibling project (fixed).
+
+Full build (0 warnings/0 errors) and full test suite (117/117) were both
+reverified after every phase of this pass — none of it was a rubber-stamp.
 
 ---
 
@@ -23,7 +83,7 @@ dotnet build SymphoniaLegato.sln -c Debug
 # Run the desktop app
 dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build
 
-# Run all tests (104 passing)
+# Run all tests (123 passing)
 dotnet test SymphoniaLegato.sln --no-build
 
 # Publish self-contained Windows EXE
@@ -301,6 +361,8 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | Bugfix 3 | ✅ Done | Note flow & playback cursor (2026-06-29): notes flow across measures/lines instead of overlapping; moving playback indicator (cursor line + active-measure band + sounding-note highlight) with auto-scroll; live transport timer; audible note preview on entry; File ▸ Load Demo Score. See `docs/BUGFIXES.md`. |
 | Features | ✅ Done | Play-from-here (click a note → playback starts there), audible per-beat metronome during playback, one-bar count-in. Transport toggles in `PlaybackControlsView`. |
 | Features 2 | ✅ Done | Keyboard note entry (A–G + duration/rest/dot/transport keys), metronome baked into MIDI (sample-accurate), fixed `FromStaffPosition` pitch bug. `docs/TODO.md` backlog added. 111 tests. |
+| TODO.md Tier 0/1 | ✅ Done | Repo-status audit (2026-09-15) found the app builds/tests/runs cleanly — `run_err.txt` was a stale pre-`3d64da4` crash log, not current state. Deleted `msbuild.binlog`/`run_*.txt` from git; gave `PlaybackEngine.Tests` real coverage (was an empty stub project); fixed duration-toolbar radio buttons not tracking keyboard entry (`EnumEqualsConverter`); wired the stubbed MIDI export menu item to `ScoreToMidiConverter`. 117 tests. |
+| TODO.md Tier 2 (4 of 6 items) | ✅ Done | 2026-09-15: mixer→playback actually wired (writes back to `Staff`, honours `IsSolo`); settings persistence via new `AppSettingsService` (theme, MIDI device, sync folder, recent files — deliberately *not* the API key or SoundFont path); `File ▸ Recent Files` menu; chord entry (Shift+A–G stacks a pitch on the selected note, `AddChordPitchCommand`). Found and fixed a real bug along the way: MIDI device selection never worked (`SetOutputDevice` added to `IPlaybackEngine`). Multi-select/cut-copy-paste and the SMuFL/Bravura font swap deferred — both large enough to warrant their own session. 123 tests. |
 
 ---
 

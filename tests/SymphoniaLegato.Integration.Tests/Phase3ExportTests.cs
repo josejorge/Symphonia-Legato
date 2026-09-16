@@ -1,3 +1,11 @@
+// File: Phase3ExportTests.cs
+// Description: Integration tests for the Phase 3 export pipeline (PDF/PNG/SVG) and score version control.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using FluentAssertions;
 using Xunit;
 using Microsoft.Extensions.Logging.Abstractions;

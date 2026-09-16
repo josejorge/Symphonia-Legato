@@ -1,0 +1,78 @@
+<!--
+File: operations_guide.html
+Description: Module-level operations guide for SymphoniaLegato.Android — build/run/verify,
+  logs, configuration, and troubleshooting for the Android companion app.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.Android — Operations Guide</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--bg:#fff;--panel:#f6f5fb;--border:#ddd;--warn:#8a5300;--warnbg:#fff6e5;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:900px;margin:0 auto;padding:2.3rem 2rem 3.8rem;line-height:1.6}
+  h1{font-size:1.75rem;border-bottom:3px solid var(--accent);padding-bottom:.45rem;margin-bottom:.15rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.2rem;margin-top:2.2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.6rem}
+  table{border-collapse:collapse;width:100%;margin:.9rem 0}
+  th,td{border:1px solid var(--border);padding:.55rem .75rem;text-align:left;font-size:.9rem;vertical-align:top}
+  th{background:var(--panel)}
+  code{background:var(--panel);border-radius:4px;padding:.1rem .35rem;font-size:.9em;font-family:Consolas,monospace}
+  pre{background:var(--panel);border-radius:6px;padding:.85rem 1.05rem;overflow-x:auto;font-size:.87rem}
+  pre code{background:none;padding:0}
+  .warn{background:var(--warnbg);border:1px solid #f0c674;border-radius:8px;padding:.85rem 1.05rem;margin:.9rem 0;color:var(--warn)}
+  footer{margin-top:2.8rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.83rem}
+  @media print{ body{max-width:100%} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.Android</h1>
+<p class="subtitle">Operations Guide — Android companion app</p>
+
+<h2>System description</h2>
+<p>A viewer-focused companion app (score viewing, playback, metronome,
+annotations — not full editing parity with Desktop yet). Shares
+<code>Rendering</code>'s <code>ScoreCanvas</code> so scores look identical to
+Desktop. Built via its own <code>SymphoniaLegato.Android.sln</code>, excluded
+from the main solution.</p>
+
+<h2>Prerequisites</h2>
+<div class="warn"><strong>JDK 21 exactly.</strong> JDK 25 does not work
+(blocked by the Android SDK 35 toolchain); JDK 17+ works in theory but 21 is
+what the toolchain validates against. The JDK bundled with Android Studio is
+known-good.</div>
+<pre><code>dotnet workload install android   # ~1 GB, one-time</code></pre>
+
+<h2>How to build, run, and verify status</h2>
+<pre><code>dotnet build SymphoniaLegato.Android.sln -c Debug
+dotnet publish SymphoniaLegato.Android.sln -c Release -r android-arm64 `
+  --self-contained -o publish\android</code></pre>
+<p>Verify by deploying the APK to a device/emulator and confirming the
+bottom-nav shell (<code>MainShellView</code>) appears.</p>
+
+<h2>Log files</h2>
+<p>None persisted from this project directly — use <code>adb logcat</code>
+for on-device diagnostics, standard for any Android app.</p>
+
+<h2>Configuration parameters</h2>
+<p>None beyond what's shared with Desktop through the common Core libraries
+(e.g. sync folder, if wired up on this platform).</p>
+
+<h2>Common troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td>Build fails with <code>XAPRAS7023</code></td><td>Known issue with Avalonia 11.2.x + Android SDK 35 — see <code>docs/ANDROID.md</code> for the documented workaround.</td></tr>
+<tr><td>Build fails citing JDK version</td><td>Confirm JDK 21 specifically is what's active — set <code>ANDROID_SDK_ROOT</code> / <code>JAVA_HOME</code> to the SDK and JDK 21 directories, or configure them in the Android project folder (see <code>docs/ANDROID.md</code>).</td></tr>
+<tr><td>Building the main solution skips this project</td><td>Expected — <code>SymphoniaLegato.sln</code> deliberately excludes Android so Desktop always builds without the workload (pitfall #13). Build <code>SymphoniaLegato.Android.sln</code> instead.</td></tr>
+</table>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

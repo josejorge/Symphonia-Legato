@@ -1,3 +1,12 @@
+<!--
+File: App.axaml
+Description: Application resource dictionary — converters, data templates, and the applied theme styles.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-06-01
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:SymphoniaLegato.Desktop"
@@ -8,6 +17,7 @@
   <Application.Resources>
     <conv:BoolToPlayPauseConverter x:Key="BoolToPlayPauseConverter"/>
     <conv:BoolToStartStopConverter x:Key="BoolToStartStopConverter"/>
+    <conv:EnumEqualsConverter x:Key="EnumEquals"/>
   </Application.Resources>
 
   <Application.DataTemplates>

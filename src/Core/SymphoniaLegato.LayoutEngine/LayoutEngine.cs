@@ -1,3 +1,11 @@
+// File: LayoutEngine.cs
+// Description: Computes proportional score layout — longer notes get more horizontal space — producing the LayoutResult tree ScoreCanvas renders.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Interfaces;
 using SymphoniaLegato.Core.Models;

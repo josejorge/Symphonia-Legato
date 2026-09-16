@@ -1,3 +1,11 @@
+// File: ViewLocator.cs
+// Description: Maps ViewModel types to their View counterparts by naming convention.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;

@@ -1,3 +1,12 @@
+<!--
+File: NoteInputToolbarView.axaml
+Description: XAML layout for the note-entry toolbar (duration, dot, rest, accidentals, articulations, slur/tie, dynamics, hand coloring).
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-06-01
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SymphoniaLegato.Desktop.ViewModels"
@@ -26,22 +35,28 @@
 
     <RadioButton GroupName="dur" Content="𝅜" FontSize="16" ToolTip.Tip="Whole (1)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.Whole}"/>
+                 CommandParameter="{x:Static models:NoteValue.Whole}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.Whole}}"/>
     <RadioButton GroupName="dur" Content="𝅗𝅥" FontSize="16" ToolTip.Tip="Half (2)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.Half}"/>
-    <RadioButton GroupName="dur" Content="♩" FontSize="16" ToolTip.Tip="Quarter (3)" IsChecked="True"
+                 CommandParameter="{x:Static models:NoteValue.Half}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.Half}}"/>
+    <RadioButton GroupName="dur" Content="♩" FontSize="16" ToolTip.Tip="Quarter (3)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.Quarter}"/>
+                 CommandParameter="{x:Static models:NoteValue.Quarter}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.Quarter}}"/>
     <RadioButton GroupName="dur" Content="♪" FontSize="16" ToolTip.Tip="Eighth (4)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.Eighth}"/>
+                 CommandParameter="{x:Static models:NoteValue.Eighth}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.Eighth}}"/>
     <RadioButton GroupName="dur" Content="𝅘𝅥𝅯" FontSize="16" ToolTip.Tip="16th (5)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.Sixteenth}"/>
+                 CommandParameter="{x:Static models:NoteValue.Sixteenth}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.Sixteenth}}"/>
     <RadioButton GroupName="dur" Content="𝅘𝅥𝅰" FontSize="16" ToolTip.Tip="32nd (6)"
                  Command="{Binding SelectDurationCommand}"
-                 CommandParameter="{x:Static models:NoteValue.ThirtySecond}"/>
+                 CommandParameter="{x:Static models:NoteValue.ThirtySecond}"
+                 IsChecked="{Binding SelectedDuration.Value, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:NoteValue.ThirtySecond}}"/>
 
     <Separator Width="1" Margin="3,4" Background="{DynamicResource BorderBrush}"/>
 

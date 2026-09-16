@@ -1,3 +1,11 @@
+// File: MidiPlaybackEngine.cs
+// Description: IPlaybackEngine implementation — converts a Score to a MidiFile and plays it via the system MIDI output device.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
 using Melanchall.DryWetMidi.Multimedia;
@@ -19,6 +27,7 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
 
     private Playback? _playback;
     private OutputDevice? _outputDevice;
+    private string? _preferredDeviceName;
     private MidiFile? _midiFile;
     private Score? _score;
     private System.Timers.Timer? _positionTimer;
@@ -169,21 +178,39 @@ public sealed class MidiPlaybackEngine : IPlaybackEngine
     }
 
     /// <summary>
-    /// Lazily opens the system's first MIDI output device (index 0 — the
-    /// Microsoft GS Wavetable Synth on Windows). Shared by playback and the
-    /// piano-keyboard preview so both produce sound. Safe to call repeatedly.
+    /// Lazily opens <see cref="_preferredDeviceName"/> if set, otherwise the system's
+    /// first MIDI output device (index 0 — the Microsoft GS Wavetable Synth on Windows).
+    /// Shared by playback and the piano-keyboard preview so both produce sound. Safe to
+    /// call repeatedly.
     /// </summary>
     private void EnsureOutputDevice()
     {
         if (_outputDevice is not null) return;
         try
         {
-            _outputDevice = OutputDevice.GetByIndex(0);
+            _outputDevice = _preferredDeviceName is not null
+                ? OutputDevice.GetByName(_preferredDeviceName)
+                : OutputDevice.GetByIndex(0);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "No MIDI output device available — playback will be silent");
+            _logger.LogWarning(ex, "Preferred MIDI output device '{Device}' unavailable — " +
+                "falling back to the system default", _preferredDeviceName);
+            try { _outputDevice = OutputDevice.GetByIndex(0); }
+            catch (Exception ex2)
+            {
+                _logger.LogWarning(ex2, "No MIDI output device available — playback will be silent");
+            }
         }
+    }
+
+    public void SetOutputDevice(string? deviceName)
+    {
+        _preferredDeviceName = deviceName;
+        // Close the currently-open device so the next EnsureOutputDevice() call reopens
+        // with the new preference — cheap, and simpler than migrating live playback state.
+        _outputDevice?.Dispose();
+        _outputDevice = null;
     }
 
     // ── Position reporting ───────────────────────────────────────────

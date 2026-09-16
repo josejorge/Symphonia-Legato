@@ -1,3 +1,11 @@
+// File: Phase2CommandTests.cs
+// Description: Unit tests for the Phase 2 IScoreCommand implementations (dynamics, hairpins, slurs, ties, articulations).
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using SymphoniaLegato.Core.Models;

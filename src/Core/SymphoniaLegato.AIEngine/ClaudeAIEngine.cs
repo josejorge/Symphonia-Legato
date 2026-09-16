@@ -1,3 +1,11 @@
+// File: ClaudeAIEngine.cs
+// Description: IAIEngine implementation — offline chord/fingering plus Claude API-powered harmonisation, score analysis, and practice recommendations.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-02
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;

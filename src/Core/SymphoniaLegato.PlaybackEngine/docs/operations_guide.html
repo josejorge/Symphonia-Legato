@@ -1,0 +1,82 @@
+<!--
+File: operations_guide.html
+Description: Module-level operations guide for SymphoniaLegato.PlaybackEngine — build/test in
+  isolation, configuration surface, and troubleshooting specific to this library.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.1.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.PlaybackEngine — Operations Guide</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--bg:#fff;--panel:#f6f5fb;--border:#ddd;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:860px;margin:0 auto;padding:2.2rem 2rem 3.5rem;line-height:1.6}
+  h1{font-size:1.6rem;border-bottom:3px solid var(--accent);padding-bottom:.4rem;margin-bottom:.1rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.15rem;margin-top:2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.55rem}
+  table{border-collapse:collapse;width:100%;margin:.8rem 0}
+  th,td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;font-size:.9rem}
+  th{background:var(--panel)}
+  code{background:var(--panel);border-radius:4px;padding:.1rem .35rem;font-size:.9em;font-family:Consolas,monospace}
+  pre{background:var(--panel);border-radius:6px;padding:.8rem 1rem;overflow-x:auto;font-size:.85rem}
+  pre code{background:none;padding:0}
+  footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.82rem}
+  @media print{ body{max-width:100%} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.PlaybackEngine</h1>
+<p class="subtitle">Operations Guide — MIDI playback &amp; metronome</p>
+
+<h2>System description</h2>
+<p><code>MidiPlaybackEngine</code> plays a <code>Score</code> through the
+system's MIDI output device via DryWetMidi. <code>ScoreToMidiConverter</code>
+converts domain ticks (1024/quarter) to MIDI ticks (480 PPQ), emits tempo and
+a sample-accurate percussion click track. <code>MetronomeEngine</code> is a
+separate, silent timer used for UI-side beat events.</p>
+
+<h2>Prerequisites</h2>
+<p>.NET 9 SDK. NuGet: <code>Melanchall.DryWetMidi</code> 8.0.0. A reachable
+MIDI output device at runtime (see root operations guide).</p>
+
+<h2>Build &amp; verify in isolation</h2>
+<pre><code>dotnet build src\Core\SymphoniaLegato.PlaybackEngine\SymphoniaLegato.PlaybackEngine.csproj
+dotnet test tests\SymphoniaLegato.PlaybackEngine.Tests --no-build   # 6 tests (ScoreToMidiConverter)</code></pre>
+<p><code>MidiPlaybackEngine</code> itself has no automated tests — it opens a
+real OS MIDI device, so it needs a fake/abstraction over the device before
+it's unit-testable (tracked in <code>docs/TODO.md</code>).</p>
+
+<h2>Log files</h2>
+<p>None persisted — logs via <code>ILogger&lt;T&gt;</code>, debug-output only
+(see root operations guide).</p>
+
+<h2>Configuration parameters</h2>
+<p>MIDI output device selection is configured by the Desktop app's MIDI
+Settings dialog (not by this library) via
+<code>IPlaybackEngine.SetOutputDevice(string?)</code> — added 2026-09-15; the
+selection now persists (Desktop's <code>AppSettingsService</code>) and
+actually changes which device <code>EnsureOutputDevice()</code> opens
+(previously hardcoded to <code>OutputDevice.GetByIndex(0)</code> regardless
+of what was selected — see <code>docs/BUGS.md</code>). SoundFont path is
+still configured by the same dialog but isn't wired to an actual synth in
+this library yet.</p>
+
+<h2>Common troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td>A selected MIDI device doesn't produce sound</td><td>Confirm <code>SetOutputDevice</code> was actually called with that device's name (the Desktop Settings dialog's Apply button does this) — if the name doesn't match any device from <code>OutputDevice.GetAll()</code>, <code>EnsureOutputDevice()</code> falls back to the system default and logs a warning.</td></tr>
+<tr><td>Play does nothing</td><td>The engine's MIDI snapshot is only rebuilt at the start of playback from the live <code>Score</code> — a caller must not assume the engine already has current data (pitfall #21).</td></tr>
+<tr><td>Piano-key preview is silent before the first Play</td><td>The output device opens lazily via <code>EnsureOutputDevice()</code>, shared by both playback and preview — make sure both call sites use it, not just <code>PlayAsync</code> (pitfall #22).</td></tr>
+<tr><td>Metronome click doesn't line up / jitters</td><td>The audible click comes from a percussion track baked into the MIDI by <code>ScoreToMidiConverter</code> (sample-accurate), not from a UI timer — <code>MetronomeEngine</code>'s own <code>Beat</code> event is for UI display only (pitfall #29).</td></tr>
+</table>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

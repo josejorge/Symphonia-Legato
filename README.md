@@ -4,6 +4,8 @@
 
 Created by **Jose Jorge Hernandez**
 
+**Version:** 3.0.0
+
 Symphonia Legato is a cross-platform, piano-first music notation editor inspired by the classic Encore application. Built with C# (.NET 9), Avalonia UI, and a clean MVVM architecture — lightweight, fast, and fully git-friendly.
 
 ---

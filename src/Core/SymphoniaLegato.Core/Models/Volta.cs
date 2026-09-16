@@ -1,3 +1,11 @@
+// File: Volta.cs
+// Description: Volta bracket (first/second ending) model.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.0.0
+
 namespace SymphoniaLegato.Core.Models;
 
 /// <summary>A volta bracket (first ending, second ending, etc.).</summary>

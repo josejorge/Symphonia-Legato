@@ -1,0 +1,59 @@
+<!--
+File: executive_overview.html
+Description: Module-level executive overview for SymphoniaLegato.PluginEngine — plain-language
+  summary of what this piece is and why it matters, aimed at non-technical stakeholders.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.0.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.PluginEngine — Executive Overview</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--accent-light:#ede9fe;--bg:#fff;--border:#ddd;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:860px;margin:0 auto;padding:2.2rem 2rem 3.5rem;line-height:1.6}
+  h1{font-size:1.7rem;border-bottom:3px solid var(--accent);padding-bottom:.4rem;margin-bottom:.1rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.15rem;margin-top:2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.55rem}
+  .flow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;justify-content:center;margin:1.3rem 0}
+  .step{background:var(--accent-light);border:2px solid var(--accent);border-radius:10px;padding:.7rem .9rem;min-width:110px;text-align:center;font-size:.85rem}
+  .step.self{background:var(--accent);color:#fff;font-weight:700}
+  .arrow{font-size:1.4rem;color:var(--accent);font-weight:700}
+  ul{padding-left:1.2rem}
+  footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.82rem}
+  @media (max-width:600px){ .flow{flex-direction:column} .arrow{transform:rotate(90deg)} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.PluginEngine</h1>
+<p class="subtitle">Executive Overview — room to grow beyond what ships in the box</p>
+
+<h2>What it does, in plain terms</h2>
+<p>Lets other developers extend the app — new instruments, new export
+formats — without needing to change Symphonia Legato's own source code. A
+safety sandbox keeps a misbehaving plugin from destabilizing the main app.</p>
+
+<h2>Where it sits</h2>
+<div class="flow">
+  <div class="step">Core</div>
+  <div class="arrow">→</div>
+  <div class="step self">PluginEngine</div>
+  <div class="arrow">→</div>
+  <div class="step">Desktop</div>
+</div>
+
+<h2>Why it matters</h2>
+<ul>
+  <li>Keeps the app extensible without every feature needing to live in the core codebase.</li>
+  <li>Sandboxing means a broken or malicious plugin doesn't take the whole app down.</li>
+</ul>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

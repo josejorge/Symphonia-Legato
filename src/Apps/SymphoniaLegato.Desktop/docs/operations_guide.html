@@ -1,0 +1,84 @@
+<!--
+File: operations_guide.html
+Description: Module-level operations guide for SymphoniaLegato.Desktop — build/run/verify,
+  logs, configuration, and troubleshooting for the primary desktop editor app.
+Author: Jose-Jorge HERNANDEZ
+Company: N/A (personal open-source project, MIT licensed)
+Date: 2026-09-15
+Last edit date: 2026-09-15
+Version: 1.1.0
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SymphoniaLegato.Desktop — Operations Guide</title>
+<style>
+  :root{--ink:#1a1a1a;--sub:#555;--accent:#7c3aed;--bg:#fff;--panel:#f6f5fb;--border:#ddd;--warn:#8a5300;--warnbg:#fff6e5;}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);max-width:900px;margin:0 auto;padding:2.3rem 2rem 3.8rem;line-height:1.6}
+  h1{font-size:1.75rem;border-bottom:3px solid var(--accent);padding-bottom:.45rem;margin-bottom:.15rem}
+  .subtitle{color:var(--sub);margin-top:0}
+  h2{font-size:1.2rem;margin-top:2.2rem;color:var(--accent);border-left:4px solid var(--accent);padding-left:.6rem}
+  table{border-collapse:collapse;width:100%;margin:.9rem 0}
+  th,td{border:1px solid var(--border);padding:.55rem .75rem;text-align:left;font-size:.9rem;vertical-align:top}
+  th{background:var(--panel)}
+  code{background:var(--panel);border-radius:4px;padding:.1rem .35rem;font-size:.9em;font-family:Consolas,monospace}
+  pre{background:var(--panel);border-radius:6px;padding:.85rem 1.05rem;overflow-x:auto;font-size:.87rem}
+  pre code{background:none;padding:0}
+  .warn{background:var(--warnbg);border:1px solid #f0c674;border-radius:8px;padding:.85rem 1.05rem;margin:.9rem 0;color:var(--warn)}
+  footer{margin-top:2.8rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--sub);font-size:.83rem}
+  @media print{ body{max-width:100%} }
+</style>
+</head>
+<body>
+<h1>SymphoniaLegato.Desktop</h1>
+<p class="subtitle">Operations Guide — the primary Windows/Linux/macOS editor</p>
+
+<h2>System description</h2>
+<p>The full-featured Avalonia MVVM desktop editor: notation entry, MIDI
+playback with mixer/metronome, PDF/PNG/SVG/MusicXML/MIDI/<code>.enscore</code>
+import-export, per-score git history, cloud sync, plugin manager, and the AI
+assistant panel. This is the same application covered by the project root's
+own operations guide — see that document for the fuller picture; this page
+is the module-scoped version for anyone working only in this app.</p>
+
+<h2>Prerequisites</h2>
+<p>.NET 9 SDK (or newer, via <code>global.json</code>'s <code>rollForward</code>).
+A MIDI output device for audible playback.</p>
+
+<h2>How to build, run, and verify status</h2>
+<pre><code>dotnet build SymphoniaLegato.sln -c Debug
+dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build</code></pre>
+<p>A successful start shows a window titled
+<code>Untitled • — Symphonia Legato</code>.</p>
+
+<h2>Log files</h2>
+<p>None persisted — logging is configured with <code>AddDebug()</code> only
+(<code>Program.cs</code>); output reaches an attached debugger's Output
+window and nowhere else.</p>
+
+<h2>Configuration parameters</h2>
+<p>Most settings persist via <code>Services/AppSettingsService.cs</code>
+(<code>%AppData%\SymphoniaLegato\settings.json</code>, added 2026-09-15).</p>
+<table>
+<tr><th>Parameter</th><th>Where</th><th>Persisted?</th></tr>
+<tr><td>Claude API key</td><td>AI Assistant sidebar</td><td>No — deliberately session-only</td></tr>
+<tr><td>MIDI output device</td><td>MIDI/Audio Settings dialog</td><td>Yes, and selecting one now actually changes what plays (see docs/BUGS.md)</td></tr>
+<tr><td>SoundFont path</td><td>MIDI/Audio Settings dialog</td><td>No — not wired to a real synth yet</td></tr>
+<tr><td>Cloud sync folder</td><td>Sync Settings dialog</td><td>Yes</td></tr>
+<tr><td>Theme (Dark / High Contrast)</td><td>View menu — defaults to last session's choice</td><td>Yes</td></tr>
+</table>
+
+<h2>Common troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td>No sound on Play</td><td>Pick a device in MIDI/Audio Settings and click Apply — the selection now persists and actually takes effect.</td></tr>
+<tr><td>New score opens blank</td><td><code>Score.CreatePianoScore()</code> creates empty staves by design; the app must add measures immediately after — if you see this from custom code, call <code>editor.AddMeasures(0, 4)</code>.</td></tr>
+<tr><td>Window won't drag by its title bar</td><td>Don't set <code>ExtendClientAreaToDecorationsHint</code> on <code>MainWindow</code> — it removes the native title bar (pitfall #12).</td></tr>
+</table>
+
+<footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>
+</body>
+</html>

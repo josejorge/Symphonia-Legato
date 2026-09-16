@@ -139,9 +139,22 @@ If your score is inside a git repository, Symphonia Legato tracks changes automa
 
 ## Settings
 
-`Edit → Preferences` opens the settings dialog:
-- **Theme**: Dark / Light / High Contrast
-- **Font**: Score font (SMuFL-compatible)
-- **MIDI Output**: Select your MIDI device
-- **SoundFont**: Choose a .sf2 file for playback
-- **Autosave**: Interval (default 3 min)
+There is no single unified Preferences dialog yet — settings are split across
+a few menus, each of which now **persists across restarts** (as of
+2026-09-15; previously everything reset every launch):
+
+- **Theme**: `View → High Contrast Theme` toggles Dark / High Contrast.
+  (A Light theme doesn't exist yet — see `docs/KNOWN_ISSUES.md`.)
+- **MIDI Output**: `Playback → MIDI / Audio Settings...` — pick your device,
+  click Apply. The selection now actually takes effect (previously the app
+  always used the first device no matter what was selected).
+- **SoundFont**: same dialog has a `.sf2` picker, but it isn't wired to an
+  actual synth yet — selecting one has no audible effect (see
+  `docs/KNOWN_ISSUES.md`). Not persisted, since persisting a setting that
+  does nothing would be misleading.
+- **Cloud sync folder**: `Sync → Cloud Sync Settings...`.
+- **Recent Files**: `File → Recent Files` — the last 10 files you opened or
+  saved, newest first; stale entries (deleted/moved files) are dropped
+  automatically.
+- **Score font / Autosave interval**: not implemented — see
+  `docs/KNOWN_ISSUES.md` and `docs/TODO.md`.

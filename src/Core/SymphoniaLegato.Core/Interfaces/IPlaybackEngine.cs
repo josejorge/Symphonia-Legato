@@ -1,3 +1,11 @@
+// File: IPlaybackEngine.cs
+// Description: Playback engine contract, decoupling the app from the MIDI/audio implementation, plus playback position/note-played event args.
+// Author: Jose-Jorge HERNANDEZ
+// Company: N/A (personal open-source project, MIT licensed)
+// Date: 2026-06-01
+// Last edit date: 2026-09-15
+// Version: 1.1.0
+
 using SymphoniaLegato.Core.Models;
 
 namespace SymphoniaLegato.Core.Interfaces;
@@ -34,6 +42,11 @@ public interface IPlaybackEngine : IAsyncDisposable
     void SetStaffPan(Guid staffId, int pan);
     void SetStaffMuted(Guid staffId, bool muted);
     void SetStaffSolo(Guid staffId, bool solo);
+
+    /// <summary>Selects the MIDI output device by name for all future playback/preview.
+    /// Pass null to fall back to the system default (first available device). Closes and
+    /// reopens the device on next use if one is already open.</summary>
+    void SetOutputDevice(string? deviceName);
 
     /// <summary>Plays a single note for audition (e.g. piano keyboard click).</summary>
     Task PreviewNoteAsync(Pitch pitch, int velocity = 80, int durationMs = 300);
