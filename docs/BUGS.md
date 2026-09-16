@@ -132,6 +132,23 @@ not applied (removing a dependency is a code change) — flagged in
 `docs/DEPENDENCIES.md` for the next session to either wire up or remove.
 File: `src/Apps/SymphoniaLegato.Desktop/SymphoniaLegato.Desktop.csproj`.
 
+[Internal] **Measure width computed from only the first staff, cramming a
+busier second staff** — Symptom (user-reported, with screenshot): on a grand
+staff, a measure whose bass clef had more/shorter notes than the treble clef
+rendered with all the bass notes squeezed together, while other measures
+looked normally spaced. Root cause:
+`LayoutEngine.EstimateMeasureWidth` read
+`score.Parts.SelectMany(p => p.Staves).FirstOrDefault()` — the treble staff
+only — to size each measure's shared column width, completely ignoring every
+other staff. A reproduction test confirmed the exact inversion: a measure
+with a busy bass staff came out *narrower* (256px) than a simple neighboring
+measure (418px), because only the sparse treble was ever consulted. Fix
+(2026-09-15): width is now the max of every staff's note content at that
+measure, not just the first one's. File:
+`src/Core/SymphoniaLegato.LayoutEngine/LayoutEngine.cs`. Covered by
+`tests/SymphoniaLegato.Integration.Tests/LayoutEngineTests.cs` (verified to
+fail against the pre-fix code before confirming the fix).
+
 [Internal] **MIDI output device selection never actually took effect** — Symptom:
 choosing a different device in MIDI/Audio Settings and clicking Apply did
 nothing audible — playback always used the first device. Root cause:

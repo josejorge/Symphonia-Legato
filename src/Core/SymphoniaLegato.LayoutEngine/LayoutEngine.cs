@@ -4,7 +4,7 @@
 // Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-06-01
 // Last edit date: 2026-09-15
-// Version: 1.0.0
+// Version: 1.1.0
 
 using Microsoft.Extensions.Logging;
 using SymphoniaLegato.Core.Interfaces;
@@ -113,16 +113,22 @@ public sealed class LayoutEngine : ILayoutEngine
 
     private static double EstimateMeasureWidth(Score score, int measureNumber, double sp, bool isFirst)
     {
-        var staff = score.Parts.SelectMany(p => p.Staves).FirstOrDefault();
-        var measure = staff?.GetMeasure(measureNumber);
-        if (measure is null) return sp * 8;
+        var measures = score.Parts.SelectMany(p => p.Staves)
+            .Select(s => s.GetMeasure(measureNumber))
+            .Where(m => m is not null)
+            .ToList();
+        if (measures.Count == 0) return sp * 8;
 
         double accW  = isFirst ? ClefWidth * sp / LineSpacing : 0;
         double ksW   = isFirst ? Math.Abs(score.InitialKeySignature.Fifths) * KeySigWidth * sp / LineSpacing : 0;
         double tsW   = isFirst ? TimeSigWidth * sp / LineSpacing : 0;
 
-        // Proportional: each duration takes proportional space
-        double noteW = measure.Notes.Sum(n => NoteWidthPx(n.Duration, sp));
+        // Proportional: width must fit the busiest staff at this measure, not just
+        // the first one — a grand staff's bass clef routinely has more/shorter notes
+        // than the treble in the same bar (or vice versa). Sizing the shared column
+        // from only one staff crammed the other staff's notes into too little room
+        // (see docs/BUGS.md).
+        double noteW = measures.Max(m => m!.Notes.Sum(n => NoteWidthPx(n.Duration, sp)));
         noteW = Math.Max(noteW, MinNoteW * sp / LineSpacing);
 
         return accW + ksW + tsW + noteW + sp; // + barline padding

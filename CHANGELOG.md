@@ -8,6 +8,17 @@ Format: [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed (2026-09-15 — grand-staff measure width bug, user-reported with screenshot)
+- **A measure's width was computed from only the treble staff**, ignoring
+  every other staff. On a grand staff, a measure where the bass clef had
+  more/shorter notes than the treble rendered with the bass notes squeezed
+  together while other measures looked fine — the shared column width was
+  sized for the sparser staff. `LayoutEngine.EstimateMeasureWidth` now takes
+  the max note-content width across every staff at that measure. Added
+  `tests/SymphoniaLegato.Integration.Tests/LayoutEngineTests.cs`, confirmed
+  to fail against the pre-fix code (busy measure came out narrower than a
+  simple one) before verifying the fix inverts it correctly.
+
 ### Added (2026-09-15 — TODO.md Tier 2: mixer, settings persistence, chord entry)
 - **Mixer → playback actually connected.** Volume/Pan/Mute/Solo changes in the
   mixer panel now write straight back into the `Staff` (so the next Play

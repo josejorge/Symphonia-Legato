@@ -6,7 +6,7 @@ Author: Jose-Jorge HERNANDEZ
 Company: N/A (personal open-source project, MIT licensed)
 Date: 2026-09-15
 Last edit date: 2026-09-15
-Version: 1.0.0
+Version: 1.1.0
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -46,10 +46,13 @@ notes can never spill past a bar line.</p>
 <p>.NET 9 SDK. Depends on <code>SymphoniaLegato.Core</code> only.</p>
 
 <h2>Build &amp; verify in isolation</h2>
-<pre><code>dotnet build src\Core\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj</code></pre>
+<pre><code>dotnet build src\Core\SymphoniaLegato.LayoutEngine\SymphoniaLegato.LayoutEngine.csproj
+dotnet test tests\SymphoniaLegato.Integration.Tests --filter FullyQualifiedName~LayoutEngineTests</code></pre>
 <p>No dedicated unit-test project; layout behavior is exercised via
-<code>SymphoniaLegato.Integration.Tests</code> (export/rendering pipeline
-tests) and manually via the Desktop app.</p>
+<code>SymphoniaLegato.Integration.Tests</code> — including
+<code>LayoutEngineTests.cs</code> (added 2026-09-15) for measure-width
+correctness across multiple staves — plus the export/rendering pipeline
+tests, and manually via the Desktop app.</p>
 
 <h2>Log files</h2>
 <p>None persisted — see root operations guide.</p>
@@ -63,6 +66,7 @@ whichever ViewModel calls <code>ComputeLayout</code>.</p>
 <tr><th>Symptom</th><th>Cause / fix</th></tr>
 <tr><td>Score doesn't scroll / is clipped after zoom or adding measures</td><td>The consuming control (<code>ScoreCanvas</code>) must call both <code>InvalidateMeasure()</code> and <code>InvalidateVisual()</code> when the <code>LayoutResult</code> changes — this layer only recomputes the tree, it doesn't force a re-measure (pitfall #23).</td></tr>
 <tr><td>An intentionally over-full measure still looks wrong</td><td>Layout scales note positions by <code>max(timeSignatureCapacity, actualContentSpan)</code> as a backstop — the real fix is not producing an over-full measure in the first place (see <code>NotationEngine</code>'s auto-flow).</td></tr>
+<tr><td>One staff's notes in a measure look cramped relative to other measures</td><td>Fixed 2026-09-15 — <code>EstimateMeasureWidth</code> used to size the shared column from only the first staff (typically treble), starving a busier second staff (typically bass) of room. It now takes the max note-content width across every staff at that measure. See <code>docs/BUGS.md</code>.</td></tr>
 </table>
 
 <footer>Author: Jose-Jorge HERNANDEZ · Symphonia Legato · Last updated 2026-09-15</footer>

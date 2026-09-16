@@ -83,7 +83,7 @@ dotnet build SymphoniaLegato.sln -c Debug
 # Run the desktop app
 dotnet run --project src\Apps\SymphoniaLegato.Desktop --no-build
 
-# Run all tests (123 passing)
+# Run all tests (125 passing)
 dotnet test SymphoniaLegato.sln --no-build
 
 # Publish self-contained Windows EXE
@@ -363,6 +363,7 @@ Score → Annotations[]  ← Phase 4: per-page freehand strokes
 | Features 2 | ✅ Done | Keyboard note entry (A–G + duration/rest/dot/transport keys), metronome baked into MIDI (sample-accurate), fixed `FromStaffPosition` pitch bug. `docs/TODO.md` backlog added. 111 tests. |
 | TODO.md Tier 0/1 | ✅ Done | Repo-status audit (2026-09-15) found the app builds/tests/runs cleanly — `run_err.txt` was a stale pre-`3d64da4` crash log, not current state. Deleted `msbuild.binlog`/`run_*.txt` from git; gave `PlaybackEngine.Tests` real coverage (was an empty stub project); fixed duration-toolbar radio buttons not tracking keyboard entry (`EnumEqualsConverter`); wired the stubbed MIDI export menu item to `ScoreToMidiConverter`. 117 tests. |
 | TODO.md Tier 2 (4 of 6 items) | ✅ Done | 2026-09-15: mixer→playback actually wired (writes back to `Staff`, honours `IsSolo`); settings persistence via new `AppSettingsService` (theme, MIDI device, sync folder, recent files — deliberately *not* the API key or SoundFont path); `File ▸ Recent Files` menu; chord entry (Shift+A–G stacks a pitch on the selected note, `AddChordPitchCommand`). Found and fixed a real bug along the way: MIDI device selection never worked (`SetOutputDevice` added to `IPlaybackEngine`). Multi-select/cut-copy-paste and the SMuFL/Bravura font swap deferred — both large enough to warrant their own session. 123 tests. |
+| Grand-staff measure-width bug (user-reported) | ✅ Fixed | 2026-09-15: `LayoutEngine.EstimateMeasureWidth` sized every measure's shared column from only the first (treble) staff, so a measure whose bass clef was busier than its treble got crammed. Fixed to take the max note-content width across every staff at that measure. Added `tests/SymphoniaLegato.Integration.Tests/LayoutEngineTests.cs` — confirmed to fail against the pre-fix code (reproducing the exact reported symptom: a busy measure came out narrower than a simple one) before verifying the fix. 125 tests. |
 
 ---
 
