@@ -227,8 +227,8 @@ use `StackPanel` with `Spacing`, or per-child `Margin`. File: n/a (convention,
 see `CLAUDE.md` pitfall #7).
 
 [External] **`claude_memory/` leaked private cross-project data into this public
-repo** — Symptom: user spotted references to an unrelated client project
-("Jireh") and machine paths while reviewing docs. Root cause: the global
+repo** — Symptom: user spotted references to an unrelated client project and
+machine paths while reviewing docs. Root cause: the global
 Claude Code memory-mirror hook (`sync-claude-memory.ps1`) mirrors this
 machine's *entire* memory folder for its `H:\DEV` working-directory grouping —
 which spans every project under that root, not just this one — into any

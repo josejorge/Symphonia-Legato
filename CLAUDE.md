@@ -36,8 +36,8 @@ decided with the user that day:
   the global rule that every git-enabled repo mirrors Claude's memory into the
   repo. This machine's memory mirror is scoped per *working-directory grouping*
   (`H:\DEV`), not per individual project — it silently carried in private
-  business/client data from other unrelated projects (Jireh Home Cleaning
-  production SSH access details, other clients' project notes, coursework
+  business/client data from other unrelated projects (another client's
+  production server access details, other clients' project notes, coursework
   info). That had already been committed and pushed to this public repo;
   purged from git history via `git-filter-repo` and force-pushed. The local
   `claude_memory\` folder still exists (the hook still writes to it) — it's
