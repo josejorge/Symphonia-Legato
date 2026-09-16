@@ -32,6 +32,17 @@ decided with the user that day:
   the global default "Jose-Jorge HERNANDEZ" instead, per the global rule's exact
   wording. Don't "fix" this inconsistency without asking — it's a known,
   deliberate split between old and new docs, not a mistake.
+- **`claude_memory/` is gitignored, not tracked** — added 2026-09-16, overriding
+  the global rule that every git-enabled repo mirrors Claude's memory into the
+  repo. This machine's memory mirror is scoped per *working-directory grouping*
+  (`H:\DEV`), not per individual project — it silently carried in private
+  business/client data from other unrelated projects (Jireh Home Cleaning
+  production SSH access details, other clients' project notes, coursework
+  info). That had already been committed and pushed to this public repo;
+  purged from git history via `git-filter-repo` and force-pushed. The local
+  `claude_memory\` folder still exists (the hook still writes to it) — it's
+  just excluded from version control here. Don't re-track it without checking
+  its contents are actually Symphonia-Legato-only first.
 
 What that audit added, for a fresh session to find:
 - `docs/BUGS.md` — the authoritative `[Internal]/[External]`-tagged bug log (new).

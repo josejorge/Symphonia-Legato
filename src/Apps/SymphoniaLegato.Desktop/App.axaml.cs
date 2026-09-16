@@ -2,10 +2,10 @@
 // Description: Application entry — receives the DI ServiceProvider, constructs MainWindow with
 //   its resolved dependencies, and switches between Dark/Light/HighContrast style includes.
 // Author: Jose-Jorge HERNANDEZ
-// Company: Parlee Conseiller, Inc.
+// Company: N/A (personal open-source project, MIT licensed)
 // Date: 2026-09-15
-// Last edit date: 2026-09-15
-// Version: 1.2.0
+// Last edit date: 2026-09-16
+// Version: 1.2.1
 
 using Avalonia;
 using Avalonia.Controls;
